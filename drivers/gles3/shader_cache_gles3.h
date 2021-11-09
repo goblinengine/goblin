@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  gd_mono_property.h                                                   */
+/*  shader_cache_gles3.h                                                 */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,53 +28,31 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef GD_MONO_PROPERTY_H
-#define GD_MONO_PROPERTY_H
+#ifndef SHADER_CACHE_GLES3_H
+#define SHADER_CACHE_GLES3_H
 
-#include "gd_mono.h"
-#include "gd_mono_header.h"
-#include "i_mono_class_member.h"
+#include "core/local_vector.h"
+#include "core/reference.h"
 
-class GDMonoProperty : public IMonoClassMember {
-	GDMonoClass *owner;
-	MonoProperty *mono_property;
+class DirAccess;
+class String;
 
-	StringName name;
-	ManagedType type;
+class ShaderCacheGLES3 {
+	DirAccess *storage_da;
+	String storage_path;
+	uint64_t storage_size = 0;
 
-	bool attrs_fetched;
-	MonoCustomAttrInfo *attributes;
-
-	unsigned int param_buffer_size;
+	void _purge_excess();
 
 public:
-	virtual GDMonoClass *get_enclosing_class() const GD_FINAL { return owner; }
+	static String hash_program(const char *const *p_platform_strings, const LocalVector<const char *> &p_vertex_strings, const LocalVector<const char *> &p_fragment_strings);
 
-	virtual MemberType get_member_type() const GD_FINAL { return MEMBER_TYPE_PROPERTY; }
+	bool retrieve(const String &p_program_hash, uint32_t *r_format, PoolByteArray *r_data);
+	void store(const String &p_program_hash, uint32_t p_program_format, const PoolByteArray &p_program_data);
+	void remove(const String &p_program_hash);
 
-	virtual StringName get_name() const GD_FINAL { return name; }
-
-	virtual bool is_static() GD_FINAL;
-	virtual Visibility get_visibility() GD_FINAL;
-
-	virtual bool has_attribute(GDMonoClass *p_attr_class) GD_FINAL;
-	virtual MonoObject *get_attribute(GDMonoClass *p_attr_class) GD_FINAL;
-	void fetch_attributes();
-
-	bool has_getter();
-	bool has_setter();
-
-	_FORCE_INLINE_ ManagedType get_type() const { return type; }
-
-	void set_value_from_variant(MonoObject *p_object, const Variant &p_value, MonoException **r_exc = NULL);
-	MonoObject *get_value(MonoObject *p_object, MonoException **r_exc = NULL);
-
-	bool get_bool_value(MonoObject *p_object);
-	int get_int_value(MonoObject *p_object);
-	String get_string_value(MonoObject *p_object);
-
-	GDMonoProperty(MonoProperty *p_mono_property, GDMonoClass *p_owner);
-	~GDMonoProperty();
+	ShaderCacheGLES3();
+	~ShaderCacheGLES3();
 };
 
-#endif // GD_MONO_PROPERTY_H
+#endif

@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  gd_mono_property.h                                                   */
+/*  property_utils.h                                                     */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,53 +28,24 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef GD_MONO_PROPERTY_H
-#define GD_MONO_PROPERTY_H
+#ifndef PROPERTY_UTILS_H
+#define PROPERTY_UTILS_H
 
-#include "gd_mono.h"
-#include "gd_mono_header.h"
-#include "i_mono_class_member.h"
+#include "scene/main/node.h"
+#include "scene/resources/packed_scene.h"
 
-class GDMonoProperty : public IMonoClassMember {
-	GDMonoClass *owner;
-	MonoProperty *mono_property;
-
-	StringName name;
-	ManagedType type;
-
-	bool attrs_fetched;
-	MonoCustomAttrInfo *attributes;
-
-	unsigned int param_buffer_size;
-
+class PropertyUtils {
 public:
-	virtual GDMonoClass *get_enclosing_class() const GD_FINAL { return owner; }
+	static bool is_property_value_different(const Variant &p_a, const Variant &p_b);
+	// Gets the most pure default value, the one that would be set when the node has just been instantiated
+	static Variant get_property_default_value(const Object *p_object, const StringName &p_property, const Vector<SceneState::PackState> *p_states_stack_cache = nullptr, bool p_update_exports = false, const Node *p_owner = nullptr, bool *r_is_class_default = nullptr);
 
-	virtual MemberType get_member_type() const GD_FINAL { return MEMBER_TYPE_PROPERTY; }
-
-	virtual StringName get_name() const GD_FINAL { return name; }
-
-	virtual bool is_static() GD_FINAL;
-	virtual Visibility get_visibility() GD_FINAL;
-
-	virtual bool has_attribute(GDMonoClass *p_attr_class) GD_FINAL;
-	virtual MonoObject *get_attribute(GDMonoClass *p_attr_class) GD_FINAL;
-	void fetch_attributes();
-
-	bool has_getter();
-	bool has_setter();
-
-	_FORCE_INLINE_ ManagedType get_type() const { return type; }
-
-	void set_value_from_variant(MonoObject *p_object, const Variant &p_value, MonoException **r_exc = NULL);
-	MonoObject *get_value(MonoObject *p_object, MonoException **r_exc = NULL);
-
-	bool get_bool_value(MonoObject *p_object);
-	int get_int_value(MonoObject *p_object);
-	String get_string_value(MonoObject *p_object);
-
-	GDMonoProperty(MonoProperty *p_mono_property, GDMonoClass *p_owner);
-	~GDMonoProperty();
+	// Gets the instance/inheritance states of this node, in order of precedence,
+	// that is, from the topmost (the most able to override values) to the lowermost
+	// (Note that in nested instancing the one with the greatest precedence is the furthest
+	// in the tree, since every owner found while traversing towards the root gets a chance
+	// to override property values.)
+	static Vector<SceneState::PackState> get_node_states_stack(const Node *p_node, const Node *p_owner = nullptr, bool *r_instanced_by_owner = nullptr);
 };
 
-#endif // GD_MONO_PROPERTY_H
+#endif // PROPERTY_UTILS_H

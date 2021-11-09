@@ -184,9 +184,10 @@ void RasterizerGLES3::initialize() {
 				GL_DEBUG_SEVERITY_HIGH_ARB,5, "hello");
 	}
 	*/
+
 	if (OS::get_singleton()->is_stdout_verbose()) {  // GOBLIN ENGINE
 		print_line("OpenGL ES 3.0 Renderer: " + VisualServer::get_singleton()->get_video_adapter_name());
-	}
+	}	
 	storage->initialize();
 	canvas->initialize();
 	scene->initialize();
@@ -208,12 +209,15 @@ void RasterizerGLES3::begin_frame(double frame_step) {
 	storage->frame.time[2] = Math::fmod(time_total, 900);
 	storage->frame.time[3] = Math::fmod(time_total, 60);
 	storage->frame.count++;
+	storage->frame.shader_compiles_started = 0;
 	storage->frame.delta = frame_step;
 
 	storage->update_dirty_resources();
 
 	storage->info.render_final = storage->info.render;
 	storage->info.render.reset();
+
+	ShaderGLES3::current_frame = storage->frame.count;
 
 	scene->iteration();
 }
@@ -411,6 +415,8 @@ void RasterizerGLES3::end_frame(bool p_swap_buffers) {
 		}
 	}
 
+	ShaderGLES3::advance_async_shaders_compilation();
+
 	if (p_swap_buffers) {
 		OS::get_singleton()->swap_buffers();
 	} else {
@@ -488,6 +494,8 @@ RasterizerGLES3::RasterizerGLES3() {
 
 	time_total = 0;
 	time_scale = 1;
+
+	ShaderGLES3::compiles_started_this_frame = &storage->frame.shader_compiles_started;
 }
 
 RasterizerGLES3::~RasterizerGLES3() {
