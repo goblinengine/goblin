@@ -1,0 +1,10 @@
+short_name = "goblin"
+name = "Goblin Engine"
+goblin = "1.0"
+major = 3
+minor = 5
+patch = 0
+status = "beta"
+module_config = ""
+year = 2021
+website = "http://goblinengine.github.io"
