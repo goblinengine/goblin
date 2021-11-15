@@ -308,11 +308,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 
 	// Please, use alphabet order if you've added new theme here(After "Default" and "Custom")
 
-	if (preset == "Default") {
-		preset_accent_color = Color(0.41, 0.61, 0.91);
-		preset_base_color = Color(0.2, 0.23, 0.31);
-		preset_contrast = default_contrast;
-	} else if (preset == "Custom") {
+	if (preset == "Custom") {
 		accent_color = EDITOR_GET("interface/theme/accent_color");
 		base_color = EDITOR_GET("interface/theme/base_color");
 		contrast = EDITOR_GET("interface/theme/contrast");
@@ -328,9 +324,9 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 		preset_accent_color = Color(0.53, 0.67, 0.89);
 		preset_base_color = Color(0.24, 0.23, 0.27);
 		preset_contrast = 0.25;
-	} else if (preset == "Grey") {
-		preset_accent_color = Color(0.72, 0.89, 1.0);
-		preset_base_color = Color(0.24, 0.24, 0.24);
+	} else if (preset == "Godot 3") {
+		preset_accent_color = Color(0.41, 0.61, 0.91);
+		preset_base_color = Color(0.2, 0.23, 0.31);
 		preset_contrast = 0.2;
 	} else if (preset == "Light") {
 		preset_accent_color = Color(0.13, 0.44, 1.0);
@@ -345,8 +341,8 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 		preset_base_color = Color(0.99, 0.96, 0.89);
 		preset_contrast = 0.06;
 	} else { // Default
-		preset_accent_color = Color(0.41, 0.61, 0.91);
-		preset_base_color = Color(0.2, 0.23, 0.31);
+		preset_accent_color = Color(1.0, 0.55, 0.0);
+		preset_base_color = Color(0.24, 0.24, 0.24);
 		preset_contrast = default_contrast;
 	}
 
@@ -546,13 +542,27 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	style_tab_selected->set_default_margin(MARGIN_TOP, tab_default_margin_vertical);
 	style_tab_selected->set_bg_color(tab_color);
 
+	Ref<StyleBoxFlat> style_tab_selected_bottom = style_tab_selected->duplicate();
+	style_tab_selected_bottom->set_border_width(MARGIN_TOP, 0);
+	style_tab_selected_bottom->set_border_width(MARGIN_BOTTOM, Math::round(2 * EDSCALE));
+	style_tab_selected_bottom->set_expand_margin_size(MARGIN_TOP, border_width);
+
+
 	Ref<StyleBoxFlat> style_tab_unselected = style_tab_selected->duplicate();
 	style_tab_unselected->set_bg_color(dark_color_1);
 	style_tab_unselected->set_border_color(dark_color_2);
 
+	Ref<StyleBoxFlat> style_tab_unselected_bottom = style_tab_unselected->duplicate();
+	style_tab_unselected_bottom->set_border_width(MARGIN_TOP, 0);
+	style_tab_unselected_bottom->set_border_width(MARGIN_BOTTOM, Math::round(2 * EDSCALE));
+
 	Ref<StyleBoxFlat> style_tab_disabled = style_tab_selected->duplicate();
 	style_tab_disabled->set_bg_color(color_disabled_bg);
 	style_tab_disabled->set_border_color(color_disabled);
+
+	Ref<StyleBoxFlat> style_tab_disabled_bottom = style_tab_disabled->duplicate();
+	style_tab_disabled_bottom->set_border_width(MARGIN_TOP, 0);
+	style_tab_disabled_bottom->set_border_width(MARGIN_BOTTOM, Math::round(2 * EDSCALE));
 
 	// Editor background
 	Color background_color_opaque = background_color;
@@ -882,8 +892,11 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 
 	// Tabs & TabContainer
 	theme->set_stylebox("tab_fg", "TabContainer", style_tab_selected);
+	theme->set_stylebox("tab_fg_bottom", "TabContainer", style_tab_selected_bottom);
 	theme->set_stylebox("tab_bg", "TabContainer", style_tab_unselected);
+	theme->set_stylebox("tab_bg_bottom", "TabContainer", style_tab_unselected_bottom);
 	theme->set_stylebox("tab_disabled", "TabContainer", style_tab_disabled);
+	theme->set_stylebox("tab_disabled_bottom", "TabContainer", style_tab_disabled_bottom);
 	theme->set_stylebox("tab_fg", "Tabs", style_tab_selected);
 	theme->set_stylebox("tab_bg", "Tabs", style_tab_unselected);
 	theme->set_stylebox("tab_disabled", "Tabs", style_tab_disabled);
@@ -919,6 +932,10 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	style_content_panel->set_default_margin(MARGIN_LEFT, margin_size_extra * EDSCALE);
 
 	// These styleboxes can be used on tabs against the base color background (e.g. nested tabs).
+	Ref<StyleBoxFlat> style_content_panel_bottom = style_content_panel->duplicate();
+	style_content_panel->set_default_margin(MARGIN_TOP, (2 + margin_size_extra) * EDSCALE);
+	style_content_panel->set_default_margin(MARGIN_BOTTOM, margin_size_extra * EDSCALE);
+	
 	Ref<StyleBoxFlat> style_tab_selected_odd = style_tab_selected->duplicate();
 	style_tab_selected_odd->set_bg_color(color_disabled_bg);
 	theme->set_stylebox("tab_selected_odd", "TabContainer", style_tab_selected_odd);
@@ -933,8 +950,13 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	style_content_panel_vp->set_default_margin(MARGIN_TOP, default_margin_size * EDSCALE);
 	style_content_panel_vp->set_default_margin(MARGIN_RIGHT, border_width * 2);
 	style_content_panel_vp->set_default_margin(MARGIN_BOTTOM, border_width * 2);
+	style_content_panel_bottom->set_default_margin(MARGIN_BOTTOM, (2 + margin_size_extra) * EDSCALE);
+	style_content_panel_bottom->set_default_margin(MARGIN_TOP, margin_size_extra * EDSCALE);
+	style_content_panel_bottom->set_border_width(MARGIN_BOTTOM, Math::round(2 * EDSCALE));
+	style_content_panel_bottom->set_border_color(dark_color_2);
 	theme->set_stylebox("panel", "TabContainer", style_content_panel);
 	theme->set_stylebox("Content", "EditorStyles", style_content_panel_vp);
+	theme->set_stylebox("panel_bottom", "TabContainer", style_content_panel_bottom);
 
 	// This stylebox is used by preview tabs in the Theme Editor.
 	Ref<StyleBoxFlat> style_theme_preview_tab = style_tab_selected_odd->duplicate();
