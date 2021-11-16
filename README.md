@@ -1,8 +1,8 @@
-# Godot Engine
+# Goblin Engine
 
 <p align="center">
   <a href="https://goblinengine.github.io">
-    <img src="logo_outlined.svg" width="400" alt="Godot Engine logo">
+    <img src="logo_outlined.svg" width="400" alt="Goblin Engine logo">
   </a>
 </p>
 
@@ -22,8 +22,9 @@ There is no community as of yet but you are welcome to contribute.
 
 ## Documentation and demos
 
-Since Goblin Engine is backwards compatible with latest Godot you can find all the documentation you need over at [Godot Docs](https://docs.godotengine.org).
-It is maintained by the Godot community in its own [GitHub repository](https://github.com/godotengine/godot-docs).
+Since Goblin Engine is backwards compatible with latest Godot you can find all the documentation you need over at [Godot Docs](https://docs.godotengine.org). It is maintained by the Godot community in its own [GitHub repository](https://github.com/godotengine/godot-docs).
+
+Goblin implements some custon functionality. Please have a look at list of [Goblin Changes](https://github.com/goblinengine/goblin/blob/main/CHANGELOG.md) to find out more.
 
 The [class reference](https://docs.godotengine.org/en/latest/classes/)
 is also accessible from the Godot editor.

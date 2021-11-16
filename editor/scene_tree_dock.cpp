@@ -48,6 +48,8 @@
 #include "scene/property_utils.h"
 #include "scene/resources/packed_scene.h"
 
+#include "modules/modules_enabled.gen.h" // For regex.
+
 void SceneTreeDock::_nodes_drag_begin() {
 	if (restore_script_editor_on_drag) {
 		EditorNode::get_singleton()->set_visible_editor(EditorNode::EDITOR_SCRIPT);
@@ -3203,8 +3205,13 @@ SceneTreeDock::SceneTreeDock(EditorNode *p_editor, Node *p_scene_root, EditorSel
 	HBoxContainer *filter_hbc = memnew(HBoxContainer);
 	filter_hbc->add_constant_override("separate", 0);
 
+#ifdef OSX_ENABLED
+	ED_SHORTCUT("scene_tree/rename", TTR("Rename"), KEY_ENTER);
+	ED_SHORTCUT("scene_tree/batch_rename", TTR("Batch Rename"), KEY_MASK_SHIFT | KEY_ENTER);
+#else
 	ED_SHORTCUT("scene_tree/rename", TTR("Rename"), KEY_F2);
 	ED_SHORTCUT("scene_tree/batch_rename", TTR("Batch Rename"), KEY_MASK_SHIFT | KEY_F2);
+#endif
 	ED_SHORTCUT("scene_tree/add_child_node", TTR("Add Child Node"), KEY_MASK_CMD | KEY_A);
 	ED_SHORTCUT("scene_tree/instance_scene", TTR("Instance Child Scene"), KEY_MASK_CMD | KEY_MASK_SHIFT | KEY_A);
 	ED_SHORTCUT("scene_tree/expand_collapse_all", TTR("Expand/Collapse All"));

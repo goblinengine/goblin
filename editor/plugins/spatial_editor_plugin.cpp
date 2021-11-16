@@ -2043,12 +2043,14 @@ void SpatialEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 			_menu_option(VIEW_RIGHT);
 		}
 		if (ED_IS_SHORTCUT("spatial_editor/orbit_view_down", p_event)) {
-			cursor.x_rot -= Math_PI / 12.0;
+			// Clamp rotation to roughly -90..90 degrees so the user can't look upside-down and end up disoriented.
+			cursor.x_rot = CLAMP(cursor.x_rot - Math_PI / 12.0, -1.57, 1.57);
 			view_type = VIEW_TYPE_USER;
 			_update_name();
 		}
 		if (ED_IS_SHORTCUT("spatial_editor/orbit_view_up", p_event)) {
-			cursor.x_rot += Math_PI / 12.0;
+			// Clamp rotation to roughly -90..90 degrees so the user can't look upside-down and end up disoriented.
+			cursor.x_rot = CLAMP(cursor.x_rot + Math_PI / 12.0, -1.57, 1.57);
 			view_type = VIEW_TYPE_USER;
 			_update_name();
 		}
@@ -2618,7 +2620,7 @@ void SpatialEditorViewport::_notification(int p_what) {
 		if (show_fps) {
 			String text;
 			const float temp_fps = Engine::get_singleton()->get_frames_per_second();
-			text += vformat(TTR("FPS: %d (%s ms)"), temp_fps, String::num(1000.0f / temp_fps, 2));
+			text += vformat(TTR("FPS: %d (%s ms)"), temp_fps, rtos(1000.0f / temp_fps).pad_decimals(2));
 			fps_label->set_text(text);
 		}
 

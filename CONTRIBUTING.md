@@ -12,115 +12,32 @@
 
 ## Reporting bugs
 
-The golden rule is to **always open *one* issue for *one* bug**. If you notice
-several bugs and want to report them, make sure to create one new issue for
-each of them.
+Since Goblin is based on Godot 3.x branch any changes to Godot will eventually end up in Goblin.
 
-If you're reporting a new bug, you'll make our life simpler (and the
-fix will come sooner) by following these guidelines:
+With that in mind you can contribute directly to this project or indirectly though Godot project 3.x branch.
+
+However, Goblin is not officially affiliated with Godot so you cannot ask Goblin specific questions on Godot channels because nobody can help you. You need to address your issues on Goblin channels. 
 
 ### Search first in the existing database
 
 Issues are often reported several times by various users. It's good practice to
 **search first in the [issue tracker](https://github.com/goblinengine/goblin/issues)
 before reporting your issue**. If you don't find a relevant match or if you're
-unsure, don't hesitate to **open a new issue**. The bugsquad will handle it
-from there if it's a duplicate.
+unsure, don't hesitate to **open a new issue**. 
 
-### Specify the platform
-
-Goblin runs on a large variety of platforms and operating systems and devices.
-**In your bug reports, please always specify:**
-
-- Operating system and version (e.g. Windows 10, macOS 10.15, Ubuntu 19.10)
-- Goblin version (e.g. 1.0 .., or the Git commit hash if you're using a development branch)
-
-For bugs that are likely OS-specific and/or graphics-related, please also specify:
-
-- Device (CPU model including architecture, e.g. x86, x86_64, ARM, etc.)
-- GPU model (and the driver version in use if you know it)
-
-**Bug reports not including the required information may be closed at the
-maintainers' discretion.** If in doubt, always include all the requested
-information; it's better to include too much information than not enough
-information.
-
-### Specify steps to reproduce
-
-Many bugs can't be reproduced unless specific steps are taken. Please **specify
-the exact steps** that must be taken to reproduce the condition, and try to
-keep them as minimal as possible. If you're describing a procedure to follow
-in the editor, don't hesitate to include screenshots.
-
-Making your bug report easy to reproduce will make it easier for contributors
-to fix the bug.
-
-### Provide a simple, example project
-
-Sometimes, unexpected behavior can happen in your project. In such case,
-understand that:
-
-- What happens to you may not happen to other users.
-- We can't take the time to look at your project, understand how it is set up
-  and then figure out why it's failing.
-
-To speed up our work, **please upload a minimal project** that isolates
-and reproduces the issue. This is always the **best way for us to fix it**.
-You can attach a ZIP file with the minimal project directly to the bug report,
-by drag and dropping the file in the GitHub edition field.
-
-We recommend always attaching a minimal reproduction project, even if the issue
-may seem simple to reproduce manually.
-
-**If you've been asked by a maintainer to upload a minimal reproduction project,
-you *must* do so within 7 days.** Otherwise, your bug report will be closed as
-it'll be considered too difficult to diagnose.
-
-Now that you've read the guidelines, click the link below to create a
-bug report:
-
-- **[Report a bug](https://github.com/godotengine/godot/issues/new?assignees=&labels=&template=bug_report.md&title=)**
+- **[Report a bug](https://github.com/goblinengine/goblin/issues/new)**
 
 ## Proposing features or improvements
 
-I cannot take suggestions because I'm a one man developer mainly for fun and educational purpose. However, I welcome PRs and suggestions. Since is a smaller project, is much easier to implement things and less hoops to go though.
+Since this is a one man project I cannot take feature proposals at this time.
 
-You are welcome to impement PRs or suggest changes. 
-
-Goblin is a custom build of Godot Engine and maintains compatibility with Godot 3.x source code. This means that any changes in upstream 3.x branch will eventually be part of Goblin. You can suggest Godot suggestions here [Godot Proposals repository](https://github.com/godotengine/godot-proposals)
-and follow the instructions in the README file. High-quality feature proposals
-are more likely to be well-received by the maintainers and community, so do
-your best :)
-
-See [this article](https://godotengine.org/article/introducing-godot-proposals-repository)
-for detailed rationale on this change.
+You are welcome to submit PRs or suggest changes, however.
 
 ## Contributing pull requests
 
-If you want to add new engine features, please make sure that:
-
-- This functionality is desired, which means that it solves a common use case
-  that several users will need in their real-life projects.
-- You talked to other developers on how to implement it best. See also
-  [Proposing features or improvements](#proposing-features-or-improvements).
-- Even if it doesn't get merged, your PR is useful for future work by another
-  developer.
-
-Similar rules can be applied when contributing bug fixes - it's always best to
-discuss the implementation in the bug report first if you are not 100% about
-what would be the best fix.
-
-[This blog post](https://godotengine.org/article/will-your-contribution-be-merged-heres-how-tell)
-outlines the process used by core developers when assessing PRs. We strongly
-recommend that you have a look at it to know what's important to take into
-account for a PR to be considered for merging.
-
-In addition to the following tips, also take a look at the
+If you wish to contribute with code take a look at the official Godot 
 [Engine development guide](https://docs.godotengine.org/en/latest/development/cpp/)
-for an introduction to developing on Godot.
-
-The [Contributing docs](https://docs.godotengine.org/en/latest/community/contributing/index.html)
-also have important information on the PR workflow and the code style we use.
+for an introduction to developing on Goblin/Godot.
 
 ### Document your changes
 
@@ -135,17 +52,14 @@ Follow the style guide described in the
 [Docs writing guidelines](https://docs.godotengine.org/en/latest/community/contributing/docs_writing_guidelines.html).
 
 If your pull request modifies parts of the code in a non-obvious way, make sure
-to add comments in the code as well. This helps other people understand the
-change without having to look at `git blame`.
+to add comments in the code as well. 
 
 ### Be nice to the Git history
 
-Try to make simple PRs that handle one specific topic. Just like for reporting
-issues, it's better to open 3 different PRs that each address a different issue
-than one big PR with three commits.
+Try to make simple PRs that handle one specific issue or feature.
 
-When updating your fork with upstream changes, please use ``git pull --rebase``
-to avoid creating "merge commits". Those commits unnecessarily pollute the git
+When updating upstream changes from Goblin use updating your fork with upstream changes, please use ``git pull --rebase``
+to avoid creating "merge commits". Rebase will change the order of the commits to place your changes last and therefore making it cleaner. Merge commits unnecessarily pollute the git
 history when coming from PRs.
 
 Also try to make commits that bring the engine from one stable state to another
@@ -181,20 +95,19 @@ description is also manually wrapped at 80 chars for readability):
 ```text
 Prevent French fries carbonization by fixing heat regulation
 
-When using the French fries frying module, Godot would not regulate the heat
+When using the French fries frying module, Goblin would not regulate the heat
 and thus bring the oil bath to supercritical liquid conditions, thus causing
 unwanted side effects in the physics engine.
 
 By fixing the regulation system via an added binding to the internal feature,
-this commit now ensures that Godot will not go past the ebullition temperature
+this commit now ensures that Goblin will not go past the ebullition temperature
 of cooking oil under normal atmospheric conditions.
 
-Fixes #1789, long live the Realm!
+Fixes #1789
 ```
 
 **Note:** When using the GitHub online editor or its drag-and-drop
-feature, *please* edit the commit title to something meaningful. Commits named
-"Update my_file.cpp" won't be accepted.
+feature, *please* edit the commit title to something meaningful. 
 
 ## Contributing to Godot's translation
 
@@ -209,29 +122,14 @@ on Weblate.
 
 ## Communicating with developers
 
-The Godot Engine community has [many communication
-channels](https://godotengine.org/community), some used more for user-level
-discussions and support, others more for development discussions.
-
 To communicate with developers (e.g. to discuss a feature you want to implement
 or a bug you want to fix), the following channels can be used:
 
-- [Godot Contributors Chat](https://chat.godotengine.org): You will
-  find most core developers there, so it's the go-to platform for direct chat
-  about Godot Engine development. Feel free to start discussing something there
-  to get some early feedback before writing up a detailed proposal in a GitHub
-  issue.
-- [Bug tracker](https://github.com/godotengine/godot/issues): If there is an
+- [Bug tracker](https://github.com/goblinengine/goblin/issues): If there is an
   existing issue about a topic you want to discuss, just add a comment to it -
   many developers watch the repository and will get a notification. You can
   also create a new issue - please keep in mind to create issues only to
   discuss quite specific points about the development, and not general user
   feedback or support requests.
-- [Feature proposals](https://github.com/godotengine/godot-proposals/issues):
-  To propose a new feature, we have a dedicated issue tracker for that. Don't
-  hesitate to start by talking about your idea on the Godot Contributors Chat
-  to make sure that it makes sense in Godot's context.
 
-Thanks for your interest in contributing!
-
-—The Godot development team
+Thanks for your interest!

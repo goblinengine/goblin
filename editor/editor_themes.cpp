@@ -36,7 +36,7 @@
 #include "editor_scale.h"
 #include "editor_settings.h"
 
-#include "modules/modules_enabled.gen.h"
+#include "modules/modules_enabled.gen.h" // For svg.
 #ifdef MODULE_SVG_ENABLED
 #include "modules/svg/image_loader_svg.h"
 #endif
@@ -932,10 +932,10 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	style_content_panel->set_default_margin(MARGIN_LEFT, margin_size_extra * EDSCALE);
 
 	// These styleboxes can be used on tabs against the base color background (e.g. nested tabs).
-	Ref<StyleBoxFlat> style_content_panel_bottom = style_content_panel->duplicate();
+		Ref<StyleBoxFlat> style_content_panel_bottom = style_content_panel->duplicate();
 	style_content_panel->set_default_margin(MARGIN_TOP, (2 + margin_size_extra) * EDSCALE);
 	style_content_panel->set_default_margin(MARGIN_BOTTOM, margin_size_extra * EDSCALE);
-	
+
 	Ref<StyleBoxFlat> style_tab_selected_odd = style_tab_selected->duplicate();
 	style_tab_selected_odd->set_bg_color(color_disabled_bg);
 	theme->set_stylebox("tab_selected_odd", "TabContainer", style_tab_selected_odd);
@@ -950,13 +950,13 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	style_content_panel_vp->set_default_margin(MARGIN_TOP, default_margin_size * EDSCALE);
 	style_content_panel_vp->set_default_margin(MARGIN_RIGHT, border_width * 2);
 	style_content_panel_vp->set_default_margin(MARGIN_BOTTOM, border_width * 2);
-	style_content_panel_bottom->set_default_margin(MARGIN_BOTTOM, (2 + margin_size_extra) * EDSCALE);
+		style_content_panel_bottom->set_default_margin(MARGIN_BOTTOM, (2 + margin_size_extra) * EDSCALE);
 	style_content_panel_bottom->set_default_margin(MARGIN_TOP, margin_size_extra * EDSCALE);
 	style_content_panel_bottom->set_border_width(MARGIN_BOTTOM, Math::round(2 * EDSCALE));
 	style_content_panel_bottom->set_border_color(dark_color_2);
 	theme->set_stylebox("panel", "TabContainer", style_content_panel);
 	theme->set_stylebox("Content", "EditorStyles", style_content_panel_vp);
-	theme->set_stylebox("panel_bottom", "TabContainer", style_content_panel_bottom);
+		theme->set_stylebox("panel_bottom", "TabContainer", style_content_panel_bottom);
 
 	// This stylebox is used by preview tabs in the Theme Editor.
 	Ref<StyleBoxFlat> style_theme_preview_tab = style_tab_selected_odd->duplicate();

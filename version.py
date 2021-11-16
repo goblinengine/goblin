@@ -8,3 +8,4 @@ status = "beta"
 module_config = ""
 year = 2021
 website = "http://goblinengine.github.io"
+docs = "3.4"

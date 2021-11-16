@@ -119,18 +119,6 @@
 #define glClearDepth glClearDepthf
 #endif
 
-#ifdef __EMSCRIPTEN__
-#include <emscripten/emscripten.h>
-
-void glGetBufferSubData(GLenum target, GLintptr offset, GLsizeiptr size, GLvoid *data) {
-	/* clang-format off */
-	EM_ASM({
-	    GLctx.getBufferSubData($0, $1, HEAPU8, $2, $3);
-	}, target, offset, data, size);
-	/* clang-format on */
-}
-#endif
-
 void glTexStorage2DCustom(GLenum target, GLsizei levels, GLenum internalformat, GLsizei width, GLsizei height, GLenum format, GLenum type) {
 #ifdef GLES_OVER_GL
 
@@ -6154,6 +6142,9 @@ void RasterizerStorageGLES3::particles_set_emitting(RID p_particles, bool p_emit
 	Particles *particles = particles_owner.getornull(p_particles);
 	ERR_FAIL_COND(!particles);
 
+	if (p_emitting && !particles->emitting) {
+		particles_request_process(p_particles);
+	}
 	particles->emitting = p_emitting;
 }
 
@@ -7796,8 +7787,13 @@ bool RasterizerStorageGLES3::free(RID p_rid) {
 		}
 		for (Map<RasterizerScene::InstanceBase *, int>::Element *E = material->instance_owners.front(); E; E = E->next()) {
 			RasterizerScene::InstanceBase *ins = E->key();
+
 			if (ins->material_override == p_rid) {
 				ins->material_override = RID();
+			}
+
+			if (ins->material_overlay == p_rid) {
+				ins->material_overlay = RID();
 			}
 
 			for (int i = 0; i < ins->materials.size(); i++) {
