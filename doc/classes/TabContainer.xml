@@ -204,7 +204,7 @@
 			Font color of the currently selected tab.
 		</theme_item>
 		<theme_item name="hseparation" data_type="constant" type="int" default="4">
-			Horizontal separation between tabs.
+			Horizontal separation between tab's icon and its name.
 		</theme_item>
 		<theme_item name="increment" data_type="icon" type="Texture">
 			Icon for the right arrow button that appears when there are too many tabs to fit in the container width. When the button is disabled (i.e. the last tab is visible) it appears semi-transparent.

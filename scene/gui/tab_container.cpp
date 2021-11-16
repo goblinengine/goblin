@@ -116,7 +116,7 @@ void TabContainer::_gui_input(const Ref<InputEvent> &p_event) {
 			if (popup) {
 				popup_ofs = menu->get_width();
 			}
-
+			
 			Ref<Texture> increment = get_icon("increment");
 			Ref<Texture> decrement = get_icon("decrement");
 			if (pos.x > size.width - increment->get_width() - popup_ofs) {
@@ -413,30 +413,17 @@ void TabContainer::_notification(int p_what) {
 
 			// Draw the navigation buttons.
 			if (buttons_visible_cache) {
-				x -= increment->get_width();
-								
 				Ref<Texture> decrement_icon = highlight_arrow == 0 ? decrement_hl : decrement;
 				Ref<Texture> increment_icon = highlight_arrow == 1 ? increment_hl : increment;
 				Color dec_icon_modulate = first_tab_cache > 0 ? Color(1, 1, 1) : Color(1, 1, 1, 0.5); // Can scroll left.
 				Color inc_icon_modulate = last_tab_cache < tabs.size() - 1 ? Color(1, 1, 1) : Color(1, 1, 1, 0.5); // Can scroll right.
-				
 				int offset = tabs_at_bottom ? size.y - header_height : 0;
 				int dec_y_pos = offset + (header_height - decrement_icon->get_height()) / 2;
 				int inc_y_pos = offset + (header_height - increment_icon->get_height()) / 2;
 
-				if (last_tab_cache < tabs.size() - 1) {
-					draw_texture(highlight_arrow == 1 ? increment_hl : increment, Point2(x, (header_height - increment->get_height()) / 2));
-				} else {
-					draw_texture(increment, Point2(x, (header_height - increment->get_height()) / 2), Color(1, 1, 1, 0.5));
-				}
+				x -= increment->get_width();
 				draw_texture(increment_icon, Point2(x, inc_y_pos), inc_icon_modulate);
-
 				x -= decrement->get_width();
-				if (first_tab_cache > 0) {
-					draw_texture(highlight_arrow == 0 ? decrement_hl : decrement, Point2(x, (header_height - decrement->get_height()) / 2));
-				} else {
-					draw_texture(decrement, Point2(x, (header_height - decrement->get_height()) / 2), Color(1, 1, 1, 0.5));
-				}
 				draw_texture(decrement_icon, Point2(x, dec_y_pos), dec_icon_modulate);
 			}
 		} break;

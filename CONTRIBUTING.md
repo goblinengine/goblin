@@ -22,18 +22,18 @@ fix will come sooner) by following these guidelines:
 ### Search first in the existing database
 
 Issues are often reported several times by various users. It's good practice to
-**search first in the [issue tracker](https://github.com/godotengine/godot/issues)
+**search first in the [issue tracker](https://github.com/goblinengine/goblin/issues)
 before reporting your issue**. If you don't find a relevant match or if you're
 unsure, don't hesitate to **open a new issue**. The bugsquad will handle it
 from there if it's a duplicate.
 
 ### Specify the platform
 
-Godot runs on a large variety of platforms and operating systems and devices.
+Goblin runs on a large variety of platforms and operating systems and devices.
 **In your bug reports, please always specify:**
 
 - Operating system and version (e.g. Windows 10, macOS 10.15, Ubuntu 19.10)
-- Godot version (e.g. 3.2, 3.1.2, or the Git commit hash if you're using a development branch)
+- Goblin version (e.g. 1.0 .., or the Git commit hash if you're using a development branch)
 
 For bugs that are likely OS-specific and/or graphics-related, please also specify:
 
@@ -83,8 +83,11 @@ bug report:
 
 ## Proposing features or improvements
 
-**Since August 2019, the main issue tracker no longer accepts feature proposals.**
-Instead, head to the [Godot Proposals repository](https://github.com/godotengine/godot-proposals)
+I cannot take suggestions because I'm a one man developer mainly for fun and educational purpose. However, I welcome PRs and suggestions. Since is a smaller project, is much easier to implement things and less hoops to go though.
+
+You are welcome to impement PRs or suggest changes. 
+
+Goblin is a custom build of Godot Engine and maintains compatibility with Godot 3.x source code. This means that any changes in upstream 3.x branch will eventually be part of Goblin. You can suggest Godot suggestions here [Godot Proposals repository](https://github.com/godotengine/godot-proposals)
 and follow the instructions in the README file. High-quality feature proposals
 are more likely to be well-received by the maintainers and community, so do
 your best :)
