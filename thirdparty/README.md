@@ -319,7 +319,6 @@ Important: Some files have Godot-made changes for use in core/io.
 They are marked with `/* GODOT start */` and `/* GODOT end */`
 comments and a patch is provided in the minizip/ folder.
 
-
 ## misc
 
 Collection of single-file libraries used in Godot components.
@@ -569,3 +568,14 @@ Files extracted from upstream source:
 
 - lib/{common/,compress/,decompress/,zstd.h}
 - LICENSE
+
+
+## ExoQuant
+
+- Upstream: https://github.com/exoticorn/exoquant
+- Version: v0.7 (4ec54ab) (Feb 20, 2018)
+- License: MIT
+
+Files extracted from upstream
+
+- `exoquant.c`
