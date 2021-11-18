@@ -8,11 +8,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Added
 
-- New `RandomNumberGenerator` functions (based on work adapted from [Goost Engine](https://github.com/goostengine)):
-    - `randshuffle(Array)` which shuffles an Array
-    - `randchoice(Variant)` which picks a random value from an Array or Dictionary or random character from a string
-    - `randdecision(double)` which helps generates a random decisions based on a probability from `0.0` to `1.0` (0% to 100%)
-    - `randroll(count,side)` simulates a random dice roll using count and side and returns an Array with sum at index 0 and all rolls starting with index 1. Count is 1 - 100, sides is 2 - 144. 
+- New `import "<path>"` function for Shader Editor that allows for basic ability to import external shader code into current shader. For Visual Shader Editor use Global Expression node. Adapted from [basic import shader](https://github.com/lyuma/godot/commit/c6b72f1f6632311aa39fe1a01ee7e982f621ed49) by iFire and Lyuma. 
+- New `RandomNumberGenerator` functions (based on code from [Goost Engine](https://github.com/goostengine)):
+    * `randshuffle(Array)` which shuffles an Array
+    * `randchoice(Variant)` which picks a random value from an Array or Dictionary or random character from a string
+    * `randdecision(double)` which helps generates a random decisions based on a probability from `0.0` to `1.0` (0% to 100%)
+    * `randroll(count,side)` simulates a random dice roll using count and side and returns an Array with sum at index 0 and all rolls starting with index 1. Count is 1 - 100, sides is 2 - 144. 
 - Tabs can now be moved to the bottom and have their own styles. Adapted from Godot 4.0 unmerged PR [#44420](https://github.com/godotengine/godot/pull/44420)
 
 

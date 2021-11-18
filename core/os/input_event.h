@@ -42,6 +42,7 @@
  */
 
 enum ButtonList {
+	NONE = 0,
 	BUTTON_LEFT = 1,
 	BUTTON_RIGHT = 2,
 	BUTTON_MIDDLE = 3,
