@@ -1,14 +1,32 @@
 /* register_types.cpp */
 
-#include "register_types.h"
-
 #include "core/class_db.h"
+#include "register_types.h"
+#include "editor/editor_node.h"
+#include "editor/mixin_script_editor.h"
+#include "editor/mixin_script_editor_plugin.h"
+#include "mixin_script.h"
+#include "core/script_language.h"
 #include "image_indexed.h"
 #include "io/image_loader_indexed_png.h"
 #include "io/resource_saver_indexed_png.h"
 
 static ImageLoaderIndexedPNG *image_loader_indexed_png;
 static Ref<ResourceSaverIndexedPNG> resource_saver_indexed_png;
+static MixinScriptLanguage *script_mixin_script = nullptr;
+
+#if defined(TOOLS_ENABLED)
+static ScriptEditorBase *create_editor(const RES &p_resource) {
+	if (Object::cast_to<MixinScript>(*p_resource)) {
+		return memnew(MixinScriptEditor);
+	}
+	return nullptr;
+}
+
+static void mixin_script_register_editor_callback() {
+	ScriptEditor::register_create_script_editor_function(create_editor);
+}
+#endif
 
 void register_goblin_types() {
     ClassDB::register_class<ImageIndexed>();
@@ -18,9 +36,23 @@ void register_goblin_types() {
 
 	resource_saver_indexed_png.instance();
 	ResourceSaver::add_resource_format_saver(resource_saver_indexed_png);
+
+	script_mixin_script = memnew(MixinScriptLanguage);
+	ScriptServer::register_language(script_mixin_script);
+	ClassDB::register_class<MixinScript>();
+	ClassDB::register_class<Mixin>();
+
+#ifdef TOOLS_ENABLED
+	EditorNode::add_plugin_init_callback(mixin_script_register_editor_callback);
+	EditorPlugins::add_by_type<MixinScriptEditorPlugin>();
+#endif
+
 }
 
 void unregister_goblin_types() {
     ResourceSaver::remove_resource_format_saver(resource_saver_indexed_png);
 	resource_saver_indexed_png.unref();
+
+	ScriptServer::unregister_language(script_mixin_script);
+	memdelete(script_mixin_script);
 }

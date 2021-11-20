@@ -11,23 +11,15 @@
 [Goblin Engine](https://goblinengine.github.io) is a custom build of [Godot Engine](https://godotengine.org) created for educational and personal use.
 
 The goal of this project is multifold:
-- Make the engine more visually functional and flexible
-- Implement features from PRs or Godot forks aimed for educational (and soe power use)
-- Add new useful modules
-- Attempt to optimize some aspects of the engine
-- Potentially backport some functionality from Godot
-- Ideally keep engine size small as much as possible
-- Goblin aims to maintain full compatibility with latest Godot 3 branch
+- Make the editor more visually appealing, larger controls, and more flexible UI
+- Implement useful features from PRs, Godot forks, modules or from GDNative addons (adapted into modules) that can be shipped with the engine
+- Maintain full compatibility with latest Godot 3.x branch
 
-Note that at this time Goblin has no releases since is very new. You would need to compile it from scratch yourself. 
+Note that at this time Goblin has no releases since is very new. You would need to compile it from scratch yourself for now. 
 
-Goblin implements some custom functionality:
-  - Ability to import external shader adapted from work by iFire and Lyuma
-  - New random generator functions including ability to shuffle, pick random choice or roll dice (some of which was adapted from [Goost Engine](https://goostengine.github.io)
-  - Ability to use indexed images and palettes (slower but more convenient than shaders) implemented by Xrayez in [Goost Engine](https://goostengine.github.io)
+Goblin is compatible with Godot 3.x but implements some custom functionality that Godot does not have. Some of this functionality overlaps with [Goost Engine](https://goostengine.github.io/).
 
 Please have a look at list of [Goblin Changes](https://github.com/goblinengine/goblin/blob/main/CHANGELOG.md) to find out more.
-
 
 
 ## Community and contributing

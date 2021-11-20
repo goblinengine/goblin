@@ -6,7 +6,9 @@ Import('env')
 env_goblin = env.Clone()
 env_goblin.add_source_files(env.modules_sources, "*.cpp")
 env_goblin.add_source_files(env.modules_sources, "io/*.cpp")
-
 env_goblin.add_source_files(env.modules_sources, "libs/*.c")
+
+if env["tools"]:
+    env_goblin.add_source_files(env.modules_sources, "editor/*.cpp")
 
 env_goblin.disable_warnings()
