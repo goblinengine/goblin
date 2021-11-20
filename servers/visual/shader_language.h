@@ -154,8 +154,6 @@ public:
 		TK_ARG_OUT,
 		TK_ARG_INOUT,
 		TK_RENDER_MODE,
-		TK_IMPORT,
-		TK_QUOTE,
 		TK_HINT_WHITE_TEXTURE,
 		TK_HINT_BLACK_TEXTURE,
 		TK_HINT_NORMAL_TEXTURE,
@@ -556,6 +554,7 @@ public:
 			DataType type;
 			StringName type_str;
 			DataPrecision precision;
+			bool is_const;
 		};
 
 		StringName name;

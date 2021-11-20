@@ -29,7 +29,6 @@
 /*************************************************************************/
 
 #include "shader_language.h"
-#include "scene/resources/shader.h"
 #include "core/os/os.h"
 #include "core/print_string.h"
 #include "servers/visual_server.h"
@@ -206,7 +205,6 @@ const char *ShaderLanguage::token_names[TK_MAX] = {
 	"HINT_COLOR",
 	"HINT_RANGE",
 	"SHADER_TYPE",
-	"IMPORT_SHADER",
 	"CURSOR",
 	"ERROR",
 	"EOF",
@@ -304,8 +302,6 @@ const ShaderLanguage::KeyWord ShaderLanguage::keyword_list[] = {
 	{ TK_HINT_COLOR, "hint_color" },
 	{ TK_HINT_RANGE, "hint_range" },
 	{ TK_SHADER_TYPE, "shader_type" },
-	{ TK_IMPORT, "import" },
-	{ TK_QUOTE, "\"" },
 
 	{ TK_ERROR, nullptr }
 };
@@ -428,13 +424,6 @@ ShaderLanguage::Token ShaderLanguage::_get_token() {
 			} break;
 			//case '"' //string - no strings in shader
 			//case '\'' //string - no strings in shader
-			case '"': {
-				int end_quote = code.find_char('"', char_idx);
-				String quoted = code.substr(char_idx, end_quote - char_idx);
-				char_idx = end_quote + 1;
-				char_idx++;
-				return _make_token(TK_QUOTE, quoted);
-			}
 			case '{':
 				return _make_token(TK_CURLY_BRACKET_OPEN);
 			case '}':
@@ -963,6 +952,9 @@ bool ShaderLanguage::_find_identifier(const BlockNode *p_block, const Map<String
 				}
 				if (r_struct_name) {
 					*r_struct_name = function->arguments[i].type_str;
+				}
+				if (r_is_const) {
+					*r_is_const = function->arguments[i].is_const;
 				}
 				return true;
 			}
@@ -3447,11 +3439,13 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 							for (int i = 0; i < call_function->arguments.size(); i++) {
 								int argidx = i + 1;
 								if (argidx < func->arguments.size()) {
-									if (call_function->arguments[i].qualifier == ArgumentQualifier::ARGUMENT_QUALIFIER_OUT || call_function->arguments[i].qualifier == ArgumentQualifier::ARGUMENT_QUALIFIER_INOUT) {
+									if (call_function->arguments[i].is_const || call_function->arguments[i].qualifier == ArgumentQualifier::ARGUMENT_QUALIFIER_OUT || call_function->arguments[i].qualifier == ArgumentQualifier::ARGUMENT_QUALIFIER_INOUT) {
 										bool error = false;
 										Node *n = func->arguments[argidx];
 										if (n->type == Node::TYPE_CONSTANT || n->type == Node::TYPE_OPERATOR) {
-											error = true;
+											if (!call_function->arguments[i].is_const) {
+												error = true;
+											}
 										} else if (n->type == Node::TYPE_ARRAY) {
 											ArrayNode *an = static_cast<ArrayNode *>(n);
 											if (an->call_expression != nullptr || an->is_const) {
@@ -5636,83 +5630,8 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 	int texture_uniforms = 0;
 	int uniforms = 0;
 
-	Set<String> includes;
-	int include_depth = 0;
-
 	while (tk.type != TK_EOF) {
 		switch (tk.type) {
-			case TK_IMPORT: {
-				tk = _get_token();
-
-				if (tk.type != TK_QUOTE) {
-					_set_error("Expected quote.");
-					return ERR_PARSE_ERROR;
-				}
-
-				String path = tk.text;
-
-				if (path.empty()) {
-					_set_error("Invalid path");
-					return ERR_PARSE_ERROR;
-				}
-
-				RES res = ResourceLoader::load(path);
-				if (res.is_null()) {
-					_set_error("Shader include load failed");
-					return ERR_PARSE_ERROR;
-				}
-
-				String replacement = String("import \"") + tk.text + String("\"");
-				String empty;
-				for (int i = 0; i < replacement.size(); i++) {
-					empty += " ";
-				}
-				code = code.replace_first(replacement, empty);
-
-				tk = _get_token();
-				if (tk.type != TK_SEMICOLON) {
-					_set_error("Expected semicolon.");
-					return ERR_PARSE_ERROR;
-				}
-
-				Ref<Shader> shader = res;
-				if (shader.is_null()) {
-					_set_error("Shader include resource type is wrong");
-					return ERR_PARSE_ERROR;
-				}
-
-				String included = shader->get_code();
-				if (included.empty()) {
-					_set_error("Shader include not found");
-					return ERR_PARSE_ERROR;
-				}
-
-				int type_end = included.find(";");
-				if (type_end == -1) {
-					_set_error("Shader include shader_type not found");
-					return ERR_PARSE_ERROR;
-				}
-
-				const String real_path = shader->get_path();
-				if (includes.has(real_path)) {
-					//Already included, skip.
-					return ERR_PARSE_ERROR;
-				}
-
-				//Mark as included
-				includes.insert(real_path);
-
-				include_depth++;
-				if (include_depth > 25) {
-					_set_error("Shader max include depth exceeded");
-					return ERR_PARSE_ERROR;
-				}
-
-				//Remove "shader_type xyz;" prefix from included files
-				included = included.substr(type_end + 1, included.length());
-
-				code = code.insert(char_idx, included);
-			} break;
 			case TK_RENDER_MODE: {
 				while (true) {
 					StringName mode;
@@ -6568,15 +6487,29 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 						break;
 					}
 
+					bool is_const = false;
+					if (tk.type == TK_CONST) {
+						is_const = true;
+						tk = _get_token();
+					}
+
 					ArgumentQualifier qualifier = ARGUMENT_QUALIFIER_IN;
 
 					if (tk.type == TK_ARG_IN) {
 						qualifier = ARGUMENT_QUALIFIER_IN;
 						tk = _get_token();
 					} else if (tk.type == TK_ARG_OUT) {
+						if (is_const) {
+							_set_error("'out' qualifier cannot be used within a function parameter declared with 'const'.");
+							return ERR_PARSE_ERROR;
+						}
 						qualifier = ARGUMENT_QUALIFIER_OUT;
 						tk = _get_token();
 					} else if (tk.type == TK_ARG_INOUT) {
+						if (is_const) {
+							_set_error("'inout' qualifier cannot be used within a function parameter declared with 'const'.");
+							return ERR_PARSE_ERROR;
+						}
 						qualifier = ARGUMENT_QUALIFIER_INOUT;
 						tk = _get_token();
 					}
@@ -6654,6 +6587,7 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 					arg.type_str = param_struct_name;
 					arg.precision = pprecision;
 					arg.qualifier = qualifier;
+					arg.is_const = is_const;
 
 					func_node->arguments.push_back(arg);
 
@@ -7062,6 +6996,10 @@ Error ShaderLanguage::complete(const String &p_code, const Map<StringName, Funct
 
 						if (j == completion_argument) {
 							calltip += CharType(0xFFFF);
+						}
+
+						if (shader->functions[i].function->arguments[j].is_const) {
+							calltip += "const ";
 						}
 					}
 
