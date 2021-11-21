@@ -2155,6 +2155,7 @@ bool Main::iteration() {
 
 	uint64_t physics_process_ticks = 0;
 	uint64_t idle_process_ticks = 0;
+	uint64_t visual_process_ticks = 0;
 
 	frame += ticks_elapsed;
 
@@ -2215,6 +2216,8 @@ bool Main::iteration() {
 	visual_server_callbacks->flush();
 	message_queue->flush();
 
+	uint64_t visual_begin = OS::get_singleton()->get_ticks_usec();
+
 	VisualServer::get_singleton()->sync(); //sync if still drawing from previous frames.
 
 	if (OS::get_singleton()->can_draw() && VisualServer::get_singleton()->is_render_loop_enabled()) {
@@ -2229,6 +2232,8 @@ bool Main::iteration() {
 			force_redraw_requested = false;
 		}
 	}
+
+	visual_process_ticks = OS::get_singleton()->get_ticks_usec() - visual_begin;
 
 #ifndef TOOLS_ENABLED
 	// we can choose to sync delta from here, just after the draw
@@ -2250,6 +2255,12 @@ bool Main::iteration() {
 
 	if (script_debugger) {
 		if (script_debugger->is_profiling()) {
+			//add visual frame time
+			Array values;
+			values.push_back("visual_time");
+			values.push_back(USEC_TO_SEC(visual_process_ticks));
+			script_debugger->add_profiling_frame_data("visual", values);
+
 			script_debugger->profiling_set_frame_times(USEC_TO_SEC(frame_time), USEC_TO_SEC(idle_process_ticks), USEC_TO_SEC(physics_process_ticks), frame_slice);
 		}
 		script_debugger->idle_poll();

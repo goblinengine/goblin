@@ -139,6 +139,15 @@ void MixinScriptInstance::notification(int p_notification) {
 		ScriptInstance *instance = instances[i];
 		if (instance) {
 			instance->notification(p_notification);
+
+			// hack to enforce the calling of _ready, _enter_tree, _exit_tree equally on all scripts
+			if (p_notification == 13) {
+				if (instance->has_method("_ready")) instance->call("_ready");
+				else if (instance->has_method("_Ready")) instance->call("_Ready");
+			} else if (p_notification == 10) {
+				if (instance->has_method("_enter_tree")) instance->call("_enter_tree");
+				else if (instance->has_method("_EnterTree")) instance->call("_EnterTree");
+			}
 		}
 	}
 }

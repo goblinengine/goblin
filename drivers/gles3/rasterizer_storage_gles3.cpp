@@ -8152,7 +8152,7 @@ void RasterizerStorageGLES3::initialize() {
 			MaxShaderCompilerThreads(ShaderGLES3::max_simultaneous_compiles);
 		} else {
 #ifdef DEBUG_ENABLED
-			print_line("Async. shader compilation: No MaxShaderCompilerThreads function found.");
+			if (OS::get_singleton()->is_stdout_verbose()) print_line("Async. shader compilation: No MaxShaderCompilerThreads function found.");
 #endif
 		}
 #endif
@@ -8172,15 +8172,15 @@ void RasterizerStorageGLES3::initialize() {
 	bool effectively_on = false;
 	if (config.async_compilation_enabled) {
 		if (config.parallel_shader_compile_supported) {
-			print_line("Async. shader compilation: ON (full native support)");
+			if (OS::get_singleton()->is_stdout_verbose()) print_line("Async. shader compilation: ON (full native support)");
 			effectively_on = true;
 		} else if (config.program_binary_supported && OS::get_singleton()->is_offscreen_gl_available()) {
 			shaders.compile_queue = memnew(ThreadedCallableQueue<GLuint>());
 			shaders.compile_queue->enqueue(0, []() { OS::get_singleton()->set_offscreen_gl_current(true); });
-			print_line("Async. shader compilation: ON (via secondary context)");
+			if (OS::get_singleton()->is_stdout_verbose())  print_line("Async. shader compilation: ON (via secondary context)");
 			effectively_on = true;
 		} else {
-			print_line("Async. shader compilation: OFF (enabled for " + String(Engine::get_singleton()->is_editor_hint() ? "editor" : "project") + ", but not supported)");
+			if (OS::get_singleton()->is_stdout_verbose()) print_line("Async. shader compilation: OFF (enabled for " + String(Engine::get_singleton()->is_editor_hint() ? "editor" : "project") + ", but not supported)");
 		}
 		if (effectively_on) {
 			if (config.shader_cache_enabled) {
@@ -8196,7 +8196,7 @@ void RasterizerStorageGLES3::initialize() {
 			}
 		}
 	} else {
-		print_line("Async. shader compilation: OFF");
+		if (OS::get_singleton()->is_stdout_verbose()) print_line("Async. shader compilation: OFF");
 	}
 	ShaderGLES3::compile_queue = shaders.compile_queue;
 	ShaderGLES3::parallel_compile_supported = config.parallel_shader_compile_supported;
