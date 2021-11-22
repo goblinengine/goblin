@@ -39,6 +39,4 @@ as well.
 There are also a number of other
 [learning resources](https://docs.godotengine.org/en/latest/community/tutorials.html)
 provided by the community, such as text and video tutorials, demos, etc.
-Consult the [community channels](https://godotengine.org/community)
-for more information.
 
