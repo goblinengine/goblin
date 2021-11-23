@@ -481,6 +481,12 @@ bool SceneTree::iteration(float p_time) {
 	if (GLOBAL_GET("physics/common/enable_pause_aware_picking")) {
 		call_group_flags(GROUP_CALL_REALTIME, "_viewports", "_process_picking", true);
 	}
+
+	//GOBLIN ENGINE fixed process
+	if (current_frame % (int)GLOBAL_GET("application/run/fixed_process_frames") == 0) {
+		call_group_flags(SceneTree::GROUP_CALL_REALTIME, "fixed_process", "_fixed_process");
+	}
+	
 	_notify_group_pause("physics_process", Node::NOTIFICATION_PHYSICS_PROCESS);
 	_flush_ugc();
 	MessageQueue::get_singleton()->flush(); //small little hack
@@ -2023,6 +2029,10 @@ SceneTree::SceneTree() {
 	physics_process_time = 1;
 	idle_process_time = 1;
 
+	// GOBLIN ENGINE fixed process
+	GLOBAL_DEF("application/run/fixed_process_frames", 20);
+	ProjectSettings::get_singleton()->set_custom_property_info("application/run/fixed_process_frames", PropertyInfo(Variant::INT, "application/run/fixed_process_frames", PROPERTY_HINT_RANGE, "1,500,or_greater")); // 1 or greater
+	
 	root = nullptr;
 	input_handled = false;
 	pause = false;

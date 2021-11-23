@@ -5,6 +5,7 @@
 
 ### Added
 
+- Brought back `_fixed_process` from Godot 2 but works differently. Fixed process runs in sync with physics process but can be set on a lower frame rate controlled by `application\run\fixed_process_frames` setting. A value of 1 means it is called on every physics frame. By default is 20 which means it is called every 20 frames. The purpose is to create an alternative physics process for lower latency game logic.
 - Added a generic `Visual` category with `Visual Time` in Profiler which tracks rendering time. The timing is not very precise due to OpenGL/Vsync according to Reduz, however, it should help track down major issues.   
 - Added `MixinScript` which is a new take on a very old feature of very early Godot Engine before it became open sourced. Was re-added [here](https://github.com/godotengine/godot/pull/8502) and removed again [here](https://github.com/godotengine/godot/pull/8718). MixinScript is MultiScript re-implemented, rebranded and fixed by Xrayez for [Goost Engine](https://github.com/goostengine). I implemented this feature with permission and kept all naming intact for compatibility between Goblin and Goost. My version force calls `_ready()` and `_enter_tree()` for all Mixins which causes the first such functions to call twice (just be aware of this glitch)
 - You can now add C style multiline comments in GDScript `/* multi line commment */`. Implemented from a rejected PR found [here](https://github.com/godotengine/godot/pull/18258)
@@ -19,10 +20,12 @@
 
 ### Changed
 
+- Editor boot splash background color is gray same as editor now and default boot splash background color is black.
+- Expose Bullet smooth trimesh collision settings based on a pr found [here](https://github.com/AndreaCatania/godot/commit/2b67feb49cbe32935b53f909f0a8b4f1ec980b17)
 - GDscript template has been simplified.
 - Tab `hseparation` class doc adjusted to reflect actual function
 - Version name has been changed to `Goblin v (Godot v) [patch]`
-- GLES2/3 and Batching notifications when running a project have been moved to verbose
+- GLES2/3, Batching and Async notifications have been moved to verbose
 - Almost all logos have been changed to Goblin specific branding
 
 ### Removed

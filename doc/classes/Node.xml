@@ -54,6 +54,16 @@
 				[b]Note:[/b] This method is only called if the node is present in the scene tree (i.e. if it's not orphan).
 			</description>
 		</method>
+		<method name="_fixed_process" qualifiers="virtual">
+			<return type="void" />
+			<description>
+				Fixed process is synced to the physics process but gets called only after a specific number of frames have elapsed.
+				The default value is 20 which means is called every 20 frames. Minimum value is 1 which makes it run on every physics frame.
+				It is controlled by [code]application/run/fixed_process_frames[/code].
+				It is only called if fixed processing is enabled, which is done automatically if this method is overridden, and can be toggled with [method set_fixed_process].
+				[b]Note:[/b] This method is only called if the node is present in the scene tree (i.e. if it's not orphan).
+			</description>
+		</method>
 		<method name="_physics_process" qualifiers="virtual">
 			<return type="void" />
 			<argument index="0" name="delta" type="float" />
@@ -615,6 +625,13 @@
 			<argument index="1" name="recursive" type="bool" default="true" />
 			<description>
 				Sets the node's network master to the peer with the given peer ID. The network master is the peer that has authority over the node on the network. Useful in conjunction with the [code]master[/code] and [code]puppet[/code] keywords. Inherited from the parent node by default, which ultimately defaults to peer ID 1 (the server). If [code]recursive[/code], the given peer is recursively set as the master for all children of this node.
+			</description>
+		</method>
+		<method name="set_fixed_process">
+			<return type="void" />
+			<argument index="0" name="enable" type="bool" />
+			<description>
+				Enables or disables fixed processing. Enabled automatically if [method _physics_process] is overridden. Any calls to this before [method _ready] will be ignored.
 			</description>
 		</method>
 		<method name="set_physics_process">

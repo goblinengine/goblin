@@ -106,6 +106,7 @@ public:
 	StringName _area_inout;
 
 	StringName _physics_process;
+	StringName _fixed_process; //GOBLIN ENGINE fixed process
 	StringName _process;
 	StringName _enter_world;
 	StringName _exit_world;

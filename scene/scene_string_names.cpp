@@ -89,6 +89,8 @@ SceneStringNames::SceneStringNames() {
 	_physics_process = StaticCString::create("_physics_process");
 	_process = StaticCString::create("_process");
 
+	_fixed_process = StaticCString::create("_fixed_process"); //GOBLIN ENGINE fixed process
+
 	_enter_tree = StaticCString::create("_enter_tree");
 	_exit_tree = StaticCString::create("_exit_tree");
 	_enter_world = StaticCString::create("_enter_world");

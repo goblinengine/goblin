@@ -143,6 +143,11 @@ void Node::_notification(int p_notification) {
 					set_physics_process(true);
 				}
 
+				// GOBLIN ENGINE fixed process
+				if (get_script_instance()->has_method(SceneStringNames::get_singleton()->_fixed_process)) {
+					set_fixed_process(true);
+				}
+
 				get_script_instance()->call_multilevel_reversed(SceneStringNames::get_singleton()->_ready, nullptr, 0);
 			}
 
@@ -395,6 +400,28 @@ void Node::set_physics_process(bool p_process) {
 bool Node::is_physics_processing() const {
 	return data.physics_process;
 }
+
+//GOBLIN ENGINE fixed process
+void Node::set_fixed_process(bool p_process) {
+	if (data.fixed_process == p_process) {
+		return;
+	}
+
+	data.fixed_process = p_process;
+
+	if (data.fixed_process) {
+		add_to_group("fixed_process", false);
+	} else {
+		remove_from_group("fixed_process");
+	}
+
+	_change_notify("fixed_process");
+}
+
+bool Node::is_fixed_processing() const {
+	return data.fixed_process;
+}
+// GOBLIN ENGINE fixed process
 
 void Node::set_physics_process_internal(bool p_process_internal) {
 	if (data.physics_process_internal == p_process_internal) {
@@ -2802,6 +2829,10 @@ void Node::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_physics_process", "enable"), &Node::set_physics_process);
 	ClassDB::bind_method(D_METHOD("get_physics_process_delta_time"), &Node::get_physics_process_delta_time);
 	ClassDB::bind_method(D_METHOD("is_physics_processing"), &Node::is_physics_processing);
+	//GOBLIN ENGINE
+	ClassDB::bind_method(D_METHOD("set_fixed_process", "enable"), &Node::set_fixed_process);
+	ClassDB::bind_method(D_METHOD("is_fixed_processing"), &Node::is_fixed_processing);
+
 	ClassDB::bind_method(D_METHOD("get_process_delta_time"), &Node::get_process_delta_time);
 	ClassDB::bind_method(D_METHOD("set_process", "enable"), &Node::set_process);
 	ClassDB::bind_method(D_METHOD("set_process_priority", "priority"), &Node::set_process_priority);
@@ -2954,6 +2985,8 @@ void Node::_bind_methods() {
 
 	BIND_VMETHOD(MethodInfo("_process", PropertyInfo(Variant::REAL, "delta")));
 	BIND_VMETHOD(MethodInfo("_physics_process", PropertyInfo(Variant::REAL, "delta")));
+	//GOBLIN ENGINE
+	BIND_VMETHOD(MethodInfo("_fixed_process"));
 	BIND_VMETHOD(MethodInfo("_enter_tree"));
 	BIND_VMETHOD(MethodInfo("_exit_tree"));
 	BIND_VMETHOD(MethodInfo("_ready"));

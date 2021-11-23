@@ -123,6 +123,7 @@ private:
 		// variables used to properly sort the node when processing, ignored otherwise
 		//should move all the stuff below to bits
 		bool physics_process;
+		bool fixed_process; //GOBLIN ENGINE fixed process
 		bool idle_process;
 		int process_priority;
 
@@ -333,6 +334,9 @@ public:
 	void set_physics_process(bool p_process);
 	float get_physics_process_delta_time() const;
 	bool is_physics_processing() const;
+	
+	void set_fixed_process(bool p_process); //GOBLIN ENGINE fixed process
+	bool is_fixed_processing() const;
 
 	void set_process(bool p_idle_process);
 	float get_process_delta_time() const;

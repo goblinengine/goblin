@@ -171,7 +171,7 @@
 			Comma-separated list of custom Android modules (which must have been built in the Android export templates) using their Java package path, e.g. [code]"org/godotengine/godot/MyCustomSingleton,com/example/foo/FrenchFriesFactory"[/code].
 			[b]Note:[/b] Since Godot 3.2.2, the [code]org/godotengine/godot/GodotPaymentV3[/code] module was deprecated and replaced by the [code]GodotPayment[/code] plugin which should be enabled in the Android export preset under [code]Plugins[/code] section. The singleton to access in code was also renamed to [code]GodotPayment[/code].
 		</member>
-		<member name="application/boot_splash/bg_color" type="Color" setter="" getter="" default="Color( 0.14, 0.14, 0.14, 1 )">
+		<member name="application/boot_splash/bg_color" type="Color" setter="" getter="" default="Color( 0.0, 0.0, 0.0, 1 )">
 			Background color for the boot splash.
 		</member>
 		<member name="application/boot_splash/fullsize" type="bool" setter="" getter="" default="true">
@@ -1085,6 +1085,9 @@
 		<member name="physics/3d/active_soft_world" type="bool" setter="" getter="" default="true">
 			Sets whether the 3D physics world will be created with support for [SoftBody] physics. Only applies to the Bullet physics engine.
 		</member>
+		<member name="physics/3d/smooth_trimesh_collision" type="bool" setter="" getter="" default="true">
+			Sets whether the 3D physics simulation will account for smooth physics shapes. Potentially laggy and only applies to the Bullet physics engine.
+		</member>
 		<member name="physics/3d/default_angular_damp" type="float" setter="" getter="" default="0.1">
 			The default angular damp in 3D.
 			[b]Note:[/b] Good values are in the range [code]0[/code] to [code]1[/code]. At value [code]0[/code] objects will keep moving with the same velocity. Values greater than [code]1[/code] will aim to reduce the velocity to [code]0[/code] in less than a second e.g. a value of [code]2[/code] will aim to reduce the velocity to [code]0[/code] in half a second. A value equal to or greater than the physics frame rate ([member ProjectSettings.physics/common/physics_fps], [code]60[/code] by default) will bring the object to a stop in one iteration.
@@ -1124,6 +1127,11 @@
 			- When pause is started, every collision object that is hovered or captured (3D only) is released from that condition, getting the relevant mouse-exit callback, unless its pause mode makes it immune to pause.
 			- During pause, picking only considers collision objects immune to pause, sending input events and enter/exit callbacks to them as expected.
 			If disabled, the legacy behavior is used, which consists in queuing the picking input events during pause (so nodes won't get them) and flushing that queue on resume, against the state of the 2D/3D world at that point.
+		</member>
+		
+		<member name="application/run/fixed_process_frames" type="int" setter="" getter="" default="60">
+			The number of frames between fixed frame calls. Controls how long to wait until [method Node._fixed_process] methods are run.
+			[b]Note:[/b] This property is only read when the project starts.
 		</member>
 		<member name="physics/common/physics_fps" type="int" setter="" getter="" default="60">
 			The number of fixed iterations per second. This controls how often physics simulation and [method Node._physics_process] methods are run.
