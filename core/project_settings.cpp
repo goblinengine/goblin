@@ -1255,6 +1255,10 @@ ProjectSettings::ProjectSettings() {
 	GLOBAL_DEF("android/modules", "");
 
 	using_datapack = false;
+
+	// GOBLIN ENGINE fixed process
+	GLOBAL_DEF("application/run/fixed_process_frames", 20);
+	ProjectSettings::get_singleton()->set_custom_property_info("application/run/fixed_process_frames", PropertyInfo(Variant::INT, "application/run/fixed_process_frames", PROPERTY_HINT_RANGE, "1,500,or_greater")); // 1 or greater
 }
 
 ProjectSettings::~ProjectSettings() {
