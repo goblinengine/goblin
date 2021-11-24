@@ -20,7 +20,8 @@
 
 ### Changed
 
-- Script debugger now points to Goblin Engine source in the debugger (as the commit hashes for Goblin are different and original source no longer lines up)
+- Editor Settings Display Scale auto suggestions will now suggest scaling relative to 96 dpi (which is usually the recommended safe dpi). 
+- Script debugger now points to Goblin Engine source in the debugger (as the commit hashes for Goblin are different and original source and no longer lines up)
 - Editor boot splash background color is gray same as editor now and default boot splash background color is black.
 - Expose Bullet smooth trimesh collision settings based on a pr found [here](https://github.com/AndreaCatania/godot/commit/2b67feb49cbe32935b53f909f0a8b4f1ec980b17)
 - GDscript template has been simplified.
