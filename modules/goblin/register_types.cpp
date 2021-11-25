@@ -10,6 +10,7 @@
 #include "image_indexed.h"
 #include "io/image_loader_indexed_png.h"
 #include "io/resource_saver_indexed_png.h"
+#include "midi_player.h"
 
 static ImageLoaderIndexedPNG *image_loader_indexed_png;
 static Ref<ResourceSaverIndexedPNG> resource_saver_indexed_png;
@@ -41,6 +42,8 @@ void register_goblin_types() {
 	ScriptServer::register_language(script_mixin_script);
 	ClassDB::register_class<MixinScript>();
 	ClassDB::register_class<Mixin>();
+
+	ClassDB::register_class<MidiPlayer>();
 
 #ifdef TOOLS_ENABLED
 	EditorNode::add_plugin_init_callback(mixin_script_register_editor_callback);
