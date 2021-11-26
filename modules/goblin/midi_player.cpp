@@ -1,3 +1,26 @@
+/* 
+Copyright (c) 2021 Filip Anton (filipworks) 
+Created for Goblin Engine github.com/goblinengine
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+*/
+
 #include "midi_player.h"
 
 #include "core/bind/core_bind.h"
@@ -6,7 +29,7 @@
 #define TML_IMPLEMENTATION
 #include "libs/tml.h"
 
-static int readTsfFile(void* inData, void* inPtr, unsigned int inSize) {
+static int readFile(void* inData, void* inPtr, unsigned int inSize) {
 	FileAccess *theFile = (FileAccess*)inData;
 	ERR_FAIL_COND_V_MSG(!theFile, 0, "File pointer was lost.");
 
@@ -18,7 +41,7 @@ static int readTsfFile(void* inData, void* inPtr, unsigned int inSize) {
 		int theReadSize = theFile->get_buffer(&w[0], inSize);
 		w.release();
 		if (theReadSize < inSize) theData.resize(inSize);
-		ERR_FAIL_COND_V_MSG(theReadSize == 0, 0, "Could't read file.");
+		//ERR_FAIL_COND_V_MSG(theReadSize == 0, 0, "Could't read file.");
 
 		memcpy(inPtr, theData.read().ptr(), theReadSize);
 
@@ -26,71 +49,81 @@ static int readTsfFile(void* inData, void* inPtr, unsigned int inSize) {
 	}
 }
 
-static int skipTsfFile(void* inData, unsigned int inSize) {
+static int skipFile(void* inData, unsigned int inSize) {
 	FileAccess *theFile = (FileAccess*)inData;
 	int64_t theNewPosition = theFile->get_position()+inSize;
 	theFile->seek(theNewPosition);
 	return (theFile->get_position() == theNewPosition) ? 1 : 0;
 }
 
-MidiPlayer::MidiPlayer(): mTsf(NULL), mTsfFile(NULL), mMidiSpeed(1.0) {
-	FileAccess *mTsfFile = nullptr;
-	FileAccess *mTmlFile = nullptr;
+MidiPlayer::MidiPlayer(): mTsf(NULL), soundFontFile(NULL), midi_speed(1.0) {
+	FileAccess *soundFontFile = nullptr;
+	FileAccess *midiFile = nullptr;
 	mTsf = NULL;
 	mSoundFontName = "";
-	mTsfStream.read = readTsfFile;
-	mTsfStream.skip = skipTsfFile;
+	soundFontStream.read = readFile;
+	soundFontStream.skip = skipFile;
 	mTml = NULL;
-	mTmlCurrent = NULL;
-	loop_mode = false;
-	mTmlStream.read = readTsfFile;
+	mMidiName = "";
+	midiCurrent = NULL;
+	looping = true;
+	midiStream.read = readFile;
 }
 
-void MidiPlayer::set_sound_font(String inSoundFontName) {
+void MidiPlayer::load_soundfont(String inSoundFontName) {
 	mSoundFontName = inSoundFontName;
+
+	// Clear the old sound font
 	if (mTsf != NULL) {
 		tsf_close(mTsf);
 		mTsf = NULL;
 	}
 
-	if (mTsfFile) {
-		mTsfFile->close();
-	}
+	// Open the new soundfont file
+	soundFontFile = FileAccess::open(mSoundFontName, FileAccess::READ);
+	ERR_FAIL_COND_MSG(!soundFontFile, "Couldn't open soundfont " + mSoundFontName + ".");
 
-	mTsfFile = FileAccess::open(mSoundFontName, FileAccess::READ);
-	ERR_FAIL_COND_MSG(!mTsfFile, "Couldn't open " + mSoundFontName + ".");
-	mTsfStream.data = mTsfFile;
-
-	if (mTsfFile) {
-		mTsf = tsf_load(&mTsfStream);
+	// Load the new soundfont
+	if (soundFontFile) {
+		soundFontStream.data = soundFontFile;
+		mTsf = tsf_load(&soundFontStream);
 	}
 }
 
-String MidiPlayer::get_sound_font() const {
+String MidiPlayer::get_soundfont() const {
 	return mSoundFontName;
 }
 
-void MidiPlayer::play_midi(String inMidiFileName, bool inloop) {
+void MidiPlayer::load_midi(String inMidiFileName) {
+	mMidiName = inMidiFileName;
+
+	// Clear the current midi
 	if (mTml != NULL) {
 		tml_free(mTml);
 		mTml = NULL;
-		mTmlCurrent = NULL;
-		loop_mode = false;
-		mTmlFile->close();
+		midiCurrent = NULL;
+		//midiFile->close();
 	}
 
-	if (mTsfFile) {
-		mTsfFile->close();
+	// Make sure we have a soundfont before we try to load a midi
+	//ERR_FAIL_COND_MSG(!soundFontFile, "Sound font file not loaded.");
+
+	// Open a new midi file
+	midiFile = FileAccess::open(mMidiName, FileAccess::READ);
+	ERR_FAIL_COND_MSG(!midiFile, "Couldn't open " + mMidiName + ".");
+
+	// Load the new midi and set parameters
+	if (midiFile) {
+		midiStream.data = midiFile;
+		mTml = tml_load(&midiStream);
+		midiCurrent = mTml;
+		midiTime = 0.0; // start at the beginning
 	}
+}
 
-	mTmlFile = FileAccess::open(inMidiFileName, FileAccess::READ);
-	ERR_FAIL_COND_MSG(!mTsfFile, "Couldn't open " + inMidiFileName + ".");
-	mTmlStream.data = mTmlFile;
 
-	mTml = tml_load(&mTmlStream);
-	mTmlCurrent = mTml;
-	mTmlTime = 0.0;
-	loop_mode = inloop;
+String MidiPlayer::get_midi() const {
+	return mMidiName;
 }
 
 PoolStringArray MidiPlayer::get_preset_names() const {
@@ -297,30 +330,14 @@ float MidiPlayer::channel_get_tuning(int inChannel) {
 	return tsf_channel_get_tuning(mTsf, inChannel);
 }
 
-bool MidiPlayer::finished() {
-	if (mTmlCurrent == NULL || (mTmlCurrent != NULL && mTmlCurrent->next == NULL)) {
-		return true;
-	}
-	return false;
-}
-
-/* void MidiPlayer::loop(bool l) {
-	loop_mode = l;
-} */
-
 PoolVector2Array MidiPlayer::get_buffer(int inSize) {
 	PoolVector2Array theBuffer;
 	
 	if (inSize > 0 && mTsf != NULL) {
-		if (mTmlCurrent == NULL && loop_mode == true) {
-			note_off_all();
-			mTmlCurrent = mTml;
-			mTmlTime = 0.0;
-			emit_signal("midi_finished");
-		}
 		theBuffer.resize(inSize);
 		Vector2 *theData = theBuffer.write().ptr();
-		if (mTmlCurrent != NULL) {
+ 
+		if (midiCurrent != NULL) {
 			int SampleBlock;
 			int SampleCount = inSize;
 			for (SampleBlock = TSF_RENDER_EFFECTSAMPLEBLOCK; SampleCount; SampleCount -= SampleBlock, theData += SampleBlock) {
@@ -328,22 +345,22 @@ PoolVector2Array MidiPlayer::get_buffer(int inSize) {
 				if (SampleBlock > SampleCount) SampleBlock = SampleCount;
 
 				//Loop through all MIDI messages which need to be played up until the current playback time
-				for (mTmlTime += SampleBlock * mMidiSpeed * (1000.0 / 44100.0); mTmlCurrent && mTmlTime >= mTmlCurrent->time; mTmlCurrent = mTmlCurrent->next) {
-					switch (mTmlCurrent->type) {
+				for (midiTime += SampleBlock * midi_speed * (1000.0 / 44100.0); midiCurrent && midiTime >= midiCurrent->time; midiCurrent = midiCurrent->next) {
+					switch (midiCurrent->type) {
 						case TML_PROGRAM_CHANGE: //channel program (preset) change (special handling for 10th MIDI channel with drums)
-							tsf_channel_set_presetnumber(mTsf, mTmlCurrent->channel, mTmlCurrent->program, (mTmlCurrent->channel == 9));
+							tsf_channel_set_presetnumber(mTsf, midiCurrent->channel, midiCurrent->program, (midiCurrent->channel == 9));
 							break;
 						case TML_NOTE_ON: //play a note
-							tsf_channel_note_on(mTsf, mTmlCurrent->channel, mTmlCurrent->key, mTmlCurrent->velocity / 127.0f);
+							tsf_channel_note_on(mTsf, midiCurrent->channel, midiCurrent->key, midiCurrent->velocity / 127.0f);
 							break;
 						case TML_NOTE_OFF: //stop a note
-							tsf_channel_note_off(mTsf, mTmlCurrent->channel, mTmlCurrent->key);
+							tsf_channel_note_off(mTsf, midiCurrent->channel, midiCurrent->key);
 							break;
 						case TML_PITCH_BEND: //pitch wheel modification
-							tsf_channel_set_pitchwheel(mTsf, mTmlCurrent->channel, mTmlCurrent->pitch_bend);
+							tsf_channel_set_pitchwheel(mTsf, midiCurrent->channel, midiCurrent->pitch_bend);
 							break;
 						case TML_CONTROL_CHANGE: //MIDI controller messages
-							tsf_channel_midi_control(mTsf, mTmlCurrent->channel, mTmlCurrent->control, mTmlCurrent->control_value);
+							tsf_channel_midi_control(mTsf, midiCurrent->channel, midiCurrent->control, midiCurrent->control_value);
 							break;
 					}
 				}
@@ -351,25 +368,67 @@ PoolVector2Array MidiPlayer::get_buffer(int inSize) {
 				tsf_render_float(mTsf, (float*)theData, SampleBlock, 0);
 			}
 		} else {
+			if (mTml) {
+				if (looping == true) {
+					note_off_all();
+					midiCurrent = mTml;
+					midiTime = 0.0;	
+					// If looping, emit loop_finished instead of finished
+					emit_signal("loop_finished");
+				} else {
+					stop();
+					// stop() automatically emits finished but this will likely change in the future
+					// see https://github.com/godotengine/godot/pull/33602
+					// commmenting this out for now until above change is merged
+					// emit_signal("finished");
+				}	
+			}
+
 			tsf_render_float(mTsf, (float*)theData, inSize, 0);
 		}
 	}
 	return theBuffer;
 }
 
-void set_playback(AudioStreamPlayback *inAudioStreamPlayback) {
+void MidiPlayer::_notification(int p_what) {
+ 	switch (p_what) {
+		case NOTIFICATION_READY: {
+			set_process_internal(true);
+		}
+		case NOTIFICATION_INTERNAL_PROCESS: {
+			// if soundfont and stream exist then start buferring
+			if (mTsf) {
+				playback_gen = get_stream_playback();
+				if (playback_gen != nullptr) {
+					playback_gen->push_buffer(get_buffer(playback_gen->get_frames_available()));
+				} 
+			} 
+			break;
+		}
+	}
+} 
+
+void MidiPlayer::set_looping(bool p_looping) {
+	looping = p_looping;
+}
+
+bool MidiPlayer::get_looping() {
+	return looping;
+}
+
+void MidiPlayer::set_midi_speed(float p_speed) {
+	midi_speed = p_speed;
+}
+
+float MidiPlayer::get_midi_speed() {
+	return midi_speed;
 }
 
 void MidiPlayer::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("set_sound_font", "sound_font"), &MidiPlayer::set_sound_font);
-	ClassDB::bind_method(D_METHOD("get_sound_font"), &MidiPlayer::get_sound_font);
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "sound_font", PROPERTY_HINT_NONE, "", 0), "set_sound_font", "get_sound_font");
-
-	//ClassDB::bind_method("loop", &MidiPlayer::loop);
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "loop", PROPERTY_HINT_NONE, "", true), "", "");
-
-	//ClassDB::bind_method(D_METHOD("get_midi_speed"), &MidiPlayer::get_midi_speed);
-	//ADD_PROPERTY(PropertyInfo(Variant::STRING, "midi_speed", PROPERTY_HINT_NONE, "", 0), "", "get_midi_speed");
+	ClassDB::bind_method("load_soundfont", &MidiPlayer::load_soundfont);
+	ClassDB::bind_method("get_soundfont", &MidiPlayer::get_soundfont);
+	ClassDB::bind_method("load_midi", &MidiPlayer::load_midi);
+	ClassDB::bind_method("get_midi", &MidiPlayer::get_midi);
 
 	ClassDB::bind_method("get_preset_names", &MidiPlayer::get_preset_names);
 
@@ -377,6 +436,7 @@ void MidiPlayer::_bind_methods() {
 	ClassDB::bind_method("note_off", &MidiPlayer::note_off);
 	ClassDB::bind_method("note_off_all", &MidiPlayer::note_off_all);
 
+	//change everything to D_METHOD(func, params)
 	ClassDB::bind_method("channel_set_presetindex", &MidiPlayer::channel_set_presetindex);
 	ClassDB::bind_method("channel_set_presetnumber", &MidiPlayer::channel_set_presetnumber);
 	ClassDB::bind_method("channel_set_bank", &MidiPlayer::channel_set_bank);
@@ -399,25 +459,28 @@ void MidiPlayer::_bind_methods() {
 	ClassDB::bind_method("channel_get_pitchrange", &MidiPlayer::channel_get_pitchrange);
 	ClassDB::bind_method("channel_get_tuning", &MidiPlayer::channel_get_tuning);
 
-	ClassDB::bind_method("play_midi", &MidiPlayer::play_midi);
-	ClassDB::bind_method("finished", &MidiPlayer::finished);
-	ClassDB::bind_method("get_buffer", &MidiPlayer::get_buffer);
 
-	ADD_SIGNAL(MethodInfo("midi_finished"));
-	//register_signal<SoundFont>((char *)"position_changed", "node", GODOT_VARIANT_TYPE_OBJECT, "new_pos", GODOT_VARIANT_TYPE_VECTOR2);
-} 
+	ClassDB::bind_method("set_looping", &MidiPlayer::set_looping);
+	ClassDB::bind_method("get_looping", &MidiPlayer::get_looping);
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "looping", PROPERTY_HINT_NONE, "", true), "set_looping", "get_looping");
+	ClassDB::bind_method("set_midi_speed", &MidiPlayer::set_midi_speed);
+	ClassDB::bind_method("get_midi_speed", &MidiPlayer::get_midi_speed);
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "midi_speed", PROPERTY_HINT_RANGE, "0,8,0.1", 1.0), "set_midi_speed", "get_midi_speed");
+
+	ADD_SIGNAL(MethodInfo("loop_finished"));
+}
 
 MidiPlayer::~MidiPlayer() {
 	if (mTsf != NULL) {
 		tsf_close(mTsf);
 	}
-	mTsfFile = nullptr;
-	delete mTsfFile;
+	soundFontFile = nullptr;
+	delete soundFontFile;
 	Error err;
-	mTsfFile = FileAccess::open(mSoundFontName, FileAccess::READ, &err);
-	if (err == OK && mTsfFile) {
-		mTsf = tsf_load(&mTsfStream);
+	soundFontFile = FileAccess::open(mSoundFontName, FileAccess::READ, &err);
+	if (err == OK && soundFontFile) {
+		mTsf = tsf_load(&soundFontStream);
 	}
-	mTmlFile = nullptr;
-	delete mTmlFile;
+	midiFile = nullptr;
+	delete midiFile;
 }

@@ -14,5 +14,8 @@ def get_doc_path():
 
 def get_doc_classes():
     return [
-        "ImageIndexed", "MixinScript",
+        "ImageIndexed", 
+        "Mixin",
+        "MixinScript", 
+        "MidiPlayer",
     ]

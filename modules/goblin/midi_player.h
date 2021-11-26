@@ -1,6 +1,30 @@
+/* 
+Copyright (c) 2021 Filip Anton (filipworks) 
+Created for Goblin Engine github.com/goblinengine
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+*/
+
 #ifndef SoundFont_H
 #define SoundFont_H
 
+#include "servers/audio/effects/audio_stream_generator.h"
 #include "scene/main/node.h"
 #include "core/os/file_access.h"
 #include "scene/audio/audio_stream_player.h"
@@ -11,28 +35,41 @@ class MidiPlayer : public AudioStreamPlayer {
 	GDCLASS(MidiPlayer, AudioStreamPlayer);
 
 private:
+	Ref<AudioStreamGeneratorPlayback> playback_gen;
+	FileAccess  *soundFontFile;
+	FileAccess  *midiFile;
+
 	String       mSoundFontName;
 	tsf         *mTsf;
-	FileAccess  *mTsfFile;
-	tsf_stream   mTsfStream;
+	tsf_stream   soundFontStream;
 	tml_message *mTml;
-	tml_message *mTmlCurrent;
-	double       mTmlTime;
-	float        mMidiSpeed;
-	FileAccess   *mTmlFile;
-	tml_stream   mTmlStream;
-	bool         loop_mode;
+	String       mMidiName;
+	tml_message *midiCurrent;
+	double       midiTime;
+	tml_stream   midiStream;
+
+	float        midi_speed;
+	bool         looping;
 
 protected:
 	static void _bind_methods();
+	void _notification(int p_what);
+	PoolVector2Array get_buffer(int inSize);
 
 public:
-
 	MidiPlayer();
 	~MidiPlayer();
 
-	void set_sound_font(String inSoundFontName);
-	String get_sound_font() const;
+	void load_soundfont(String inSoundFontName);
+	String get_soundfont() const;
+
+	void load_midi(String inMidiFileName);
+	String get_midi() const;
+
+	void MidiPlayer::set_looping(bool p_looping);
+	bool MidiPlayer::get_looping();
+	void MidiPlayer::set_midi_speed(float p_speed);
+	float MidiPlayer::get_midi_speed();
 
 	PoolStringArray get_preset_names() const;
 	int get_presetindex(int inBank, int inPresetNumber);
@@ -65,12 +102,6 @@ public:
     int channel_get_pitchwheel(int inChannel);
     float channel_get_pitchrange(int inChannel);
     float channel_get_tuning(int inChannel);
-
-	void play_midi(String inMidiFileName, bool loop);
-	bool finished();
-	void loop(bool l);
-
-	PoolVector2Array get_buffer(int inSize);
 };
 
 #endif
