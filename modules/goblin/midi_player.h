@@ -23,14 +23,82 @@ SOFTWARE.
 
 #ifndef SoundFont_H
 #define SoundFont_H
-
+#include "core/io/resource_importer.h"
 #include "servers/audio/effects/audio_stream_generator.h"
 #include "scene/main/node.h"
 #include "core/os/file_access.h"
 #include "scene/audio/audio_stream_player.h"
 #include "libs/tsf.h"
 #include "libs/tml.h"
+#include "core/resource.h"
 
+// SOUNDFONT RESOURCE
+class SoundFont : public Resource {
+	GDCLASS(SoundFont, Resource);
+	OBJ_CATEGORY("Resources");
+	RES_BASE_EXTENSION("sf2str");
+
+public:
+	SoundFont() {};
+	~SoundFont() {};
+};
+
+// MIDI RESOURCE 
+class AudioMIDI : public Resource {
+	GDCLASS(AudioMIDI, Resource);
+	OBJ_CATEGORY("Resources");
+	RES_BASE_EXTENSION("midstr");
+
+public:	
+	AudioMIDI() {};
+	~AudioMIDI() {};
+};
+
+// SOUNDFONT IMPORTER
+class ResourceImporterSoundFont : public ResourceImporter {
+	GDCLASS(ResourceImporterSoundFont, ResourceImporter);
+
+public:
+	virtual String get_importer_name() const { return "soundfont"; }
+	virtual String get_visible_name() const { return "SoundFont"; }
+	virtual void get_recognized_extensions(List<String> *p_extensions) const;
+	virtual String get_save_extension() const { return "sf2str"; }
+	virtual String get_resource_type() const { return "SoundFont"; }
+
+	virtual int get_preset_count() const { return 0; }
+	virtual String get_preset_name(int p_idx) const { return String(); }
+
+	virtual void get_import_options(List<ImportOption> *r_options, int p_preset = 0) const { }
+	virtual bool get_option_visibility(const String &p_option, const Map<StringName, Variant> &p_options) const { return true; }
+
+	virtual Error import(const String &p_source_file, const String &p_save_path, const Map<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files = nullptr, Variant *r_metadata = nullptr);
+
+	ResourceImporterSoundFont() {};
+};
+
+// MIDI IMPORTER
+class ResourceImporterMIDI : public ResourceImporter {
+	GDCLASS(ResourceImporterMIDI, ResourceImporter);
+
+public:
+	virtual String get_importer_name() const { return "midi"; }
+	virtual String get_visible_name() const { return "AudioMIDI"; }
+	virtual void get_recognized_extensions(List<String> *p_extensions) const;
+	virtual String get_save_extension() const { return "midstr"; }
+	virtual String get_resource_type() const { return "AudioMIDI"; }
+
+	virtual int get_preset_count() const { return 0; }
+	virtual String get_preset_name(int p_idx) const { return String(); }
+
+	virtual void get_import_options(List<ImportOption> *r_options, int p_preset = 0) const { }
+	virtual bool get_option_visibility(const String &p_option, const Map<StringName, Variant> &p_options) const { return true;}
+
+	virtual Error import(const String &p_source_file, const String &p_save_path, const Map<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files = nullptr, Variant *r_metadata = nullptr);
+
+	ResourceImporterMIDI() {};
+};
+
+// MIDI PLAYER
 class MidiPlayer : public AudioStreamPlayer {
 	GDCLASS(MidiPlayer, AudioStreamPlayer);
 
@@ -72,7 +140,7 @@ public:
 	float MidiPlayer::get_midi_speed();
 
 	PoolStringArray get_preset_names() const;
-	int get_presetindex(int inBank, int inPresetNumber);
+	int get_preset_index(int inBank, int inPresetNumber);
 
 	void set_output(int inSampleRate, float inGainDb);
 	
@@ -80,8 +148,8 @@ public:
 	void note_off(int inPresetIndex, int inKey);
 	void note_off_all();
 
-    void channel_set_presetindex(int inChannel, int inPresetIndex);
-    int channel_set_presetnumber(int inChannel, int inPresetNumber, int inDrums);
+    void channel_set_preset_index(int inChannel, int inPresetIndex);
+    int channel_set_preset_number(int inChannel, int inPresetNumber, int inDrums);
     void channel_set_bank(int inChannel, int inBank);
     int channel_set_bank_preset(int inChannel, int inBank, int inPresetNumber);
     void channel_set_pan(int inChannel, float inPan);

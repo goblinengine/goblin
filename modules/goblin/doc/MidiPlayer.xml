@@ -101,7 +101,7 @@
 			<return type="void" />
 			<argument index="0" name="channel" type="int" />
 			<argument index="1" name="note" type="int" />
-			<argument index="2" name="velocity" type="float" />
+			<argument index="2" name="volume" type="float" />
 			<description>
 				Start playing a note on a specific channel.
 			</description>
@@ -147,7 +147,7 @@
 				Set the pitch wheel value for a channel.
 			</description>
 		</method>
-		<method name="channel_set_presetindex">
+		<method name="channel_set_preset_index">
 			<return type="void" />
 			<argument index="0" name="channel" type="int" />
 			<argument index="1" name="preset" type="int" />
@@ -155,7 +155,7 @@
 				Set the preset index for a channel.
 			</description>
 		</method>
-		<method name="channel_set_presetnumber">
+		<method name="channel_set_preset_number">
 			<return type="int" />
 			<argument index="0" name="channel" type="int" />
 			<argument index="1" name="preset" type="int" />

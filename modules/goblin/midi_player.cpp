@@ -29,6 +29,36 @@ SOFTWARE.
 #define TML_IMPLEMENTATION
 #include "libs/tml.h"
 
+// SOUNDFONT IMPORTER
+void ResourceImporterSoundFont::get_recognized_extensions(List<String> *p_extensions) const {
+	p_extensions->push_back("sf2");
+}
+
+Error ResourceImporterSoundFont::import(const String &p_source_file, const String &p_save_path, const Map<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files, Variant *r_metadata) {
+	Ref<SoundFont> sf;
+	sf.instance();
+
+	return ResourceSaver::save(p_save_path + ".sf2str", sf);
+
+	return OK;
+}
+
+// MIDI IMPORTER
+void ResourceImporterMIDI::get_recognized_extensions(List<String> *p_extensions) const {
+	p_extensions->push_back("midi");
+	p_extensions->push_back("mid");
+}
+
+Error ResourceImporterMIDI::import(const String &p_source_file, const String &p_save_path, const Map<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files, Variant *r_metadata) {
+	Ref<AudioMIDI> res;
+	res.instance();
+
+	ResourceSaver::save(p_save_path + ".midstr", res);
+
+	return OK;
+}
+
+// MIDI PLAYER
 static int readFile(void* inData, void* inPtr, unsigned int inSize) {
 	FileAccess *theFile = (FileAccess*)inData;
 	ERR_FAIL_COND_V_MSG(!theFile, 0, "File pointer was lost.");
@@ -105,8 +135,6 @@ void MidiPlayer::load_midi(String inMidiFileName) {
 		//midiFile->close();
 	}
 
-	// Make sure we have a soundfont before we try to load a midi
-	//ERR_FAIL_COND_MSG(!soundFontFile, "Sound font file not loaded.");
 
 	// Open a new midi file
 	midiFile = FileAccess::open(mMidiName, FileAccess::READ);
@@ -139,7 +167,7 @@ PoolStringArray MidiPlayer::get_preset_names() const {
 	return theReturnValue;
 }
 
-int MidiPlayer::get_presetindex(int inBank, int inPresetNumber) {
+int MidiPlayer::get_preset_index(int inBank, int inPresetNumber) {
 	if (mTsf == NULL) {
 		return -1;
 	}
@@ -168,7 +196,7 @@ void MidiPlayer::note_off_all() {
 	tsf_note_off_all(mTsf);
 }
 
-void MidiPlayer::channel_set_presetindex(int inChannel, int inPresetIndex) {
+void MidiPlayer::channel_set_preset_index(int inChannel, int inPresetIndex) {
 	if (mTsf == NULL) {
 		return;
 	}
@@ -176,7 +204,7 @@ void MidiPlayer::channel_set_presetindex(int inChannel, int inPresetIndex) {
 }
 
 
-int MidiPlayer::channel_set_presetnumber(int inChannel, int inPresetNumber, int inDrums) {
+int MidiPlayer::channel_set_preset_number(int inChannel, int inPresetNumber, int inDrums) {
 	if (mTsf == NULL) {
 		return -1;
 	}
@@ -425,46 +453,45 @@ float MidiPlayer::get_midi_speed() {
 }
 
 void MidiPlayer::_bind_methods() {
-	ClassDB::bind_method("load_soundfont", &MidiPlayer::load_soundfont);
-	ClassDB::bind_method("get_soundfont", &MidiPlayer::get_soundfont);
-	ClassDB::bind_method("load_midi", &MidiPlayer::load_midi);
-	ClassDB::bind_method("get_midi", &MidiPlayer::get_midi);
+	ClassDB::bind_method(D_METHOD("load_soundfont", "soundfont_file"), &MidiPlayer::load_soundfont);
+	ClassDB::bind_method(D_METHOD("get_soundfont"), &MidiPlayer::get_soundfont);
+	ClassDB::bind_method(D_METHOD("load_midi", "midi_file"), &MidiPlayer::load_midi);
+	ClassDB::bind_method(D_METHOD("get_midi"), &MidiPlayer::get_midi);
 
-	ClassDB::bind_method("get_preset_names", &MidiPlayer::get_preset_names);
+	ClassDB::bind_method(D_METHOD("get_preset_names"), &MidiPlayer::get_preset_names);
 
-	ClassDB::bind_method("note_on", &MidiPlayer::note_on);
-	ClassDB::bind_method("note_off", &MidiPlayer::note_off);
-	ClassDB::bind_method("note_off_all", &MidiPlayer::note_off_all);
+	ClassDB::bind_method(D_METHOD("note_on", "preset", "note", "volume"), &MidiPlayer::note_on);
+	ClassDB::bind_method(D_METHOD("note_off", "preset", "note"), &MidiPlayer::note_off);
+	ClassDB::bind_method(D_METHOD("note_off_all"), &MidiPlayer::note_off_all);
 
 	//change everything to D_METHOD(func, params)
-	ClassDB::bind_method("channel_set_presetindex", &MidiPlayer::channel_set_presetindex);
-	ClassDB::bind_method("channel_set_presetnumber", &MidiPlayer::channel_set_presetnumber);
-	ClassDB::bind_method("channel_set_bank", &MidiPlayer::channel_set_bank);
-	ClassDB::bind_method("channel_set_bank_preset", &MidiPlayer::channel_set_bank_preset);
-	ClassDB::bind_method("channel_set_pan", &MidiPlayer::channel_set_pan);
-	ClassDB::bind_method("channel_set_volume", &MidiPlayer::channel_set_volume);
-	ClassDB::bind_method("channel_set_pitchwheel", &MidiPlayer::channel_set_pitchwheel);
-	ClassDB::bind_method("channel_set_pitchrange", &MidiPlayer::channel_set_pitchrange);
-	ClassDB::bind_method("channel_set_tuning", &MidiPlayer::channel_set_tuning);
-	ClassDB::bind_method("channel_note_on", &MidiPlayer::channel_note_on);
-	ClassDB::bind_method("channel_note_off", &MidiPlayer::channel_note_off);
-	ClassDB::bind_method("channel_note_off_all", &MidiPlayer::channel_note_off_all);
-	ClassDB::bind_method("channel_midi_control", &MidiPlayer::channel_midi_control);
-	ClassDB::bind_method("channel_get_preset_index", &MidiPlayer::channel_get_preset_index);
-	ClassDB::bind_method("channel_get_preset_bank", &MidiPlayer::channel_get_preset_bank);
-	ClassDB::bind_method("channel_get_preset_number", &MidiPlayer::channel_get_preset_number);
-	ClassDB::bind_method("channel_get_pan", &MidiPlayer::channel_get_pan);
-	ClassDB::bind_method("channel_get_volume", &MidiPlayer::channel_get_volume);
-	ClassDB::bind_method("channel_get_pitchwheel", &MidiPlayer::channel_get_pitchwheel);
-	ClassDB::bind_method("channel_get_pitchrange", &MidiPlayer::channel_get_pitchrange);
-	ClassDB::bind_method("channel_get_tuning", &MidiPlayer::channel_get_tuning);
+	ClassDB::bind_method(D_METHOD("channel_set_preset_index", "channel", "preset_index"), &MidiPlayer::channel_set_preset_index);
+	ClassDB::bind_method(D_METHOD("channel_set_preset_number", "channel", "preset_number", "drums"), &MidiPlayer::channel_set_preset_number);
+	ClassDB::bind_method(D_METHOD("channel_set_bank", "channel", "bank"), &MidiPlayer::channel_set_bank);
+	ClassDB::bind_method(D_METHOD("channel_set_bank_preset", "channel", "bank", "preset"), &MidiPlayer::channel_set_bank_preset);
+	ClassDB::bind_method(D_METHOD("channel_set_pan", "channel", "pan"), &MidiPlayer::channel_set_pan);
+	ClassDB::bind_method(D_METHOD("channel_set_volume", "channel", "volume"), &MidiPlayer::channel_set_volume);
+	ClassDB::bind_method(D_METHOD("channel_set_pitchwheel", "channel", "pitchwheel"), &MidiPlayer::channel_set_pitchwheel);
+	ClassDB::bind_method(D_METHOD("channel_set_pitchrange", "channel", "pitchrange"), &MidiPlayer::channel_set_pitchrange);
+	ClassDB::bind_method(D_METHOD("channel_set_tuning", "channel", "tuning"), &MidiPlayer::channel_set_tuning);
+	ClassDB::bind_method(D_METHOD("channel_note_on", "channel", "note", "volume"), &MidiPlayer::channel_note_on);
+	ClassDB::bind_method(D_METHOD("channel_note_off", "channel", "note"), &MidiPlayer::channel_note_off);
+	ClassDB::bind_method(D_METHOD("channel_note_off_all", "channel"), &MidiPlayer::channel_note_off_all);
+	ClassDB::bind_method(D_METHOD("channel_midi_control", "channel", "control", "value"), &MidiPlayer::channel_midi_control);
+	ClassDB::bind_method(D_METHOD("channel_get_preset_index", "channel"), &MidiPlayer::channel_get_preset_index);
+	ClassDB::bind_method(D_METHOD("channel_get_preset_bank", "channel"), &MidiPlayer::channel_get_preset_bank);
+	ClassDB::bind_method(D_METHOD("channel_get_preset_number", "channel"), &MidiPlayer::channel_get_preset_number);
+	ClassDB::bind_method(D_METHOD("channel_get_pan", "channel"), &MidiPlayer::channel_get_pan);
+	ClassDB::bind_method(D_METHOD("channel_get_volume", "channel"), &MidiPlayer::channel_get_volume);
+	ClassDB::bind_method(D_METHOD("channel_get_pitchwheel", "channel"), &MidiPlayer::channel_get_pitchwheel);
+	ClassDB::bind_method(D_METHOD("channel_get_pitchrange", "channel"), &MidiPlayer::channel_get_pitchrange);
+	ClassDB::bind_method(D_METHOD("channel_get_tuning", "channel"), &MidiPlayer::channel_get_tuning);
 
-
-	ClassDB::bind_method("set_looping", &MidiPlayer::set_looping);
-	ClassDB::bind_method("get_looping", &MidiPlayer::get_looping);
+	ClassDB::bind_method(D_METHOD("set_looping", "looping"), &MidiPlayer::set_looping);
+	ClassDB::bind_method(D_METHOD("get_looping"), &MidiPlayer::get_looping);
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "looping", PROPERTY_HINT_NONE, "", true), "set_looping", "get_looping");
-	ClassDB::bind_method("set_midi_speed", &MidiPlayer::set_midi_speed);
-	ClassDB::bind_method("get_midi_speed", &MidiPlayer::get_midi_speed);
+	ClassDB::bind_method(D_METHOD("set_midi_speed", "speed"), &MidiPlayer::set_midi_speed);
+	ClassDB::bind_method(D_METHOD("get_midi_speed"), &MidiPlayer::get_midi_speed);
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "midi_speed", PROPERTY_HINT_RANGE, "0,8,0.1", 1.0), "set_midi_speed", "get_midi_speed");
 
 	ADD_SIGNAL(MethodInfo("loop_finished"));
