@@ -86,7 +86,7 @@ Variant RandomNumberGenerator::randroll(uint32_t count, uint32_t sides) {
 	Array rolls = *new Array();
 	uint32_t sum = 0;
 	uint32_t val = 0;
-	for (int i = 0; i < count; i++) {
+	for (unsigned int i = 0; i < count; i++) {
 		val = randbase.rand() % sides + 1;
 		rolls.append(val);
 		sum += val;

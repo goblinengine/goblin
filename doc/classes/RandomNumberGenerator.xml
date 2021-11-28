@@ -61,7 +61,7 @@
 				Setups a time-based seed to generator.
 			</description>
 		</method>
-					<method name="randchoice">
+			<method name="randchoice">
 			<return type="Variant" />
 			<argument index="0" name="from" type="Variant" />
 			<description>
@@ -72,7 +72,7 @@
 			<return type="void" />
 			<argument index="0" name="array" type="Array" />
 			<description>
-				Shuffles the array such that the items will have a random order. By default, this method uses the global random number generator in [Random] singletons, but unlike in [method Array.shuffle], local instances of [Random] can be created with [method new_instance] to achieve reproducible results given the same seed.
+				Shuffles the array such that the items will have a random order. By default, this method uses the global random number generator in [RandomNumberGenerator] singletons, but unlike in [method Array.shuffle], local instances of [RandomNumberGenerator].
 			</description>
 		</method>
 		<method name="randroll">

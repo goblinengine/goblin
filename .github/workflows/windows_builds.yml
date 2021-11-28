@@ -1,0 +1,59 @@
+name: 🏁 Windows Builds
+on: [push, pull_request]
+
+# Global Settings
+# SCONS_CACHE for windows must be set in the build environment
+env:
+  GODOT_BASE_BRANCH: main
+  SCONSFLAGS: verbose=yes warnings=all werror=yes debug_symbols=no use_thinlto=yes
+  SCONS_CACHE_MSVC_CONFIG: true
+
+concurrency:
+  group: ci-${{github.actor}}-${{github.head_ref || github.run_number}}-${{github.ref}}-windows
+  cancel-in-progress: true
+
+jobs:
+  build-windows:
+    # Windows 10 with latest image
+    runs-on: "windows-latest"
+    name: ${{ matrix.name }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: Editor (target=release_debug, tools=yes)
+            cache-name: windows-editor
+            target: release_debug
+            tools: true
+            bin: "./bin/goblin.windows.opt.tools.64.exe"
+
+          - name: Template (target=release, tools=no)
+            cache-name: windows-template
+            target: release
+            tools: false
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Setup Goblin build cache
+        uses: ./.github/actions/goblin-cache
+        with:
+          cache-name: ${{ matrix.cache-name }}
+        continue-on-error: true
+
+      - name: Setup python and scons
+        uses: ./.github/actions/goblin-deps
+
+      - name: Compilation
+        uses: ./.github/actions/goblin-build
+        with:
+          sconsflags: ${{ env.SCONSFLAGS }}
+          platform: windows
+          target: ${{ matrix.target }}
+          tools: ${{ matrix.tools }}
+          scons-cache-limit: 3072
+
+      - name: Upload artifact
+        uses: ./.github/actions/upload-artifact
+        with:
+          name: ${{ matrix.cache-name }}

@@ -134,10 +134,10 @@ public:
 	void load_midi(String inMidiFileName);
 	String get_midi() const;
 
-	void MidiPlayer::set_looping(bool p_looping);
-	bool MidiPlayer::get_looping();
-	void MidiPlayer::set_midi_speed(float p_speed);
-	float MidiPlayer::get_midi_speed();
+	void set_looping(bool p_looping);
+	bool get_looping();
+	void set_midi_speed(float p_speed);
+	float get_midi_speed();
 
 	PoolStringArray get_preset_names() const;
 	int get_preset_index(int inBank, int inPresetNumber);
