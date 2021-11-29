@@ -5,7 +5,7 @@
 
 ### Added
 
-- Added a new class `MidiPlayer` which plays `.mid` Midi songs using `.sf2` SoundFont2 audio samples. Missing documentation, resource file extensions and inspector integration but otherwise fully functional.
+- Added a new class `MidiPlayer` which plays `.mid` Midi songs using `.sf2` SoundFont2 audio samples. It loads all data as generic MidiFile (for now internal format is not implemented). It plays from memory from the imported data rather than from file which makes it work in the exported game. SoundFont files can be somewhat large so they will make the executable larger. It can also play nodes individually, can silence all notes or specific notes, can pitchwheel, change midi program, use different instruments. All these advanced functions require more in depth understanding about MIDI. 
 - Brought back `_fixed_process` from Godot 2 but works differently. Fixed process runs in sync with physics process but can be set on a lower frame rate controlled by `application\run\fixed_process_frames` setting. A value of 1 means it is called on every physics frame. By default is 20 which means it is called every 20 frames. Maximum is set to 400. The purpose is to create an alternative physics process for lower latency game logic. 
 - Added a generic `Visual` category with `Visual Time` in Profiler which tracks rendering time. The timing is not very precise due to OpenGL/Vsync according to Reduz in [this](https://github.com/godotengine/godot/pull/19593#issuecomment-398041766) post. However, based on my tests, is still gives pretty good representation of overall visual rendering time and paired with other information (such as scripts) you can find which areas of the code are problematic.
 - Added `MixinScript` which is a new take on a very old feature of very early Godot Engine before it became open sourced. Was re-added [here](https://github.com/godotengine/godot/pull/8502) and removed again [here](https://github.com/godotengine/godot/pull/8718). MixinScript is MultiScript re-implemented, rebranded and fixed by Xrayez for [Goost Engine](https://github.com/goostengine). I implemented this feature with permission and kept all naming intact for compatibility between Goblin and Goost. My version force calls `_ready()` and `_enter_tree()` for all Mixins which causes the first such functions to call twice (just be aware of this glitch)
@@ -21,6 +21,12 @@
 
 ### Changed
 
+- The workflows have been slightly altered:
+    * Editor + template are now created for Linux X11, Windows, MacOS. 
+    * All Linux builds automatically strip the debug symbols now. 
+    * All builds (except iOS and JavaScript) use thinlto now. 
+    * Mono test builds have been removed. Goblin will not provide mono builds. Mono should work is just too much trouble to focus both on regular and Mono. Goblin aims to stay lightweight and flexible focusing primarily on GDScript and GDNative. Other languages via GDNative should work fine.
+    * The static tests have been slightly altered to accomodate Goblin branding
 - Editor Settings Display Scale auto suggestions will now suggest scaling relative to 96 dpi (which is usually the recommended safe dpi). 
 - Script debugger now points to Goblin Engine source in the debugger (as the commit hashes for Goblin are different and original source and no longer lines up)
 - Editor boot splash background color is gray same as editor now and default boot splash background color is black.

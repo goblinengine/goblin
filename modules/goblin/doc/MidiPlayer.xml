@@ -4,7 +4,7 @@
 		[b]A MIDI player class.[/b]
 	</brief_description>
 	<description>
-		The MidiPlayer class can play MIDI files. It does this using a collection of sounds called SoundFonts which were originally invented in the early 1990s by Creative Labs for their SoundBlaser AWE32 sound card. The MIDI specification is even older from 1983.
+		The MidiPlayer class can play MIDI files. It does this using a collection of sounds called SoundFont which was originally invented in the early 1990s by Creative Labs for their SoundBlaser AWE32 sound card. The MIDI specification is even older from 1983.
 		Although these technologies old, they are still used today in music industry because they are so incredibly handy. MIDI specifically has seen continous with minimal changes since since inception.
 		In order to use this class you will need to setup a few things. First you will need to add this node to the tree. Then you will need to add an AudioStreamGenerator. Finally you will need to load a SoundFont and the MIDI file. You can find MIDI music and General Midi SoundFonts online.
 		[b]List of keywords:[/b]

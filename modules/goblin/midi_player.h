@@ -33,37 +33,47 @@ SOFTWARE.
 #include "core/resource.h"
 
 // SOUNDFONT RESOURCE
-class SoundFont : public Resource {
-	GDCLASS(SoundFont, Resource);
+class MidiFile : public Resource {
+	GDCLASS(MidiFile, Resource);
 	OBJ_CATEGORY("Resources");
-	RES_BASE_EXTENSION("sf2str");
+	RES_BASE_EXTENSION("mdf");
+
+	void *data = nullptr;
+	uint32_t data_len = 0;
+
+protected:
+	static void _bind_methods();
 
 public:
-	SoundFont() {};
-	~SoundFont() {};
+	/* enum Format { //this format stuff doesn't work yet (will come back to it later)
+		FORMAT_MIDI = 0,
+		FORMAT_SF2,
+	};
+
+	// set default format
+	int format = FORMAT_MIDI; 
+
+	void set_format(int f) { format = f; }
+	int get_format() const { return format; } */
+	void set_data(const PoolVector<uint8_t> &p_data);
+	PoolVector<uint8_t> get_data() const;
+
+	MidiFile() {};
+	~MidiFile() {};
 };
 
-// MIDI RESOURCE 
-class AudioMIDI : public Resource {
-	GDCLASS(AudioMIDI, Resource);
-	OBJ_CATEGORY("Resources");
-	RES_BASE_EXTENSION("midstr");
-
-public:	
-	AudioMIDI() {};
-	~AudioMIDI() {};
-};
+//VARIANT_ENUM_CAST(MidiFile::Format);
 
 // SOUNDFONT IMPORTER
-class ResourceImporterSoundFont : public ResourceImporter {
-	GDCLASS(ResourceImporterSoundFont, ResourceImporter);
+class ResourceImporterMidiFile : public ResourceImporter {
+	GDCLASS(ResourceImporterMidiFile, ResourceImporter);
 
 public:
-	virtual String get_importer_name() const { return "soundfont"; }
-	virtual String get_visible_name() const { return "SoundFont"; }
+	virtual String get_importer_name() const { return "midifile"; }
+	virtual String get_visible_name() const { return "MidiFile"; }
 	virtual void get_recognized_extensions(List<String> *p_extensions) const;
-	virtual String get_save_extension() const { return "sf2str"; }
-	virtual String get_resource_type() const { return "SoundFont"; }
+	virtual String get_save_extension() const { return "mdf"; }
+	virtual String get_resource_type() const { return "MidiFile"; }
 
 	virtual int get_preset_count() const { return 0; }
 	virtual String get_preset_name(int p_idx) const { return String(); }
@@ -73,29 +83,7 @@ public:
 
 	virtual Error import(const String &p_source_file, const String &p_save_path, const Map<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files = nullptr, Variant *r_metadata = nullptr);
 
-	ResourceImporterSoundFont() {};
-};
-
-// MIDI IMPORTER
-class ResourceImporterMIDI : public ResourceImporter {
-	GDCLASS(ResourceImporterMIDI, ResourceImporter);
-
-public:
-	virtual String get_importer_name() const { return "midi"; }
-	virtual String get_visible_name() const { return "AudioMIDI"; }
-	virtual void get_recognized_extensions(List<String> *p_extensions) const;
-	virtual String get_save_extension() const { return "midstr"; }
-	virtual String get_resource_type() const { return "AudioMIDI"; }
-
-	virtual int get_preset_count() const { return 0; }
-	virtual String get_preset_name(int p_idx) const { return String(); }
-
-	virtual void get_import_options(List<ImportOption> *r_options, int p_preset = 0) const { }
-	virtual bool get_option_visibility(const String &p_option, const Map<StringName, Variant> &p_options) const { return true;}
-
-	virtual Error import(const String &p_source_file, const String &p_save_path, const Map<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files = nullptr, Variant *r_metadata = nullptr);
-
-	ResourceImporterMIDI() {};
+	ResourceImporterMidiFile() {};
 };
 
 // MIDI PLAYER
@@ -104,17 +92,13 @@ class MidiPlayer : public AudioStreamPlayer {
 
 private:
 	Ref<AudioStreamGeneratorPlayback> playback_gen;
-	FileAccess  *soundFontFile;
-	FileAccess  *midiFile;
 
 	String       mSoundFontName;
 	tsf         *mTsf;
-	tsf_stream   soundFontStream;
 	tml_message *mTml;
 	String       mMidiName;
 	tml_message *midiCurrent;
 	double       midiTime;
-	tml_stream   midiStream;
 
 	float        midi_speed;
 	bool         looping;

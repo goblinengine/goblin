@@ -44,20 +44,17 @@ void register_goblin_types() {
 	ClassDB::register_class<Mixin>();
 
 	ClassDB::register_class<MidiPlayer>();
-	ClassDB::register_class<SoundFont>();
-	ClassDB::register_class<AudioMIDI>();
+	ClassDB::register_class<MidiFile>();
 
 #ifdef TOOLS_ENABLED
 	EditorNode::add_plugin_init_callback(mixin_script_register_editor_callback);
 	EditorPlugins::add_by_type<MixinScriptEditorPlugin>();
 
 	if (Engine::get_singleton()->is_editor_hint()) {
-		Ref<ResourceImporterSoundFont> soundfont_import;
-		Ref<ResourceImporterMIDI> midi_import;
-		soundfont_import.instance();
-		midi_import.instance();
-		ResourceFormatImporter::get_singleton()->add_importer(soundfont_import);
-		ResourceFormatImporter::get_singleton()->add_importer(midi_import);
+		Ref<ResourceImporterMidiFile> midiobject;
+		midiobject.instance();
+		ResourceFormatImporter::get_singleton()->add_importer(midiobject);
+
 	}
 
 #endif

@@ -29,75 +29,78 @@ SOFTWARE.
 #define TML_IMPLEMENTATION
 #include "libs/tml.h"
 
+//GENERIC MIDI OBJECT
+void MidiFile::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("set_data", "data"), &MidiFile::set_data);
+	ClassDB::bind_method(D_METHOD("get_data"), &MidiFile::get_data);
+	ADD_PROPERTY(PropertyInfo(Variant::POOL_BYTE_ARRAY, "data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR), "set_data", "get_data");
+
+	/* ClassDB::bind_method(D_METHOD("get_format"), &MidiFile::get_format);
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "format"), "", "get_format"); */
+}
+
+PoolByteArray MidiFile::get_data() const {
+	PoolVector<uint8_t> vdata;
+
+	if (data_len && data) {
+		vdata.resize(data_len);
+		{
+			PoolVector<uint8_t>::Write w = vdata.write();
+			memcpy(w.ptr(), data, data_len);
+		}
+	}
+
+	return vdata;
+}
+
+void MidiFile::set_data(const PoolVector<uint8_t> &dataIn) {
+	data_len = dataIn.size();
+	data = memalloc(data_len);
+	memcpy(data, dataIn.read().ptr(), data_len);
+}
+
 // SOUNDFONT IMPORTER
-void ResourceImporterSoundFont::get_recognized_extensions(List<String> *p_extensions) const {
+void ResourceImporterMidiFile::get_recognized_extensions(List<String> *p_extensions) const {
 	p_extensions->push_back("sf2");
-}
-
-Error ResourceImporterSoundFont::import(const String &p_source_file, const String &p_save_path, const Map<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files, Variant *r_metadata) {
-	Ref<SoundFont> sf;
-	sf.instance();
-
-	return ResourceSaver::save(p_save_path + ".sf2str", sf);
-
-	return OK;
-}
-
-// MIDI IMPORTER
-void ResourceImporterMIDI::get_recognized_extensions(List<String> *p_extensions) const {
 	p_extensions->push_back("midi");
 	p_extensions->push_back("mid");
 }
 
-Error ResourceImporterMIDI::import(const String &p_source_file, const String &p_save_path, const Map<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files, Variant *r_metadata) {
-	Ref<AudioMIDI> res;
-	res.instance();
+Error ResourceImporterMidiFile::import(const String &p_source_file, const String &p_save_path, const Map<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files, Variant *r_metadata) {
+	FileAccess *f = FileAccess::open(p_source_file, FileAccess::READ);
+	ERR_FAIL_COND_V(!f, ERR_FILE_CANT_OPEN);
+	
+	uint64_t len = f->get_len();
 
-	ResourceSaver::save(p_save_path + ".midstr", res);
+	PoolVector<uint8_t> data;
+	data.resize(len);
+	PoolVector<uint8_t>::Write w = data.write();
+
+	f->get_buffer(w.ptr(), len);
+
+	memdelete(f);
+
+	Ref<MidiFile> mdf;
+	mdf.instance();
+	mdf->set_data(data);
+	ERR_FAIL_COND_V(!mdf->get_data().size(), ERR_FILE_CORRUPT);
+
+	/* if (p_source_file.ends_with("sf2")) {
+		mdf->set_format(1);
+	}  */
+
+	return ResourceSaver::save(p_save_path + ".mdf", mdf);
 
 	return OK;
 }
 
-// MIDI PLAYER
-static int readFile(void* inData, void* inPtr, unsigned int inSize) {
-	FileAccess *theFile = (FileAccess*)inData;
-	ERR_FAIL_COND_V_MSG(!theFile, 0, "File pointer was lost.");
-
-	if (theFile) {
-		PoolVector<uint8_t> theData;
-		Error err = theData.resize(inSize);
-		if (err) ERR_FAIL_V_MSG(0, "Could not resize data");
-		PoolVector<uint8_t>::Write w = theData.write();
-		int theReadSize = theFile->get_buffer(&w[0], inSize);
-		w.release();
-		if (theReadSize < inSize) theData.resize(inSize);
-		//ERR_FAIL_COND_V_MSG(theReadSize == 0, 0, "Could't read file.");
-
-		memcpy(inPtr, theData.read().ptr(), theReadSize);
-
-		return theReadSize;
-	}
-}
-
-static int skipFile(void* inData, unsigned int inSize) {
-	FileAccess *theFile = (FileAccess*)inData;
-	int64_t theNewPosition = theFile->get_position()+inSize;
-	theFile->seek(theNewPosition);
-	return (theFile->get_position() == theNewPosition) ? 1 : 0;
-}
-
-MidiPlayer::MidiPlayer(): mTsf(NULL), soundFontFile(NULL), midi_speed(1.0) {
-	FileAccess *soundFontFile = nullptr;
-	FileAccess *midiFile = nullptr;
+MidiPlayer::MidiPlayer(): mTsf(NULL), midi_speed(1.0) {
 	mTsf = NULL;
 	mSoundFontName = "";
-	soundFontStream.read = readFile;
-	soundFontStream.skip = skipFile;
 	mTml = NULL;
 	mMidiName = "";
 	midiCurrent = NULL;
 	looping = true;
-	midiStream.read = readFile;
 }
 
 void MidiPlayer::load_soundfont(String inSoundFontName) {
@@ -109,14 +112,17 @@ void MidiPlayer::load_soundfont(String inSoundFontName) {
 		mTsf = NULL;
 	}
 
-	// Open the new soundfont file
-	soundFontFile = FileAccess::open(mSoundFontName, FileAccess::READ);
-	ERR_FAIL_COND_MSG(!soundFontFile, "Couldn't open soundfont " + mSoundFontName + ".");
+	Ref<MidiFile> mo = ResourceLoader::load(inSoundFontName);
+	ERR_FAIL_COND_MSG(mo == nullptr, "Couldn't open soundfont " + mSoundFontName + ".");
 
-	// Load the new soundfont
-	if (soundFontFile) {
-		soundFontStream.data = soundFontFile;
-		mTsf = tsf_load(&soundFontStream);
+	if (mo != nullptr) {
+		int data_len = mo->get_data().size();
+		PoolVector<uint8_t> dataIn = mo->get_data();
+		void * dataOut = memalloc(data_len);
+		memcpy(dataOut, dataIn.read().ptr(), data_len);
+
+		//load from memory instead of file
+		mTsf = tsf_load_memory(dataOut, data_len);
 	}
 }
 
@@ -135,15 +141,20 @@ void MidiPlayer::load_midi(String inMidiFileName) {
 		//midiFile->close();
 	}
 
-
 	// Open a new midi file
-	midiFile = FileAccess::open(mMidiName, FileAccess::READ);
-	ERR_FAIL_COND_MSG(!midiFile, "Couldn't open " + mMidiName + ".");
+	//midiFile = FileAccess::open(mMidiName, FileAccess::READ);
+	Ref<MidiFile> mo = ResourceLoader::load(inMidiFileName);
+
+	ERR_FAIL_COND_MSG(mo == nullptr, "Couldn't open " + mMidiName + ".");
 
 	// Load the new midi and set parameters
-	if (midiFile) {
-		midiStream.data = midiFile;
-		mTml = tml_load(&midiStream);
+	if (mo != nullptr) {
+		int data_len = mo->get_data().size();
+		PoolVector<uint8_t> dataIn = mo->get_data();
+		void * dataOut = memalloc(data_len);
+		memcpy(dataOut, dataIn.read().ptr(), data_len);
+
+		mTml = tml_load_memory(dataOut, data_len);
 		midiCurrent = mTml;
 		midiTime = 0.0; // start at the beginning
 	}
@@ -501,13 +512,4 @@ MidiPlayer::~MidiPlayer() {
 	if (mTsf != NULL) {
 		tsf_close(mTsf);
 	}
-	soundFontFile = nullptr;
-	delete soundFontFile;
-	Error err;
-	soundFontFile = FileAccess::open(mSoundFontName, FileAccess::READ, &err);
-	if (err == OK && soundFontFile) {
-		mTsf = tsf_load(&soundFontStream);
-	}
-	midiFile = nullptr;
-	delete midiFile;
 }
