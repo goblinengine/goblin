@@ -29,11 +29,11 @@ SOFTWARE.
 #define TML_IMPLEMENTATION
 #include "libs/tml.h"
 
-//GENERIC MIDI OBJECT
+// MIDIFILE
 void MidiFile::_bind_methods() {
-	//ClassDB::bind_method(D_METHOD("set_data", "data"), &MidiFile::set_data);
+	ClassDB::bind_method(D_METHOD("set_data", "data"), &MidiFile::set_data);
 	ClassDB::bind_method(D_METHOD("get_data"), &MidiFile::get_data);
-	ADD_PROPERTY(PropertyInfo(Variant::POOL_BYTE_ARRAY, "data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR), "", "get_data");
+	ADD_PROPERTY(PropertyInfo(Variant::POOL_BYTE_ARRAY, "data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR), "set_data", "get_data");
 
 	/* ClassDB::bind_method(D_METHOD("get_format"), &MidiFile::get_format);
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "format"), "", "get_format"); */
@@ -59,7 +59,7 @@ void MidiFile::set_data(const PoolVector<uint8_t> &dataIn) {
 	memcpy(data, dataIn.read().ptr(), data_len);
 }
 
-// SOUNDFONT IMPORTER
+// MIDIFILE IMPORTER
 void ResourceImporterMidiFile::get_recognized_extensions(List<String> *p_extensions) const {
 	p_extensions->push_back("sf2");
 	p_extensions->push_back("midi");
@@ -94,6 +94,7 @@ Error ResourceImporterMidiFile::import(const String &p_source_file, const String
 	return OK;
 }
 
+// MIDIPLAYER
 MidiPlayer::MidiPlayer(): mTsf(NULL), midi_speed(1.0) {
 	mTsf = NULL;
 	mSoundFontName = "";
@@ -116,12 +117,12 @@ void MidiPlayer::load_soundfont(String inSoundFontName) {
 	ERR_FAIL_COND_MSG(mo == nullptr, "Couldn't open soundfont " + mSoundFontName + ".");
 
 	if (mo != nullptr) {
+		//load data in memory
 		int data_len = mo->get_data().size();
 		PoolVector<uint8_t> dataIn = mo->get_data();
 		void * dataOut = memalloc(data_len);
 		memcpy(dataOut, dataIn.read().ptr(), data_len);
-
-		//load from memory instead of file
+		//load tiny sound font using memory data
 		mTsf = tsf_load_memory(dataOut, data_len);
 	}
 }
@@ -149,14 +150,17 @@ void MidiPlayer::load_midi(String inMidiFileName) {
 
 	// Load the new midi and set parameters
 	if (mo != nullptr) {
+		//load data in memory
 		int data_len = mo->get_data().size();
 		PoolVector<uint8_t> dataIn = mo->get_data();
 		void * dataOut = memalloc(data_len);
 		memcpy(dataOut, dataIn.read().ptr(), data_len);
-
+		//load tiny midy loader using memory data
 		mTml = tml_load_memory(dataOut, data_len);
+
+		//set midi to start at the beginning
 		midiCurrent = mTml;
-		midiTime = 0.0; // start at the beginning
+		midiTime = 0.0;
 	}
 }
 
@@ -295,7 +299,7 @@ void MidiPlayer::channel_note_off_all(int inChannel) {
 	tsf_channel_note_off_all(mTsf, inChannel);
 }
 
- //end with sustain and release
+// end with sustain and release
 void MidiPlayer::channel_sounds_off_all(int inChannel) {
 	if (mTsf == NULL) {
 		return;
@@ -303,7 +307,7 @@ void MidiPlayer::channel_sounds_off_all(int inChannel) {
 	tsf_channel_sounds_off_all(mTsf, inChannel);
 }
 
- //end immediatly
+// end immediatly
 void MidiPlayer::channel_midi_control(int inChannel, int inController, int inValue) {
 	if (mTsf == NULL) {
 		return;
@@ -376,14 +380,15 @@ PoolVector2Array MidiPlayer::get_buffer(int inSize) {
 		theBuffer.resize(inSize);
 		Vector2 *theData = theBuffer.write().ptr();
  
+		// if there is a midi loaded play the midi
 		if (midiCurrent != NULL) {
 			int SampleBlock;
 			int SampleCount = inSize;
 			for (SampleBlock = TSF_RENDER_EFFECTSAMPLEBLOCK; SampleCount; SampleCount -= SampleBlock, theData += SampleBlock) {
-				//We progress the MIDI playback and then process TSF_RENDER_EFFECTSAMPLEBLOCK samples at once
+				// We progress the MIDI playback and then process TSF_RENDER_EFFECTSAMPLEBLOCK samples at once
 				if (SampleBlock > SampleCount) SampleBlock = SampleCount;
 
-				//Loop through all MIDI messages which need to be played up until the current playback time
+				// Loop through all MIDI messages which need to be played up until the current playback time
 				for (midiTime += SampleBlock * midi_speed * (1000.0 / 44100.0); midiCurrent && midiTime >= midiCurrent->time; midiCurrent = midiCurrent->next) {
 					switch (midiCurrent->type) {
 						case TML_PROGRAM_CHANGE: //channel program (preset) change (special handling for 10th MIDI channel with drums)
@@ -404,9 +409,11 @@ PoolVector2Array MidiPlayer::get_buffer(int inSize) {
 					}
 				}
 				// Render the block of audio samples in float format
+				// play the soundfont samples from note_on fuctions and from midi file
 				tsf_render_float(mTsf, (float*)theData, SampleBlock, 0);
 			}
 		} else {
+			// otherwise if there is a midi loaded but finished then loop if looping or else stop
 			if (mTml) {
 				if (looping == true) {
 					note_off_all();
@@ -423,12 +430,14 @@ PoolVector2Array MidiPlayer::get_buffer(int inSize) {
 				}	
 			}
 
+			// play the soundfont samples even without midi loaded
 			tsf_render_float(mTsf, (float*)theData, inSize, 0);
 		}
 	}
 	return theBuffer;
 }
 
+// handle ready and interan process which feeds the buffer
 void MidiPlayer::_notification(int p_what) {
  	switch (p_what) {
 		case NOTIFICATION_READY: {
@@ -475,7 +484,7 @@ void MidiPlayer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("note_off", "preset", "note"), &MidiPlayer::note_off);
 	ClassDB::bind_method(D_METHOD("note_off_all"), &MidiPlayer::note_off_all);
 
-	//change everything to D_METHOD(func, params)
+	// change everything to D_METHOD(func, params)
 	ClassDB::bind_method(D_METHOD("channel_set_preset_index", "channel", "preset_index"), &MidiPlayer::channel_set_preset_index);
 	ClassDB::bind_method(D_METHOD("channel_set_preset_number", "channel", "preset_number", "drums"), &MidiPlayer::channel_set_preset_number);
 	ClassDB::bind_method(D_METHOD("channel_set_bank", "channel", "bank"), &MidiPlayer::channel_set_bank);
@@ -509,6 +518,7 @@ void MidiPlayer::_bind_methods() {
 }
 
 MidiPlayer::~MidiPlayer() {
+	// frees memory related to soundfont
 	if (mTsf != NULL) {
 		tsf_close(mTsf);
 	}

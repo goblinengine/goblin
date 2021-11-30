@@ -32,7 +32,7 @@ SOFTWARE.
 #include "libs/tml.h"
 #include "core/resource.h"
 
-// SOUNDFONT RESOURCE
+// MIDIFILE RESOURCE
 class MidiFile : public Resource {
 	GDCLASS(MidiFile, Resource);
 	OBJ_CATEGORY("Resources");
@@ -61,10 +61,9 @@ public:
 	MidiFile() {};
 	~MidiFile() {};
 };
+// VARIANT_ENUM_CAST(MidiFile::Format); //FORMAT stuff doesn't work yet
 
-//VARIANT_ENUM_CAST(MidiFile::Format);
-
-// SOUNDFONT IMPORTER
+// MIDIFILE IMPORTER
 class ResourceImporterMidiFile : public ResourceImporter {
 	GDCLASS(ResourceImporterMidiFile, ResourceImporter);
 
@@ -143,8 +142,8 @@ public:
     void channel_set_tuning(int inChannel, float inTuning);
     void channel_note_on(int inChannel, int inKey, float inVelocity);
     void channel_note_off(int inChannel, int inKey);
-    void channel_note_off_all(int inChannel); //end with sustain and release
-    void channel_sounds_off_all(int inChannel); //end immediatly
+    void channel_note_off_all(int inChannel); // end with sustain and release
+    void channel_sounds_off_all(int inChannel); // end immediatly
     void channel_midi_control(int inChannel, int inController, int inValue);
     int channel_get_preset_index(int inChannel);
     int channel_get_preset_bank(int inChannel);
