@@ -1,6 +1,7 @@
 /* 
 Copyright (c) 2021 Filip Anton (filipworks) 
 Created for Goblin Engine github.com/goblinengine
+Initial implementation based on https://github.com/RodZill4/godot-music
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -45,7 +46,7 @@ protected:
 	static void _bind_methods();
 
 public:
-	/* enum Format { //this format stuff doesn't work yet (will come back to it later)
+	enum Format { //this format stuff doesn't work yet (will come back to it later)
 		FORMAT_MIDI = 0,
 		FORMAT_SF2,
 	};
@@ -54,14 +55,17 @@ public:
 	int format = FORMAT_MIDI; 
 
 	void set_format(int f) { format = f; }
-	int get_format() const { return format; } */
+	int get_format() const { return format; }
+
 	void set_data(const PoolVector<uint8_t> &p_data);
 	PoolVector<uint8_t> get_data() const;
 
 	MidiFile() {};
 	~MidiFile() {};
 };
-// VARIANT_ENUM_CAST(MidiFile::Format); //FORMAT stuff doesn't work yet
+
+MAKE_ENUM_TYPE_INFO(MidiFile::Format);
+
 
 // MIDIFILE IMPORTER
 class ResourceImporterMidiFile : public ResourceImporter {
@@ -91,14 +95,12 @@ class MidiPlayer : public AudioStreamPlayer {
 
 private:
 	Ref<AudioStreamGeneratorPlayback> playback_gen;
-
-	String       mSoundFontName;
+	Ref<MidiFile> soundfont;
 	tsf         *mTsf;
+	Ref<MidiFile> midi;
 	tml_message *mTml;
-	String       mMidiName;
 	tml_message *midiCurrent;
 	double       midiTime;
-
 	float        midi_speed;
 	bool         looping;
 
@@ -112,10 +114,12 @@ public:
 	~MidiPlayer();
 
 	void load_soundfont(String inSoundFontName);
-	String get_soundfont() const;
+	void set_soundfont(Ref<MidiFile> sf);
+	Ref<MidiFile> get_soundfont() const;
 
 	void load_midi(String inMidiFileName);
-	String get_midi() const;
+	void set_midi(Ref<MidiFile> mid);
+	Ref<MidiFile> get_midi() const;
 
 	void set_looping(bool p_looping);
 	bool get_looping();

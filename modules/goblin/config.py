@@ -23,4 +23,5 @@ def get_doc_classes():
         "Mixin",
         "MixinScript",
         "MidiPlayer",
+        "MidiFile"
     ]
