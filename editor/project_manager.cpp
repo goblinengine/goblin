@@ -480,11 +480,11 @@ private:
 						if (!f) {
 							set_message(TTR("Couldn't create project.godot in project path."), MESSAGE_ERROR);
 						} else {
-							f->store_line("[gd_resource type=\"Environment\" load_steps=2 format=2]");
-							f->store_line("[sub_resource type=\"ProceduralSky\" id=1]");
+							// GOBLIN ENGINE 
+							// disable Procedural Sky as the default (falls back to Background: Clear Color)
+							f->store_line("[gd_resource type=\"Environment\" format=2]");
+							f->store_line("");
 							f->store_line("[resource]");
-							f->store_line("background_mode = 2");
-							f->store_line("background_sky = SubResource( 1 )");
 							memdelete(f);
 						}
 					}
