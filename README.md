@@ -38,7 +38,7 @@ There is no community as of yet but PRs welcome.
 
 ## Documentation and demos
 
-Since Goblin Engine is compatible with latest 3.x Godot branch, you can find most the documentation you need over at [Godot Docs](https://docs.godotengine.org/en/stable/). It is maintained by the Godot community in its own [GitHub repository](https://github.com/godotengine/godot-docs). 
+Since Goblin Engine is compatible with latest 3.x Godot branch, you can find most the documentation you need over at [Godot Docs](https://docs.godotengine.org/en/stable/).
 
 The [class reference](https://docs.godotengine.org/en/latest/classes/) is also accessible from the Godot editor. Goblin adds some new functionality which is only documented in the built in Class references.
 
@@ -46,6 +46,5 @@ The official demos are maintained in their own [GitHub repository](https://githu
 as well.
 
 There are also a number of other
-[learning resources](https://docs.godotengine.org/en/stable/community/tutorials.html)
-provided by the community, such as text and video tutorials, demos, etc.
+[learning resources](https://docs.godotengine.org/en/stable/community/tutorials.html) such as text and video tutorials, demos, etc.
 
