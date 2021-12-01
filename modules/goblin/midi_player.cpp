@@ -128,6 +128,7 @@ void MidiPlayer::set_soundfont(Ref<MidiFile> sf) {
 
 	// Clear the old sound font
 	if (mTsf != NULL) {
+	    note_off_all();
 		tsf_close(mTsf);
 		mTsf = NULL;
 	}
@@ -169,10 +170,10 @@ void MidiPlayer::set_midi(Ref<MidiFile> mid) {
 
 	// Clear the current midi
 	if (mTml != NULL) {
+	    note_off_all();
 		tml_free(mTml);
 		mTml = NULL;
 		midiCurrent = NULL;
-		//midiFile->close();
 	}
 
 	// Load the new midi and set parameters
@@ -541,10 +542,10 @@ void MidiPlayer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_looping", "looping"), &MidiPlayer::set_looping);
 	ClassDB::bind_method(D_METHOD("get_looping"), &MidiPlayer::get_looping);
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "looping", PROPERTY_HINT_NONE, "", true), "set_looping", "get_looping");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "looping", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), "set_looping", "get_looping");
 	ClassDB::bind_method(D_METHOD("set_midi_speed", "speed"), &MidiPlayer::set_midi_speed);
 	ClassDB::bind_method(D_METHOD("get_midi_speed"), &MidiPlayer::get_midi_speed);
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "midi_speed", PROPERTY_HINT_RANGE, "0,8,0.1", 1.0), "set_midi_speed", "get_midi_speed");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "midi_speed", PROPERTY_HINT_RANGE, "0,8,0.1", PROPERTY_USAGE_EDITOR), "set_midi_speed", "get_midi_speed");
 
 	ADD_SIGNAL(MethodInfo("loop_finished"));
 }
