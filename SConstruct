@@ -398,7 +398,10 @@ if selected_platform in platform_list:
     # Set our C and C++ standard requirements.
     # Prepending to make it possible to override
     # This needs to come after `configure`, otherwise we don't have env.msvc.
-    if not env.msvc:
+    if selected_platform == "iphone": #GOBLIN ENGINE hack because ios is not C++17 compliant
+        env.Prepend(CFLAGS=["-std=gnu11"]) 
+        env.Prepend(CXXFLAGS=["-std=gnu++14"])  
+    elif not env.msvc:
         # Specifying GNU extensions support explicitly, which are supported by
         # both GCC and Clang. This mirrors GCC and Clang's current default
         # compile flags if no -std is specified.
