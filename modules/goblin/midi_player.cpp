@@ -229,7 +229,11 @@ void MidiPlayer::note_on(int inPresetIndex, int inKey, float inVelocity) {
 }
 
 void MidiPlayer::note_off(int inPresetIndex, int inKey) {
-	tsf_note_on(mTsf, inPresetIndex, inKey, 0.0);
+	if (mTsf == NULL) {
+		return;
+	}
+	tsf_note_off(mTsf, inPresetIndex, inKey);
+	//tsf_note_on(mTsf, inPresetIndex, inKey, 0.0);
 }
 
 void MidiPlayer::note_off_all() {
