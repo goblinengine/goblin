@@ -142,9 +142,15 @@ protected:
 	}
 
 	void _get_property_list(List<PropertyInfo> *p_list) const {
-		p_list->clear(); //sorry, no want category
+		p_list->clear(); // Sorry, no want category.
 		for (const List<PropertyInfo>::Element *E = prop_list.front(); E; E = E->next()) {
-			p_list->push_back(E->get());
+			const PropertyInfo &prop = E->get();
+			if (prop.name == "script") {
+				// Skip the script property, it's always added by the non-virtual method.
+				continue;
+			}
+
+			p_list->push_back(prop);
 		}
 	}
 
@@ -2289,13 +2295,13 @@ void ScriptEditorDebugger::_item_menu_id_pressed(int p_option) {
 			// Construct a GitHub repository URL and open it in the user's default web browser.
 			if (String(VERSION_HASH).length() >= 1) {
 				// Git commit hash information available; use it for greater accuracy, including for development versions.
-				OS::get_singleton()->shell_open(vformat("https://github.com/goblinengine/goblin/blob/%s/%s#L%d",
+				OS::get_singleton()->shell_open(vformat("https://github.com/godotengine/godot/blob/%s/%s#L%d",
 						VERSION_HASH,
 						file,
 						line_number));
 			} else {
 				// Git commit hash information unavailable; fall back to tagged releases.
-				OS::get_singleton()->shell_open(vformat("https://github.com/goblinengine/goblin/blob/%s-stable/%s#L%d",
+				OS::get_singleton()->shell_open(vformat("https://github.com/godotengine/godot/blob/%s-stable/%s#L%d",
 						VERSION_NUMBER,
 						file,
 						line_number));

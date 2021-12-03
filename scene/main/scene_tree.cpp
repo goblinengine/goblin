@@ -80,6 +80,14 @@ bool SceneTreeTimer::is_pause_mode_process() {
 	return process_pause;
 }
 
+void SceneTreeTimer::set_ignore_time_scale(bool p_ignore) {
+	ignore_time_scale = p_ignore;
+}
+
+bool SceneTreeTimer::is_ignore_time_scale() {
+	return ignore_time_scale;
+}
+
 void SceneTreeTimer::release_connections() {
 	List<Connection> connections;
 	get_all_signal_connections(&connections);
@@ -484,7 +492,7 @@ bool SceneTree::iteration(float p_time) {
 
 	//GOBLIN ENGINE fixed process
 	if (current_frame % (int)GLOBAL_GET("application/run/fixed_process_frames") == 0) {
-		call_group_flags(SceneTree::GROUP_CALL_REALTIME, "fixed_process", "_fixed_process");
+		call_group("fixed_process", "_fixed_process");
 	}
 
 	_notify_group_pause("physics_process", Node::NOTIFICATION_PHYSICS_PROCESS);
@@ -563,8 +571,13 @@ bool SceneTree::idle(float p_time) {
 			E = N;
 			continue;
 		}
+
 		float time_left = E->get()->get_time_left();
-		time_left -= p_time;
+		if (E->get()->is_ignore_time_scale()) {
+			time_left -= Engine::get_singleton()->get_idle_frame_step();
+		} else {
+			time_left -= p_time;
+		}
 		E->get()->set_time_left(time_left);
 
 		if (time_left < 0) {

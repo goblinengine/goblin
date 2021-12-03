@@ -4,8 +4,9 @@
 		Tabbed container.
 	</brief_description>
 	<description>
-		Sets the active tab's [code]visible[/code] property to the value [code]true[/code]. Sets all other children's to [code]false[/code].
+		Arranges [Control] children into a tabbed view, creating a tab for each one. The active tab's corresponding [Control] has its [code]visible[/code] property set to [code]true[/code], and all other children's to [code]false[/code].
 		Ignores non-[Control] children.
+		[b]Note:[/b] The drawing of the clickable tabs themselves is handled by this node. Adding [Tabs] as children is not needed.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -143,10 +144,6 @@
 		<member name="tab_align" type="int" setter="set_tab_align" getter="get_tab_align" enum="TabContainer.TabAlign" default="1">
 			The alignment of all tabs in the tab container. See the [enum TabAlign] constants for details.
 		</member>
-		<member name="tabs_at_bottom" type="bool" setter="set_tabs_at_bottom" getter="is_tabs_at_bottom" default="false">
-			If [code]true[/code], tabs will be displayed at the bottom of the container. If [code]false[/code], tabs are displayed at the top (default).
-			Different styles can be set for tabs being displayed at the bottom and the top. This allows setting of different border radius, for example, depeding on where tabs are displayed.
-		</member>
 		<member name="tabs_visible" type="bool" setter="set_tabs_visible" getter="are_tabs_visible" default="true">
 			If [code]true[/code], tabs are visible. If [code]false[/code], tabs' content and titles are hidden.
 		</member>
@@ -204,7 +201,7 @@
 			Font color of the currently selected tab.
 		</theme_item>
 		<theme_item name="hseparation" data_type="constant" type="int" default="4">
-			Horizontal separation between tab's icon and its name.
+			Horizontal separation between tabs.
 		</theme_item>
 		<theme_item name="increment" data_type="icon" type="Texture">
 			Icon for the right arrow button that appears when there are too many tabs to fit in the container width. When the button is disabled (i.e. the last tab is visible) it appears semi-transparent.
@@ -225,29 +222,17 @@
 		<theme_item name="panel" data_type="style" type="StyleBox">
 			The style for the background fill.
 		</theme_item>
-		<theme_item name="panel_bottom" data_type="style" type="StyleBox">
-			The style for the background fill when tabs are displayed at the bottom.
-		</theme_item>
 		<theme_item name="side_margin" data_type="constant" type="int" default="8">
 			The space at the left and right edges of the tab bar.
 		</theme_item>
 		<theme_item name="tab_bg" data_type="style" type="StyleBox">
 			The style of inactive tabs.
 		</theme_item>
-		<theme_item name="tab_bg_bottom" data_type="style" type="StyleBox">
-			The style of inactive tabs when tabs are displayed at the bottom.
-		</theme_item>
 		<theme_item name="tab_disabled" data_type="style" type="StyleBox">
 			The style of disabled tabs.
 		</theme_item>
-		<theme_item name="tab_disabled_bottom" data_type="style" type="StyleBox">
-			The style of disabled tabs when tabs are displayed at the bottom.
-		</theme_item>
 		<theme_item name="tab_fg" data_type="style" type="StyleBox">
 			The style of the currently selected tab.
-		</theme_item>
-		<theme_item name="tab_fg_bottom" data_type="style" type="StyleBox">
-			The style of the currently selected tab when tabs are displayed at the bottom.
 		</theme_item>
 		<theme_item name="top_margin" data_type="constant" type="int" default="24">
 		</theme_item>

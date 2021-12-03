@@ -147,7 +147,7 @@ opts.Add(
 )
 opts.Add(BoolVariable("disable_3d", "Disable 3D nodes for a smaller executable", False))
 opts.Add(BoolVariable("disable_advanced_gui", "Disable advanced GUI nodes and behaviors", False))
-opts.Add(BoolVariable("no_editor_splash", "Don't use the custom splash screen for the editor", False))
+opts.Add(BoolVariable("no_editor_splash", "Don't use the custom splash screen for the editor", True))
 opts.Add("system_certs_path", "Use this path as SSL certificates default for editor (for package maintainers)", "")
 opts.Add(BoolVariable("use_precise_math_checks", "Math checks use very precise epsilon (debug option)", False))
 
@@ -289,6 +289,13 @@ opts.Update(env_base)
 env_base["platform"] = selected_platform  # Must always be re-set after calling opts.Update().
 Help(opts.GenerateHelpText(env_base))
 
+# Detect and print a warning listing unknown SCons variables to ease troubleshooting.
+unknown = opts.UnknownVariables()
+if unknown:
+    print("WARNING: Unknown SCons variables were passed and will be ignored:")
+    for item in unknown.items():
+        print("    " + item[0] + "=" + item[1])
+
 # add default include paths
 
 env_base.Prepend(CPPPATH=["#"])
@@ -311,6 +318,9 @@ if env_base["target"] == "debug":
 if env_base["use_precise_math_checks"]:
     env_base.Append(CPPDEFINES=["PRECISE_MATH_CHECKS"])
 
+if not env_base.File("#main/splash_editor.png").exists():
+    # Force disabling editor splash if missing.
+    env_base["no_editor_splash"] = True
 if env_base["no_editor_splash"]:
     env_base.Append(CPPDEFINES=["NO_EDITOR_SPLASH"])
 
@@ -400,7 +410,7 @@ if selected_platform in platform_list:
     # This needs to come after `configure`, otherwise we don't have env.msvc.
     if selected_platform == "iphone": #GOBLIN ENGINE hack because ios is not C++17 compliant
         env.Prepend(CFLAGS=["-std=gnu11"]) 
-        env.Prepend(CXXFLAGS=["-std=gnu++14"])  
+        env.Prepend(CXXFLAGS=["-std=gnu++14"]) 
     elif not env.msvc:
         # Specifying GNU extensions support explicitly, which are supported by
         # both GCC and Clang. This mirrors GCC and Clang's current default

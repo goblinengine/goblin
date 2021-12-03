@@ -212,6 +212,14 @@
 			<description>
 				Returns an array listing the groups that the node is a member of.
 				[b]Note:[/b] For performance reasons, the order of node groups is [i]not[/i] guaranteed. The order of node groups should not be relied upon as it can vary across project runs.
+				[b]Note:[/b] The engine uses some group names internally (all starting with an underscore). To avoid conflicts with internal groups, do not add custom groups whose name starts with an underscore. To exclude internal groups while looping over [method get_groups], use the following snippet:
+				[codeblock]
+				# Stores the node's non-internal groups only (as an array of Strings).
+				var non_internal_groups = []
+				for group in get_groups():
+				    if not group.begins_with("_"):
+				        non_internal_groups.push_back(group)
+				[/codeblock]
 			</description>
 		</method>
 		<method name="get_index" qualifiers="const">
@@ -230,7 +238,7 @@
 			<return type="Node" />
 			<argument index="0" name="path" type="NodePath" />
 			<description>
-				Fetches a node. The [NodePath] can be either a relative path (from the current node) or an absolute path (in the scene tree) to a node. If the path does not exist, a [code]null instance[/code] is returned and an error is logged. Attempts to access methods on the return value will result in an "Attempt to call &lt;method&gt; on a null instance." error.
+				Fetches a node. The [NodePath] can be either a relative path (from the current node) or an absolute path (in the scene tree) to a node. If the path does not exist, [code]null[/code] is returned and an error is logged. Attempts to access methods on the return value will result in an "Attempt to call &lt;method&gt; on a null instance." error.
 				[b]Note:[/b] Fetching absolute paths only works when the node is inside the scene tree (see [method is_inside_tree]).
 				[b]Example:[/b] Assume your current node is Character and the following tree:
 				[codeblock]
@@ -276,7 +284,7 @@
 		<method name="get_parent" qualifiers="const">
 			<return type="Node" />
 			<description>
-				Returns the parent node of the current node, or a [code]null instance[/code] if the node lacks a parent.
+				Returns the parent node of the current node, or [code]null[/code] if the node lacks a parent.
 			</description>
 		</method>
 		<method name="get_path" qualifiers="const">
@@ -523,6 +531,7 @@
 			<argument index="1" name="keep_data" type="bool" default="false" />
 			<description>
 				Replaces a node in a scene by the given one. Subscriptions that pass through this node will be lost.
+				Note that the replaced node is not automatically freed, so you either need to keep it in a variable for later use or free it using [method Object.free].
 			</description>
 		</method>
 		<method name="request_ready">

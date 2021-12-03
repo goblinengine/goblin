@@ -393,7 +393,9 @@ const GodotInput = {
 			const rect = canvas.getBoundingClientRect();
 			const pos = GodotInput.computePosition(evt, rect);
 			const modifiers = GodotInput.getModifiers(evt);
-			if (p_pressed && document.activeElement !== GodotConfig.canvas) {
+			// Since the event is consumed, focus manually.
+			// NOTE: The iframe container may not have focus yet, so focus even when already active.
+			if (p_pressed) {
 				GodotConfig.canvas.focus();
 			}
 			if (func(p_pressed, evt.button, pos[0], pos[1], modifiers)) {
@@ -412,7 +414,9 @@ const GodotInput = {
 		const func = GodotRuntime.get_func(callback);
 		const canvas = GodotConfig.canvas;
 		function touch_cb(type, evt) {
-			if (type === 0 && document.activeElement !== GodotConfig.canvas) {
+			// Since the event is consumed, focus manually.
+			// NOTE: The iframe container may not have focus yet, so focus even when already active.
+			if (type === 0) {
 				GodotConfig.canvas.focus();
 			}
 			const rect = canvas.getBoundingClientRect();
@@ -420,9 +424,9 @@ const GodotInput = {
 			for (let i = 0; i < touches.length; i++) {
 				const touch = touches[i];
 				const pos = GodotInput.computePosition(touch, rect);
-				GodotRuntime.setHeapValue(coords + (i * 2), pos[0], 'double');
-				GodotRuntime.setHeapValue(coords + (i * 2 + 8), pos[1], 'double');
-				GodotRuntime.setHeapValue(ids + i, touch.identifier, 'i32');
+				GodotRuntime.setHeapValue(coords + (i * 2) * 8, pos[0], 'double');
+				GodotRuntime.setHeapValue(coords + (i * 2 + 1) * 8, pos[1], 'double');
+				GodotRuntime.setHeapValue(ids + i * 4, touch.identifier, 'i32');
 			}
 			func(type, touches.length);
 			if (evt.cancelable) {

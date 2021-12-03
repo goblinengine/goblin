@@ -869,8 +869,13 @@ bool EditorData::script_class_is_parent(const String &p_class, const String &p_i
 	if (!ScriptServer::is_global_class(p_class)) {
 		return false;
 	}
-	String base = script_class_get_base(p_class);
+
 	Ref<Script> script = script_class_load_script(p_class);
+	if (script.is_null()) {
+		return false;
+	}
+
+	String base = script_class_get_base(p_class);
 	Ref<Script> base_script = script->get_base_script();
 
 	while (p_inherits != base) {
@@ -921,6 +926,7 @@ Ref<Script> EditorData::script_class_load_script(const String &p_class) const {
 		return Ref<Script>();
 	}
 
+	// GOBLIN ENGINE create context
 	ERR_FAIL_COND_V_MSG(!_script_cache.has(p_class), Ref<Script>(), "Cannot find a script cached in the editor data.");
 	return _script_cache[p_class];
 }
@@ -948,6 +954,7 @@ String EditorData::script_class_get_icon_path(const String &p_class) const {
 }
 
 StringName EditorData::script_class_get_name(const String &p_path) const {
+	// GOBLIN ENGINE create context
 	return _script_class_path_to_name.has(p_path) ? _script_class_path_to_name[p_path] : StringName();
 }
 
@@ -1002,6 +1009,7 @@ void EditorData::script_class_load_icon_paths() {
 	}
 }
 
+// GOBLIN ENGINE create context
 void EditorData::script_class_update_cache() {
 	// NOTE: clearing the cache completely is not efficient, so don't clear?
 	// _script_cache.clear();
