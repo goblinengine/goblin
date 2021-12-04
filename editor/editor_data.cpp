@@ -959,7 +959,7 @@ StringName EditorData::script_class_get_name(const String &p_path) const {
 }
 
 void EditorData::script_class_set_name(const String &p_path, const StringName &p_class) {
-	_script_class_path_to_name[p_path] = p_class;
+	_script_class_path_to_name[p_path] = p_class; // GOBLIN ENGINE create context
 }
 
 void EditorData::script_class_save_icon_paths() {

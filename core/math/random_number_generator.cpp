@@ -32,6 +32,7 @@
 
 RandomNumberGenerator::RandomNumberGenerator() {}
 
+// GOBLIN ENGINE rng
 Variant RandomNumberGenerator::randchoice(const Variant &p_from) {
 	switch (p_from.get_type()) {
 		case Variant::STRING: {
@@ -63,6 +64,7 @@ Variant RandomNumberGenerator::randchoice(const Variant &p_from) {
 	return Variant();
 }
 
+// GOBLIN ENGINE rng
 void RandomNumberGenerator::randshuffle(Array p_array) {
 	if (p_array.size() < 2) {
 		return;
@@ -75,6 +77,7 @@ void RandomNumberGenerator::randshuffle(Array p_array) {
 	}
 }
 
+// GOBLIN ENGINE rng
 Variant RandomNumberGenerator::randroll(uint32_t count, uint32_t sides) {
 	if (sides > 144 || sides < 2) {
 		ERR_FAIL_V_MSG(Variant(), "Die sides must be between 2 and 144");
@@ -111,10 +114,10 @@ void RandomNumberGenerator::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("randi_range", "from", "to"), &RandomNumberGenerator::randi_range);
 	ClassDB::bind_method(D_METHOD("randomize"), &RandomNumberGenerator::randomize);
 
-	ClassDB::bind_method(D_METHOD("randchoice", "from"), &RandomNumberGenerator::randchoice);
-	ClassDB::bind_method(D_METHOD("randshuffle", "array"), &RandomNumberGenerator::randshuffle);
-	ClassDB::bind_method(D_METHOD("randdecision", "probability"), &RandomNumberGenerator::randdecision);
-	ClassDB::bind_method(D_METHOD("randroll", "count", "sides"), &RandomNumberGenerator::randroll);
+	ClassDB::bind_method(D_METHOD("randchoice", "from"), &RandomNumberGenerator::randchoice); // GOBLIN ENGINE rng
+	ClassDB::bind_method(D_METHOD("randshuffle", "array"), &RandomNumberGenerator::randshuffle); // GOBLIN ENGINE rng
+	ClassDB::bind_method(D_METHOD("randdecision", "probability"), &RandomNumberGenerator::randdecision); // GOBLIN ENGINE rng
+	ClassDB::bind_method(D_METHOD("randroll", "count", "sides"), &RandomNumberGenerator::randroll); // GOBLIN ENGINE rng
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "seed"), "set_seed", "get_seed");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "state"), "set_state", "get_state");

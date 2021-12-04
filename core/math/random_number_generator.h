@@ -53,13 +53,13 @@ public:
 
 	_FORCE_INLINE_ void randomize() { randbase.randomize(); }
 
-	_FORCE_INLINE_ Variant randchoice(const Variant &p_from);
+	_FORCE_INLINE_ Variant randchoice(const Variant &p_from); // GOBLIN ENGINE rng
 
-	_FORCE_INLINE_ void randshuffle(Array p_array);
+	_FORCE_INLINE_ void randshuffle(Array p_array); // GOBLIN ENGINE rng
 
-	_FORCE_INLINE_ bool randdecision(float probability) { return randbase.randf() <= probability; }
+	_FORCE_INLINE_ bool randdecision(float probability) { return randbase.randf() <= probability; } // GOBLIN ENGINE rng
 
-	_FORCE_INLINE_ Variant randroll(uint32_t count, uint32_t sides);
+	_FORCE_INLINE_ Variant randroll(uint32_t count, uint32_t sides); // GOBLIN ENGINE rng
 
 	_FORCE_INLINE_ uint32_t randi() { return randbase.rand(); }
 

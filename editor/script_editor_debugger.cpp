@@ -2295,13 +2295,15 @@ void ScriptEditorDebugger::_item_menu_id_pressed(int p_option) {
 			// Construct a GitHub repository URL and open it in the user's default web browser.
 			if (String(VERSION_HASH).length() >= 1) {
 				// Git commit hash information available; use it for greater accuracy, including for development versions.
-				OS::get_singleton()->shell_open(vformat("https://github.com/godotengine/godot/blob/%s/%s#L%d",
+				// GOBLIN ENGINE commit information
+				OS::get_singleton()->shell_open(vformat("https://github.com/goblinengine/goblin/blob/%s/%s#L%d",
 						VERSION_HASH,
 						file,
 						line_number));
 			} else {
 				// Git commit hash information unavailable; fall back to tagged releases.
-				OS::get_singleton()->shell_open(vformat("https://github.com/godotengine/godot/blob/%s-stable/%s#L%d",
+				// GOBLIN ENGINE commit information
+				OS::get_singleton()->shell_open(vformat("https://github.com/goblinengine/goblin/blob/%s-stable/%s#L%d",
 						VERSION_NUMBER,
 						file,
 						line_number));

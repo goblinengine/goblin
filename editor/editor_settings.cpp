@@ -354,19 +354,19 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 
 	// Theme
 	_initial_set("interface/theme/preset", "Default");
-	hints["interface/theme/preset"] = PropertyInfo(Variant::STRING, "interface/theme/preset", PROPERTY_HINT_ENUM, "Default,Alien,Arc,Godot 2,Godot 3,Light,Solarized (Dark),Solarized (Light),Custom", PROPERTY_USAGE_DEFAULT);
+	hints["interface/theme/preset"] = PropertyInfo(Variant::STRING, "interface/theme/preset", PROPERTY_HINT_ENUM, "Default,Alien,Arc,Godot 2,Godot 3,Light,Solarized (Dark),Solarized (Light),Custom", PROPERTY_USAGE_DEFAULT); // GOBLIN ENGINE theme
 	_initial_set("interface/theme/icon_and_font_color", 0);
 	hints["interface/theme/icon_and_font_color"] = PropertyInfo(Variant::INT, "interface/theme/icon_and_font_color", PROPERTY_HINT_ENUM, "Auto,Dark,Light", PROPERTY_USAGE_DEFAULT);
-	_initial_set("interface/theme/base_color", Color(0.24, 0.24, 0.24));
+	_initial_set("interface/theme/base_color", Color(0.24, 0.24, 0.24)); // GOBLIN ENGINE theme
 	hints["interface/theme/base_color"] = PropertyInfo(Variant::COLOR, "interface/theme/base_color", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT);
-	_initial_set("interface/theme/accent_color", Color(1.0, 0.55, 0.0));
+	_initial_set("interface/theme/accent_color", Color(1.0, 0.55, 0.0)); // GOBLIN ENGINE theme
 	hints["interface/theme/accent_color"] = PropertyInfo(Variant::COLOR, "interface/theme/accent_color", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT);
 	_initial_set("interface/theme/contrast", 0.25);
 	hints["interface/theme/contrast"] = PropertyInfo(Variant::REAL, "interface/theme/contrast", PROPERTY_HINT_RANGE, "-1, 1, 0.01");
 	_initial_set("interface/theme/relationship_line_opacity", 0.1);
 	hints["interface/theme/relationship_line_opacity"] = PropertyInfo(Variant::REAL, "interface/theme/relationship_line_opacity", PROPERTY_HINT_RANGE, "0.00, 1, 0.01");
 	_initial_set("interface/theme/highlight_tabs", false);
-	_initial_set("interface/theme/border_size", 0);
+	_initial_set("interface/theme/border_size", 0); // GOBLIN ENGINE theme
 	_initial_set("interface/theme/use_graph_node_headers", false);
 	hints["interface/theme/border_size"] = PropertyInfo(Variant::INT, "interface/theme/border_size", PROPERTY_HINT_RANGE, "0,2,1", PROPERTY_USAGE_DEFAULT);
 	_initial_set("interface/theme/additional_spacing", 0);
@@ -692,21 +692,21 @@ void EditorSettings::_load_default_text_editor_theme() {
 
 	_initial_set("text_editor/highlighting/symbol_color", Color(0.73, 0.87, 1.0));
 	_initial_set("text_editor/highlighting/keyword_color", Color(1.0, 1.0, 0.7));
-	_initial_set("text_editor/highlighting/control_flow_keyword_color", Color(1.0, 1.0, 0.7));  // GOBLIN ENGINE
+	_initial_set("text_editor/highlighting/control_flow_keyword_color", Color(1.0, 1.0, 0.7));  // GOBLIN ENGINE theme
 	_initial_set("text_editor/highlighting/base_type_color", Color(0.64, 1.0, 0.83));
 	_initial_set("text_editor/highlighting/engine_type_color", Color(0.51, 0.83, 1.0));
 	_initial_set("text_editor/highlighting/user_type_color", Color(0.42, 0.67, 0.93));
 	_initial_set("text_editor/highlighting/comment_color", Color(0.4, 0.4, 0.4));
 	_initial_set("text_editor/highlighting/string_color", Color(0.94, 0.43, 0.75));
-	_initial_set("text_editor/highlighting/background_color", dark_theme ? Color(0.0, 0.0, 0.0, 0.23) : Color(0.24, 0.24, 0.24));
+	_initial_set("text_editor/highlighting/background_color", dark_theme ? Color(0.0, 0.0, 0.0, 0.23) : Color(0.24, 0.24, 0.24)); // GOBLIN ENGINE theme
 	_initial_set("text_editor/highlighting/completion_background_color", Color(0.17, 0.16, 0.2));
 	_initial_set("text_editor/highlighting/completion_selected_color", Color(0.26, 0.26, 0.27));
 	_initial_set("text_editor/highlighting/completion_existing_color", Color(0.13, 0.87, 0.87, 0.87));
 	_initial_set("text_editor/highlighting/completion_scroll_color", Color(1, 1, 1));
 	_initial_set("text_editor/highlighting/completion_font_color", Color(0.67, 0.67, 0.67));
 	_initial_set("text_editor/highlighting/text_color", Color(0.67, 0.67, 0.67));
-	_initial_set("text_editor/highlighting/line_number_color", Color(0.56, 0.56, 0.56, 0.05));  // GOBLIN ENGINE
-	_initial_set("text_editor/highlighting/safe_line_number_color", Color(0.56, 0.56, 0.56, 0.05));  // GOBLIN ENGINE
+	_initial_set("text_editor/highlighting/line_number_color", Color(0.56, 0.56, 0.56, 0.05));  // GOBLIN ENGINE theme
+	_initial_set("text_editor/highlighting/safe_line_number_color", Color(0.56, 0.56, 0.56, 0.05));  // GOBLIN ENGINE theme
 	_initial_set("text_editor/highlighting/caret_color", Color(0.67, 0.67, 0.67));
 	_initial_set("text_editor/highlighting/caret_background_color", Color(0, 0, 0));
 	_initial_set("text_editor/highlighting/text_selected_color", Color(0, 0, 0));
@@ -1500,6 +1500,7 @@ float EditorSettings::get_auto_display_scale() const {
 	// Use the smallest dimension to use a correct display scale on portait displays.
 	const int smallest_dimension = MIN(OS::get_singleton()->get_screen_size(screen).x, OS::get_singleton()->get_screen_size(screen).y);
 	
+	// GOBLIN ENGINE dpi calculations
 	if (OS::get_singleton()->get_screen_dpi(screen) >= 96 && smallest_dimension >= 600 && OS::get_singleton()->get_screen_dpi(screen) < 300 && smallest_dimension < 1400) {
 		return Math::stepify(OS::get_singleton()->get_screen_dpi(screen)/96.0, 0.25);
 	} else if (OS::get_singleton()->get_screen_dpi(screen) >= 192 && smallest_dimension >= 1400) {
@@ -1514,7 +1515,7 @@ float EditorSettings::get_auto_display_scale() const {
 		// Icons won't look great, but this is better than having editor elements overflow from its window.
 		return 0.75;
 	}
-	
+
 	return 1.0;
 #endif
 }

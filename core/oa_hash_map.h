@@ -243,6 +243,7 @@ public:
 	 * if r_data is not nullptr then the value will be written to the object
 	 * it points to.
 	 */
+	// GOBLIN ENGINE lookup_ptr
 	TValue *lookup_ptr(const TKey &p_key) const {
 		uint32_t pos = 0;
 		bool exists = _lookup_pos(p_key, pos);

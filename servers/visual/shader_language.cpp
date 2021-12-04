@@ -29,7 +29,7 @@
 /*************************************************************************/
 
 #include "shader_language.h"
-#include "scene/resources/shader.h"
+#include "scene/resources/shader.h"  // GOBLIN ENGINE import shader
 #include "core/os/os.h"
 #include "core/print_string.h"
 #include "servers/visual_server.h"
@@ -206,7 +206,7 @@ const char *ShaderLanguage::token_names[TK_MAX] = {
 	"HINT_COLOR",
 	"HINT_RANGE",
 	"SHADER_TYPE",
-	"IMPORT_SHADER",
+	"IMPORT_SHADER", // GOBLIN ENGINE import shader
 	"CURSOR",
 	"ERROR",
 	"EOF",
@@ -304,7 +304,7 @@ const ShaderLanguage::KeyWord ShaderLanguage::keyword_list[] = {
 	{ TK_HINT_COLOR, "hint_color" },
 	{ TK_HINT_RANGE, "hint_range" },
 	{ TK_SHADER_TYPE, "shader_type" },
-	{ TK_IMPORT, "import" },
+	{ TK_IMPORT, "import" },  // GOBLIN ENGINE import shader
 	{ TK_QUOTE, "\"" },
 
 	{ TK_ERROR, nullptr }
@@ -428,7 +428,7 @@ ShaderLanguage::Token ShaderLanguage::_get_token() {
 			} break;
 			//case '"' //string - no strings in shader
 			//case '\'' //string - no strings in shader
-			case '"': {
+			case '"': {  // GOBLIN ENGINE import shader
 				int end_quote = code.find_char('"', char_idx);
 				String quoted = code.substr(char_idx, end_quote - char_idx);
 				char_idx = end_quote + 1;
@@ -5641,45 +5641,14 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 	int texture_uniforms = 0;
 	int uniforms = 0;
 
+	// GOBLIN ENGINE import shader
 	Set<String> includes;
 	int include_depth = 0;
 	
 	while (tk.type != TK_EOF) {
 		switch (tk.type) {
-			case TK_RENDER_MODE: {
-				while (true) {
-					StringName mode;
-					_get_completable_identifier(nullptr, COMPLETION_RENDER_MODE, mode);
-
-					if (mode == StringName()) {
-						_set_error("Expected identifier for render mode");
-						return ERR_PARSE_ERROR;
-					}
-
-					if (p_render_modes.find(mode) == -1) {
-						_set_error("Invalid render mode: '" + String(mode) + "'");
-						return ERR_PARSE_ERROR;
-					}
-
-					if (shader->render_modes.find(mode) != -1) {
-						_set_error("Duplicate render mode: '" + String(mode) + "'");
-						return ERR_PARSE_ERROR;
-					}
-
-					shader->render_modes.push_back(mode);
-
-					tk = _get_token();
-					if (tk.type == TK_COMMA) {
-						//all good, do nothing
-					} else if (tk.type == TK_SEMICOLON) {
-						break; //done
-					} else {
-						_set_error("Unexpected token: " + get_token_text(tk));
-						return ERR_PARSE_ERROR;
-					}
-				}
-			} break;
-					case TK_IMPORT: {
+			// GOBLIN ENGINE import shader
+			case TK_IMPORT: {
 				tk = _get_token();
 
 				if (tk.type != TK_QUOTE) {
@@ -5750,6 +5719,39 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 				included = included.substr(type_end + 1, included.length());
 
 				code = code.insert(char_idx, included);
+			} break;
+			case TK_RENDER_MODE: {
+				while (true) {
+					StringName mode;
+					_get_completable_identifier(nullptr, COMPLETION_RENDER_MODE, mode);
+
+					if (mode == StringName()) {
+						_set_error("Expected identifier for render mode");
+						return ERR_PARSE_ERROR;
+					}
+
+					if (p_render_modes.find(mode) == -1) {
+						_set_error("Invalid render mode: '" + String(mode) + "'");
+						return ERR_PARSE_ERROR;
+					}
+
+					if (shader->render_modes.find(mode) != -1) {
+						_set_error("Duplicate render mode: '" + String(mode) + "'");
+						return ERR_PARSE_ERROR;
+					}
+
+					shader->render_modes.push_back(mode);
+
+					tk = _get_token();
+					if (tk.type == TK_COMMA) {
+						//all good, do nothing
+					} else if (tk.type == TK_SEMICOLON) {
+						break; //done
+					} else {
+						_set_error("Unexpected token: " + get_token_text(tk));
+						return ERR_PARSE_ERROR;
+					}
+				}
 			} break;
 			case TK_STRUCT: {
 				ShaderNode::Struct st;

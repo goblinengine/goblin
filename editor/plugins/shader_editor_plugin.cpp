@@ -483,10 +483,11 @@ void ShaderEditor::apply_shaders() {
 			shader->set_code(editor_code);
 			shader->set_edited(true);
 		}
-		refresh_shader_dependencies();
+		refresh_shader_dependencies(); // GOBLIN ENGINE import shader
 	}
 }
 
+// GOBLIN ENGINE import shader
 void ShaderEditor::refresh_shader_dependencies() {
 	//We could use the arguments to find exactly what shaders we should update that depend on the argument shader.
 	//For now go through cached shaders, which are usually(?) all shaders that are currently used in editor

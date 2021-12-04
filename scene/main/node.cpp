@@ -401,7 +401,7 @@ bool Node::is_physics_processing() const {
 	return data.physics_process;
 }
 
-//GOBLIN ENGINE fixed process
+// GOBLIN ENGINE fixed process
 void Node::set_fixed_process(bool p_process) {
 	if (data.fixed_process == p_process) {
 		return;
@@ -418,10 +418,11 @@ void Node::set_fixed_process(bool p_process) {
 	_change_notify("fixed_process");
 }
 
+// GOBLIN ENGINE fixed process
 bool Node::is_fixed_processing() const {
 	return data.fixed_process;
 }
-// GOBLIN ENGINE fixed process
+
 
 void Node::set_physics_process_internal(bool p_process_internal) {
 	if (data.physics_process_internal == p_process_internal) {
@@ -2829,7 +2830,8 @@ void Node::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_physics_process", "enable"), &Node::set_physics_process);
 	ClassDB::bind_method(D_METHOD("get_physics_process_delta_time"), &Node::get_physics_process_delta_time);
 	ClassDB::bind_method(D_METHOD("is_physics_processing"), &Node::is_physics_processing);
-	//GOBLIN ENGINE
+
+	// GOBLIN ENGINE fixed process
 	ClassDB::bind_method(D_METHOD("set_fixed_process", "enable"), &Node::set_fixed_process);
 	ClassDB::bind_method(D_METHOD("is_fixed_processing"), &Node::is_fixed_processing);
 
@@ -2985,8 +2987,10 @@ void Node::_bind_methods() {
 
 	BIND_VMETHOD(MethodInfo("_process", PropertyInfo(Variant::REAL, "delta")));
 	BIND_VMETHOD(MethodInfo("_physics_process", PropertyInfo(Variant::REAL, "delta")));
-	//GOBLIN ENGINE
+	
+	//GOBLIN ENGINE fixed process
 	BIND_VMETHOD(MethodInfo("_fixed_process"));
+
 	BIND_VMETHOD(MethodInfo("_enter_tree"));
 	BIND_VMETHOD(MethodInfo("_exit_tree"));
 	BIND_VMETHOD(MethodInfo("_ready"));

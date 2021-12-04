@@ -129,7 +129,7 @@ protected:
 public:
 	void apply_shaders();
 
-	static void refresh_shader_dependencies();
+	static void refresh_shader_dependencies(); // GOBLIN ENGINE import shader
 
 	void ensure_select_current();
 	void edit(const Ref<Shader> &p_shader);

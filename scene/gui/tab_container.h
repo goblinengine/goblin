@@ -56,8 +56,10 @@ private:
 	bool menu_hovered;
 	int highlight_arrow;
 	TabAlign align;
+	// GOBLIN ENGINE tabs at bottom
 	bool tabs_at_bottom = false;
 	int _get_tabs_margin() const;
+
 	mutable ObjectID popup_obj_id;
 	bool drag_to_rearrange_enabled;
 	bool use_hidden_tabs_for_min_size;
@@ -108,6 +110,7 @@ public:
 	void set_tab_hidden(int p_tab, bool p_hidden);
 	bool get_tab_hidden(int p_tab) const;
 
+	// GOBLIN ENGINE tabs at bottom
 	void set_tabs_at_bottom(bool p_at_bottom);
 	bool is_tabs_at_bottom() const;
 

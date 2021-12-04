@@ -42,7 +42,7 @@
  */
 
 enum ButtonList {
-	NONE = 0,
+	NONE = 0, // GOBLIN ENGINE 
 	BUTTON_LEFT = 1,
 	BUTTON_RIGHT = 2,
 	BUTTON_MIDDLE = 3,

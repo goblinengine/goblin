@@ -226,7 +226,7 @@ public:
 	void script_class_save_icon_paths();
 	void script_class_load_icon_paths();
 
-	void script_class_update_cache();
+	void script_class_update_cache(); // GOBLIN ENGINE create context
 
 	EditorData();
 };

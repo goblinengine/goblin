@@ -2175,7 +2175,7 @@ bool Main::iteration() {
 
 	uint64_t physics_process_ticks = 0;
 	uint64_t idle_process_ticks = 0;
-	uint64_t visual_process_ticks = 0;
+	uint64_t visual_process_ticks = 0; // GOBLIN ENGINE visual profiler
 
 	frame += ticks_elapsed;
 
@@ -2236,7 +2236,7 @@ bool Main::iteration() {
 	visual_server_callbacks->flush();
 	message_queue->flush();
 
-	uint64_t visual_begin = OS::get_singleton()->get_ticks_usec();
+	uint64_t visual_begin = OS::get_singleton()->get_ticks_usec(); // GOBLIN ENGINE visual profiler
 
 	VisualServer::get_singleton()->sync(); //sync if still drawing from previous frames.
 
@@ -2253,7 +2253,7 @@ bool Main::iteration() {
 		}
 	}
 
-	visual_process_ticks = OS::get_singleton()->get_ticks_usec() - visual_begin;
+	visual_process_ticks = OS::get_singleton()->get_ticks_usec() - visual_begin; // GOBLIN ENGINE visual profiler
 
 #ifndef TOOLS_ENABLED
 	// we can choose to sync delta from here, just after the draw
@@ -2275,7 +2275,7 @@ bool Main::iteration() {
 
 	if (script_debugger) {
 		if (script_debugger->is_profiling()) {
-			//add visual frame time
+			// GOBLIN ENGINE visual profiler
 			Array values;
 			values.push_back("visual_time");
 			values.push_back(USEC_TO_SEC(visual_process_ticks));

@@ -171,6 +171,7 @@
 			Comma-separated list of custom Android modules (which must have been built in the Android export templates) using their Java package path, e.g. [code]"org/godotengine/godot/MyCustomSingleton,com/example/foo/FrenchFriesFactory"[/code].
 			[b]Note:[/b] Since Godot 3.2.2, the [code]org/godotengine/godot/GodotPaymentV3[/code] module was deprecated and replaced by the [code]GodotPayment[/code] plugin which should be enabled in the Android export preset under [code]Plugins[/code] section. The singleton to access in code was also renamed to [code]GodotPayment[/code].
 		</member>
+		<!-- GOBLIN ENGINE theme -->
 		<member name="application/boot_splash/bg_color" type="Color" setter="" getter="" default="Color( 0.0, 0.0, 0.0, 1 )">
 			Background color for the boot splash.
 		</member>
@@ -1094,6 +1095,7 @@
 		<member name="physics/3d/active_soft_world" type="bool" setter="" getter="" default="true">
 			Sets whether the 3D physics world will be created with support for [SoftBody] physics. Only applies to the Bullet physics engine.
 		</member>
+		<!-- GOBLIN ENGINE bullet trimesh collision -->
 		<member name="physics/3d/smooth_trimesh_collision" type="bool" setter="" getter="" default="true">
 			Sets whether the 3D physics simulation will account for smooth physics shapes. Potentially laggy and only applies to the Bullet physics engine.
 		</member>
@@ -1142,6 +1144,7 @@
 			- During pause, picking only considers collision objects immune to pause, sending input events and enter/exit callbacks to them as expected.
 			If disabled, the legacy behavior is used, which consists in queuing the picking input events during pause (so nodes won't get them) and flushing that queue on resume, against the state of the 2D/3D world at that point.
 		</member>
+		<!-- GLOBAL ENGINE fixed process -->
 		<member name="application/run/fixed_process_frames" type="int" setter="" getter="" default="60">
 			The number of frames between fixed frame calls. Controls how long to wait until [method Node._fixed_process] methods are run.
 			[b]Note:[/b] This property is only read when the project starts.

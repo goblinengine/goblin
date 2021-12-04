@@ -480,7 +480,7 @@ private:
 						if (!f) {
 							set_message(TTR("Couldn't create project.godot in project path."), MESSAGE_ERROR);
 						} else {
-							// GOBLIN ENGINE 
+							// GOBLIN ENGINE disable procedural sky
 							// disable Procedural Sky as the default (falls back to Background: Clear Color)
 							f->store_line("[gd_resource type=\"Environment\" format=2]");
 							f->store_line("");

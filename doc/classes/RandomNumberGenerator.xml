@@ -61,13 +61,15 @@
 				Setups a time-based seed to generator.
 			</description>
 		</method>
-			<method name="randchoice">
+		<!-- GOBLIN ENGINE rng -->
+		<method name="randchoice">
 			<return type="Variant" />
 			<argument index="0" name="from" type="Variant" />
 			<description>
 				Returns a random element from a container or indexable sequence, such as [Array], [Dictionary], [String]. If container is empty, prints an error and returns [code]null[/code].
 			</description>
 		</method>
+		<!-- GOBLIN ENGINE rng -->
 		<method name="randshuffle">
 			<return type="void" />
 			<argument index="0" name="array" type="Array" />
@@ -75,6 +77,7 @@
 				Shuffles the array such that the items will have a random order. By default, this method uses the global random number generator in [RandomNumberGenerator] singletons, but unlike in [method Array.shuffle], local instances of [RandomNumberGenerator].
 			</description>
 		</method>
+		<!-- GOBLIN ENGINE rng -->
 		<method name="randroll">
 			<return type="Array" />
 			<argument index="0" name="count" type="int" />
@@ -90,6 +93,7 @@
 				[/codeblock]
 			</description>
 		</method>
+		<!-- GOBLIN ENGINE rng -->
 		<method name="randdecision">
 			<return type="bool" />
 			<argument index="0" name="probability" type="float" />

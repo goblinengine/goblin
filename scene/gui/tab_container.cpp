@@ -35,12 +35,14 @@
 #include "scene/gui/label.h"
 #include "scene/gui/texture_rect.h"
 
+// GOBLIN ENGINE tabs at bottom
 int TabContainer::_get_tabs_margin() const {
 	if (!tabs_visible) {
 		return 0;
 	}
 
 	// Respect the minimum tab height.
+	// GOBLIN ENGINE tabs at bottom
 	Ref<StyleBox> tab_bg = get_stylebox(tabs_at_bottom ? "tab_bg_bottom" : "tab_bg");
 	Ref<StyleBox> tab_fg = get_stylebox(tabs_at_bottom ? "tab_fg_bottom" : "tab_fg");
 	Ref<StyleBox> tab_disabled = get_stylebox(tabs_at_bottom ? "tab_disabled_bottom" : "tab_disabled");
@@ -72,13 +74,14 @@ void TabContainer::_gui_input(const Ref<InputEvent> &p_event) {
 	Ref<InputEventMouseButton> mb = p_event;
 
 	Popup *popup = get_popup();
-	int header_height = _get_tabs_margin();
+	int header_height = _get_tabs_margin(); // GOBLIN ENGINE tabs at bottom
 
 	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == BUTTON_LEFT) {
 		Point2 pos(mb->get_position().x, mb->get_position().y);
 		Size2 size = get_size();
 
 		// Click must be on tabs in the tab header area.
+		// GOBLIN ENGINE tabs at bottom
 		if (pos.x < tabs_ofs_cache ) {
 			return;
 		}
@@ -96,6 +99,7 @@ void TabContainer::_gui_input(const Ref<InputEvent> &p_event) {
 
 			Vector2 popup_pos = get_global_position();
 			popup_pos.x += size.width * get_global_transform().get_scale().x - popup->get_size().width * popup->get_global_transform().get_scale().x;
+			// GOBLIN ENGINE tabs at bottom
 			popup_pos.y += (tabs_at_bottom ? size.height - header_height : header_height) + menu->get_height() * get_global_transform().get_scale().y;
 
 			popup->set_global_position(popup_pos);
@@ -158,7 +162,7 @@ void TabContainer::_gui_input(const Ref<InputEvent> &p_event) {
 		Size2 size = get_size();
 
 		// Mouse must be on tabs in the tab header area.
-		
+		// GOBLIN ENGINE tabs at bottom
 		if (pos.x < tabs_ofs_cache || (!tabs_at_bottom && pos.y > header_height) || (tabs_at_bottom && pos.y < get_size().height - header_height)) {
 			if (menu_hovered || highlight_arrow > -1) {
 				menu_hovered = false;
@@ -268,6 +272,7 @@ void TabContainer::_notification(int p_what) {
 			Size2 size = get_size();
 
 			// Draw only the tab area if the header is hidden.
+			// GOBLIN ENGINE tabs at bottom
 			Ref<StyleBox> panel = get_stylebox(tabs_at_bottom ? "panel_bottom" : "panel");
 			if (!tabs_visible) {
 				panel->draw(canvas, Rect2(0, 0, size.width, size.height));
@@ -275,9 +280,11 @@ void TabContainer::_notification(int p_what) {
 			}
 
 			Vector<Control *> tabs = _get_tabs();
+			// GOBLIN ENGINE tabs at bottom
 			Ref<StyleBox> tab_bg = get_stylebox(tabs_at_bottom ? "tab_bg_bottom" : "tab_bg");
 			Ref<StyleBox> tab_fg = get_stylebox(tabs_at_bottom ? "tab_fg_bottom" : "tab_fg");
 			Ref<StyleBox> tab_disabled = get_stylebox(tabs_at_bottom ? "tab_disabled_bottom" : "tab_disabled");
+
 			Ref<Texture> increment = get_icon("increment");
 			Ref<Texture> increment_hl = get_icon("increment_highlight");
 			Ref<Texture> decrement = get_icon("decrement");
@@ -293,7 +300,7 @@ void TabContainer::_notification(int p_what) {
 			// Find out start and width of the header area.
 			int header_x = side_margin;
 			int header_width = size.width - side_margin * 2;
-			int header_height = _get_tabs_margin();
+			int header_height = _get_tabs_margin(); // GOBLIN ENGINE tabs at bottom
 			Popup *popup = get_popup();
 			if (popup) {
 				header_width -= menu->get_width();
@@ -357,6 +364,7 @@ void TabContainer::_notification(int p_what) {
 
 			if (all_tabs_in_front) {
 				// Draw the tab area.
+				// GOBLIN ENGINE tabs at bottom
 				if (tabs_at_bottom) {
 					panel->draw(canvas, Rect2(0, 0, size.width, size.height - header_height));
 				} else {
@@ -389,6 +397,7 @@ void TabContainer::_notification(int p_what) {
 
 			if (!all_tabs_in_front) {
 				// Draw the tab area.
+				// GOBLIN ENGINE tabs at bottom
 				if (tabs_at_bottom) {
 					panel->draw(canvas, Rect2(0, 0, size.width, size.height - header_height));
 				} else {
@@ -403,16 +412,18 @@ void TabContainer::_notification(int p_what) {
 			}
 
 			// Draw the popup menu.
-			Ref<Texture> icon_to_draw = menu_hovered ? menu_hl : menu;
+			Ref<Texture> icon_to_draw = menu_hovered ? menu_hl : menu; // GOBLIN ENGINE tabs at bottom
 			x = get_size().width;
 			if (popup) {
 				x -= menu->get_width();
+				// GOBLIN ENGINE tabs at bottom
 				int offset = tabs_at_bottom ? size.y - header_height : 0;
 				icon_to_draw->draw(get_canvas_item(), Size2(x, (offset + (header_height - icon_to_draw->get_height()) / 2)));
 			}
 
 			// Draw the navigation buttons.
 			if (buttons_visible_cache) {
+				// GOBLIN ENGINE tabs at bottom
 				Ref<Texture> decrement_icon = highlight_arrow == 0 ? decrement_hl : decrement;
 				Ref<Texture> increment_icon = highlight_arrow == 1 ? increment_hl : increment;
 				Color dec_icon_modulate = first_tab_cache > 0 ? Color(1, 1, 1) : Color(1, 1, 1, 0.5); // Can scroll left.
@@ -422,9 +433,9 @@ void TabContainer::_notification(int p_what) {
 				int inc_y_pos = offset + (header_height - increment_icon->get_height()) / 2;
 
 				x -= increment->get_width();
-				draw_texture(increment_icon, Point2(x, inc_y_pos), inc_icon_modulate);
+				draw_texture(increment_icon, Point2(x, inc_y_pos), inc_icon_modulate); // GOBLIN ENGINE tabs at bottom
 				x -= decrement->get_width();
-				draw_texture(decrement_icon, Point2(x, dec_y_pos), dec_icon_modulate);
+				draw_texture(decrement_icon, Point2(x, dec_y_pos), dec_icon_modulate); // GOBLIN ENGINE tabs at bottom
 			}
 		} break;
 		case NOTIFICATION_THEME_CHANGED: {
@@ -440,9 +451,10 @@ void TabContainer::_draw_tab(Ref<StyleBox> &p_tab_style, Color &p_font_color, in
 	Ref<Font> font = get_font("font");
 	int icon_text_distance = get_constant("hseparation");
 	int tab_width = _get_tab_width(p_index);
-	int header_height = _get_tabs_margin();
+	int header_height = _get_tabs_margin(); // GOBLIN ENGINE tabs at bottom
 
 	// Draw the tab background.
+	// GOBLIN ENGINE tabs at bottom
 	Rect2 tab_rect(p_x, !tabs_at_bottom ? 0 : get_size().y - header_height, tab_width, header_height);
 	p_tab_style->draw(canvas, tab_rect);
 
@@ -450,6 +462,7 @@ void TabContainer::_draw_tab(Ref<StyleBox> &p_tab_style, Color &p_font_color, in
 	String text = control->has_meta("_tab_name") ? String(tr(String(control->get_meta("_tab_name")))) : String(tr(control->get_name()));
 
 	int x_content = tab_rect.position.x + p_tab_style->get_margin(MARGIN_LEFT);
+	// GOBLIN ENGINE tabs at bottom
 	int margin = tabs_at_bottom ? p_tab_style->get_margin(MARGIN_BOTTOM) : p_tab_style->get_margin(MARGIN_TOP);
 	int y_center = 0;
 	if (tabs_at_bottom) {
@@ -483,16 +496,18 @@ void TabContainer::_on_theme_changed() {
 }
 
 void TabContainer::_repaint() {
-	Ref<StyleBox> sb = get_stylebox(tabs_at_bottom ? "panel_bottom" : "panel");
+	Ref<StyleBox> sb = get_stylebox(tabs_at_bottom ? "panel_bottom" : "panel"); // GOBLIN ENGINE tabs at bottom
 	Vector<Control *> tabs = _get_tabs();
 	for (int i = 0; i < tabs.size(); i++) {
 		Control *c = tabs[i];
 		if (i == current) {
 			c->show();
 			c->set_anchors_and_margins_preset(Control::PRESET_WIDE);
+			// GOBLIN ENGINE tabs at bottom
 			int vis_multiplier = tabs_visible ? 1 : 0;
 			int location_multiplier = tabs_at_bottom ? -1 * _get_tabs_margin() : _get_tabs_margin();
 			c->set_margin(tabs_at_bottom ? MARGIN_BOTTOM : MARGIN_TOP, vis_multiplier * location_multiplier);
+
 			c->set_margin(MARGIN_TOP, c->get_margin(MARGIN_TOP) + sb->get_margin(MARGIN_TOP));
 			c->set_margin(MARGIN_LEFT, c->get_margin(MARGIN_LEFT) + sb->get_margin(MARGIN_LEFT));
 			c->set_margin(MARGIN_RIGHT, c->get_margin(MARGIN_RIGHT) - sb->get_margin(MARGIN_RIGHT));
@@ -536,9 +551,11 @@ int TabContainer::_get_tab_width(int p_index) const {
 	}
 
 	// Respect a minimum size.
+	// GOBLIN ENGINE tabs at bottom
 	Ref<StyleBox> tab_bg = get_stylebox(tabs_at_bottom ? "tab_bg_bottom" : "tab_bg");
 	Ref<StyleBox> tab_fg = get_stylebox(tabs_at_bottom ? "tab_fg_bottom" : "tab_fg");
 	Ref<StyleBox> tab_disabled = get_stylebox(tabs_at_bottom ? "tab_disabled_bottom" : "tab_disabled");
+
 	if (get_tab_disabled(p_index)) {
 		width += tab_disabled->get_minimum_size().width;
 	} else if (p_index == current) {
@@ -588,13 +605,14 @@ void TabContainer::add_child_notify(Node *p_child) {
 	}
 	c->set_anchors_and_margins_preset(Control::PRESET_WIDE);
 	if (tabs_visible) {
+		// GOBLIN ENGINE tabs at bottom
 		if (!tabs_at_bottom) {
 			c->set_margin(MARGIN_TOP, _get_tabs_margin());
 		} else {
 			c->set_margin(MARGIN_BOTTOM, -1 * _get_tabs_margin());
 		}
 	}
-	Ref<StyleBox> sb = get_stylebox(tabs_at_bottom ? "panel_bottom" : "panel");
+	Ref<StyleBox> sb = get_stylebox(tabs_at_bottom ? "panel_bottom" : "panel"); // GOBLIN ENGINE tabs at bottom
 	c->set_margin(MARGIN_TOP, c->get_margin(MARGIN_TOP) + sb->get_margin(MARGIN_TOP));
 	c->set_margin(MARGIN_LEFT, c->get_margin(MARGIN_LEFT) + sb->get_margin(MARGIN_LEFT));
 	c->set_margin(MARGIN_RIGHT, c->get_margin(MARGIN_RIGHT) - sb->get_margin(MARGIN_RIGHT));
@@ -798,6 +816,7 @@ int TabContainer::get_tab_idx_at_point(const Point2 &p_point) const {
 	}
 
 	// Must be on tabs in the tab header area.
+	// GOBLIN ENGINE tabs at bottom
 	if (!tabs_at_bottom && p_point.y > _get_tabs_margin()) {
 		return -1;
 	}
@@ -859,17 +878,18 @@ void TabContainer::set_tabs_visible(bool p_visible) {
 	for (int i = 0; i < tabs.size(); i++) {
 		Control *c = tabs[i];
 		if (p_visible) {
-			c->set_margin(MARGIN_TOP, _get_tabs_margin());
+			c->set_margin(MARGIN_TOP, _get_tabs_margin()); // GOBLIN ENGINE tabs at bottom
 		} else {
 			c->set_margin(MARGIN_TOP, 0);
 		}
 	}
 
-	_repaint();
+	_repaint(); // GOBLIN ENGINE tabs at bottom
 	update();
 	minimum_size_changed();
 }
 
+// GOBLIN ENGINE tabs at bottom
 void TabContainer::set_tabs_at_bottom(bool p_at_bottom) {
 	tabs_at_bottom = p_at_bottom;
 	_repaint();
@@ -1010,18 +1030,21 @@ Size2 TabContainer::get_minimum_size() const {
 		ms.y = MAX(ms.y, cms.y);
 	}
 
+	// GOBLIN ENGINE tabs at bottom
 	Ref<StyleBox> tab_bg = get_stylebox(tabs_at_bottom ? "tab_bg_bottom" : "tab_bg");
 	Ref<StyleBox> tab_fg = get_stylebox(tabs_at_bottom ? "tab_fg_bottom" : "tab_fg");
 	Ref<StyleBox> tab_disabled = get_stylebox(tabs_at_bottom ? "tab_disabled_bottom" : "tab_disabled");
+
 	Ref<Font> font = get_font("font");
 
 	if (tabs_visible) {
 		ms.y += MAX(MAX(tab_bg->get_minimum_size().y, tab_fg->get_minimum_size().y), tab_disabled->get_minimum_size().y);
+		// GOBLIN ENGINE tabs at bottom
 		ms.y += _get_tabs_margin();
 		ms.y += font->get_height();	
 	}
 
-	Ref<StyleBox> sb = get_stylebox(tabs_at_bottom ? "panel_bottom" : "panel");
+	Ref<StyleBox> sb = get_stylebox(tabs_at_bottom ? "panel_bottom" : "panel"); // GOBLIN ENGINE tabs at bottom
 	ms += sb->get_minimum_size();
 
 	return ms;
@@ -1101,6 +1124,7 @@ void TabContainer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_drag_to_rearrange_enabled"), &TabContainer::get_drag_to_rearrange_enabled);
 	ClassDB::bind_method(D_METHOD("set_tabs_rearrange_group", "group_id"), &TabContainer::set_tabs_rearrange_group);
 	ClassDB::bind_method(D_METHOD("get_tabs_rearrange_group"), &TabContainer::get_tabs_rearrange_group);
+	// GOBLIN ENGINE tabs at bottom
 	ClassDB::bind_method(D_METHOD("set_tabs_at_bottom", "at_bottom"), &TabContainer::set_tabs_at_bottom);
 	ClassDB::bind_method(D_METHOD("is_tabs_at_bottom"), &TabContainer::is_tabs_at_bottom);
 	
@@ -1120,7 +1144,9 @@ void TabContainer::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "current_tab", PROPERTY_HINT_RANGE, "-1,4096,1", PROPERTY_USAGE_EDITOR), "set_current_tab", "get_current_tab");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "tabs_visible"), "set_tabs_visible", "are_tabs_visible");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "all_tabs_in_front"), "set_all_tabs_in_front", "is_all_tabs_in_front");
+	// GOBLIN ENGINE tabs at bottom
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "tabs_at_bottom"), "set_tabs_at_bottom", "is_tabs_at_bottom");
+	
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "drag_to_rearrange_enabled"), "set_drag_to_rearrange_enabled", "get_drag_to_rearrange_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_hidden_tabs_for_min_size"), "set_use_hidden_tabs_for_min_size", "get_use_hidden_tabs_for_min_size");
 
