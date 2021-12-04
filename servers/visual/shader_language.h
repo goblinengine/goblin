@@ -155,7 +155,7 @@ public:
 		TK_ARG_INOUT,
 		TK_RENDER_MODE,
 
-		// GOBLIN ENGINE shader import
+		// GOBLIN ENGINE import shader
 		TK_IMPORT, 
 		TK_QUOTE,
 		
@@ -760,6 +760,7 @@ private:
 	bool error_set;
 	String error_str;
 	int error_line;
+	int include_lines;
 
 	String code;
 	int char_idx;

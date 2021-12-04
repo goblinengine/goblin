@@ -181,6 +181,7 @@ void ShaderTextEditor::_load_theme_settings() {
 	// Colorize comments.
 	get_text_edit()->add_color_region("/*", "*/", comment_color, false);
 	get_text_edit()->add_color_region("//", "", comment_color, false);
+	get_text_edit()->add_color_region("\"", "\"", text_color, false); // GOBLIN ENGINE import shader
 }
 
 void ShaderTextEditor::_check_shader_mode() {

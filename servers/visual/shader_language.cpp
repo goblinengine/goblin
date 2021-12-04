@@ -348,7 +348,7 @@ ShaderLanguage::Token ShaderLanguage::_get_token() {
 
 					} break;
 					case '/': { // line comment skip
-
+						
 						while (true) {
 							if (GETCHAR(0) == '\n') {
 								tk_line++;
@@ -893,6 +893,7 @@ void ShaderLanguage::clear() {
 	unknown_varying_usages.clear();
 
 	error_line = 0;
+	include_lines = 0; // GOBLINE ENGINE import shader
 	tk_line = 1;
 	char_idx = 0;
 	error_set = false;
@@ -5703,6 +5704,7 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 				const String real_path = shader->get_path();
 				if (includes.has(real_path)) {
 					//Already included, skip.
+					_set_error("Shader already included."); 
 					return ERR_PARSE_ERROR;
 				}
 
@@ -5719,6 +5721,8 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 				included = included.substr(type_end + 1, included.length());
 
 				code = code.insert(char_idx, included);
+				//offset editor error
+				include_lines += (included.count("\n"));
 			} break;
 			case TK_RENDER_MODE: {
 				while (true) {
@@ -7213,7 +7217,7 @@ String ShaderLanguage::get_error_text() {
 }
 
 int ShaderLanguage::get_error_line() {
-	return error_line;
+	return error_line - include_lines;
 }
 
 ShaderLanguage::ShaderNode *ShaderLanguage::get_shader() {
