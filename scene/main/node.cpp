@@ -2785,7 +2785,7 @@ void Node::request_ready() {
 void Node::_bind_methods() {
 	GLOBAL_DEF("node/name_num_separator", 0);
 	ProjectSettings::get_singleton()->set_custom_property_info("node/name_num_separator", PropertyInfo(Variant::INT, "node/name_num_separator", PROPERTY_HINT_ENUM, "None,Space,Underscore,Dash"));
-	GLOBAL_DEF("node/name_casing", NAME_CASING_PASCAL_CASE);
+	GLOBAL_DEF("node/name_casing", NAME_CASING_SNAKE_CASE); // GOBLIN ENGINE default to snake_case
 	ProjectSettings::get_singleton()->set_custom_property_info("node/name_casing", PropertyInfo(Variant::INT, "node/name_casing", PROPERTY_HINT_ENUM, "PascalCase,camelCase,snake_case"));
 
 	ClassDB::bind_method(D_METHOD("add_child_below_node", "node", "child_node", "legible_unique_name"), &Node::add_child_below_node, DEFVAL(false));

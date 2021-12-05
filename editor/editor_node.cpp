@@ -2417,13 +2417,9 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 						file->set_current_path(path.replacen("." + ext, "." + extensions.front()->get()));
 					}
 				}
-			} else {
-				String existing;
-				if (extensions.size()) {
-					String root_name(scene->get_name());
-					existing = root_name + "." + extensions.front()->get().to_lower();
-				}
-				file->set_current_path(existing);
+			} else if (extensions.size()) { //GOBLIN ENGINE default to snake_case file name
+				const String root_name = String(scene->get_name()).camelcase_to_underscore();
+				file->set_current_path(root_name + "." + extensions.front()->get().to_lower());
 			}
 			file->popup_centered_ratio();
 			file->set_title(TTR("Save Scene As..."));
