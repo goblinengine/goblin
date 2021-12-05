@@ -809,7 +809,23 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 			}
 
 			//also save the .import file
-			Vector<uint8_t> array = FileAccess::get_file_as_array(path + ".import");
+			// GOBLIN ENGINE remove unecessary import params and deps
+			// see https://github.com/godotengine/godot/pull/42441
+			config->erase_section("params");
+			config->erase_section("deps");
+			String tmp_path = EditorSettings::get_singleton()->get_cache_dir().plus_file("tmpfile.import");
+			err = config->save(tmp_path);
+			if (err != OK) {
+				DirAccess::remove_file_or_error(tmp_path);
+				return err;
+			}
+			Vector<uint8_t> array = FileAccess::get_file_as_array(tmp_path);
+			if (array.size() == 0) {
+				DirAccess::remove_file_or_error(tmp_path);
+				return ERR_FILE_CORRUPT;
+			}
+			DirAccess::remove_file_or_error(tmp_path);
+
 			err = p_func(p_udata, path + ".import", array, idx, total);
 
 			if (err != OK) {
