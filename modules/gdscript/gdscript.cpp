@@ -30,6 +30,7 @@
 
 #include "gdscript.h"
 
+#include "scene/main/node.h"
 #include "core/core_string_names.h"
 #include "core/engine.h"
 #include "core/global_constants.h"
@@ -162,6 +163,36 @@ Variant GDScript::_new(const Variant **p_args, int p_argcount, Variant::CallErro
 	} else {
 		return owner;
 	}
+}
+
+// GOBLIN ENGINE new as child
+Variant GDScript::_new_as_child(const Variant **p_args, int p_argcount, Variant::CallError &r_error) {
+	r_error.error = Variant::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
+
+	ERR_FAIL_COND_V(p_argcount < 1, Variant());
+	if (p_args[0]->get_type() != Variant::OBJECT) {
+		r_error.error = Variant::CallError::CALL_ERROR_INVALID_ARGUMENT;
+		r_error.argument = 0;
+		r_error.expected = Variant::OBJECT;
+		ERR_FAIL_COND_V(p_args[0]->get_type() != Variant::OBJECT, Variant());
+	}
+
+	r_error.error = Variant::CallError::CALL_OK;
+
+	Node *p_parent = *p_args[0];
+
+	const Variant **args = nullptr;
+
+	int argc = p_argcount - 1;
+	if (argc > 0) {
+		args = &p_args[1];
+	}
+
+	Node *s = _new(args, argc, r_error);
+	s->set_name(get_script_class_name());
+
+	p_parent->add_child(s, true);
+	return s;
 }
 
 bool GDScript::can_instance() const {
@@ -693,7 +724,7 @@ void GDScript::_get_property_list(List<PropertyInfo> *p_properties) const {
 
 void GDScript::_bind_methods() {
 	ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT, "new", &GDScript::_new, MethodInfo("new"));
-
+	ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT, "new_as_child", &GDScript::_new_as_child, MethodInfo("new_as_child")); // GOBLIN ENGINE new as child
 	ClassDB::bind_method(D_METHOD("get_as_byte_code"), &GDScript::get_as_byte_code);
 }
 
