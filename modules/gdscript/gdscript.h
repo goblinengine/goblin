@@ -171,7 +171,7 @@ public:
 	StringName debug_get_member_by_index(int p_idx) const;
 
 	Variant _new(const Variant **p_args, int p_argcount, Variant::CallError &r_error);
-	Variant _new_as_child(const Variant **p_args, int p_argcount, Variant::CallError &r_error); // GOBLIN ENGINE new as child
+	Variant _new_add(const Variant **p_args, int p_argcount, Variant::CallError &r_error); // GOBLIN ENGINE new as child
 	virtual bool can_instance() const;
 
 	virtual Ref<Script> get_base_script() const;

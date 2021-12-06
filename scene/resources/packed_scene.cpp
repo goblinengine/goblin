@@ -71,8 +71,8 @@ static Array _sanitize_node_pinned_properties(Node *p_node) {
 	return pinned;
 }
 
-// GOBLIN ENGINE instance_as_child
-Node *PackedScene::instance_as_child(Node *p_parent, bool p_legible_unique_name, GenEditState p_edit_state) const {
+// GOBLIN ENGINE instance as child
+Node *PackedScene::instance_add(Node *p_parent, bool p_legible_unique_name, GenEditState p_edit_state) const {
 	ERR_FAIL_COND_V_MSG(!p_parent, nullptr, "Can't instance a scene to a non-existing node.");
 
 	Node *s = instance(p_edit_state);
@@ -1642,7 +1642,7 @@ void PackedScene::set_path(const String &p_path, bool p_take_over) {
 void PackedScene::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("pack", "path"), &PackedScene::pack);
 	// GOBLIN ENGINE instance as child
-	ClassDB::bind_method(D_METHOD("instance_as_child", "parent", "legible_unique_name", "edit_state"), &PackedScene::instance_as_child, DEFVAL(false), DEFVAL(GEN_EDIT_STATE_DISABLED));
+	ClassDB::bind_method(D_METHOD("instance_add", "parent", "legible_unique_name", "edit_state"), &PackedScene::instance_add, DEFVAL(false), DEFVAL(GEN_EDIT_STATE_DISABLED));
 	ClassDB::bind_method(D_METHOD("instance", "edit_state"), &PackedScene::instance, DEFVAL(GEN_EDIT_STATE_DISABLED));
 	ClassDB::bind_method(D_METHOD("can_instance"), &PackedScene::can_instance);
 	ClassDB::bind_method(D_METHOD("_set_bundled_scene"), &PackedScene::_set_bundled_scene);
