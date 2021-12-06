@@ -109,6 +109,7 @@ void OptionButton::pressed() {
 	popup->set_global_position(get_global_position() + Size2(0, size.height * get_global_transform().get_scale().y));
 	popup->set_size(Size2(size.width, 0));
 	popup->set_scale(get_global_transform().get_scale());
+	popup->set_current_index(current); // GOBLIN ENGINE give focus to selection OptionButton
 	popup->popup();
 }
 

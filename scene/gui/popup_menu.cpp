@@ -1037,6 +1037,12 @@ int PopupMenu::get_current_index() const {
 	return mouse_over;
 }
 
+// GOBLIN ENGINE give focus to selection OptionButton
+void PopupMenu::set_current_index(int p_idx) {
+	ERR_FAIL_INDEX(p_idx, items.size());
+	mouse_over = p_idx;
+}
+
 int PopupMenu::get_item_count() const {
 	return items.size();
 }
