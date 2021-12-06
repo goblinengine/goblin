@@ -683,7 +683,12 @@ public:
 				int prev_expansion_rows = expansion_rows;
 				expansion_rows = 0;
 
-				const int bsize = (grid_size.height * 80 / 100) / 2;
+				// GOBLIN ENGINE layer labels editor setting
+				int scale = 2;
+				if (!EDITOR_GET("interface/inspector/layer_labels")) {
+					scale = 3;
+				}
+				const int bsize = (grid_size.height * 80 / 100) / scale;
 				const int h = bsize * 2 + 1;
 
 				Color color = get_color("highlight_color", "Editor");
@@ -719,19 +724,22 @@ public:
 
 							draw_rect(rect2, color);
 							flag_rects.push_back(rect2);
+							
+							// GOBLIN ENGINE layer labels editor setting
+							if (EDITOR_GET("interface/inspector/layer_labels")) {
+								Ref<Font> font = get_font("font", "Label");
+								Vector2 offset;
+								if (layer_index + 1 > 9) {
+									// Offset for double digit numbers.
+									offset.x = rect2.size.x * 0.1;
+								} else {
+									offset.x = rect2.size.x * 0.3;
+								}
+								offset.y = rect2.size.y * 0.75;
 
-							Ref<Font> font = get_font("font", "Label");
-							Vector2 offset;
-							if (layer_index + 1 > 9) {
-								// Offset for double digit numbers.
-								offset.x = rect2.size.x * 0.1;
-							} else {
-								offset.x = rect2.size.x * 0.3;
+								draw_string(font, rect2.position + offset, itos(layer_index + 1), on ? text_color_on : text_color);
 							}
-							offset.y = rect2.size.y * 0.75;
-
-							draw_string(font, rect2.position + offset, itos(layer_index + 1), on ? text_color_on : text_color);
-
+						
 							ofs.x += bsize + 1;
 
 							++layer_index;
