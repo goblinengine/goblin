@@ -22,11 +22,17 @@
 
 ### Changes
 
+- Clarified AudioEffectCapture docs
+- Unify Focus and Hover behavior for Buttons that have keyboard focus enabled. A Project Setting option under `gui/theme/unify_button_focus_hover` will turn this on and off. This brings back old behavior where there was only one focus shared by mouse and keyboard.
+- GDScript Plugins will now fall back to X11 if no Server plugins found. This may fail if Server is not on Linux.
+- When selecting an option from OptionButton it now selects the correct index (rather than showing -1)
+- Docs properties and methods are grouped alphabetically making it easier to find things
+- Inspector default small reload button is now a small star instead which is less intrusive than the original circular arrow button.
+- FileDialog now hides `.import` folder. 
 - The default environment will use Background Color instead of Procedural Sky which appears to cause crashes when starting the editor on systems that only support GLES2.
 - EditorSpinSlider `hide_slide` exported for plugins.
 - Editor help has been altered to group methods and parameters by letters. This creates a much easier to read experience for built in docs.
 - Changed the Node naming as well as resource File Save to suggest `snake_case` names by default rather than `camelCase` or `CamelCase` as it did previously. This lines up with the official intent for Godot to use snake_case everywhere by default (mentioned all over the documents).
-- Parameters `[deps]` and `[params]` from `.import` files are no longer saved in the exported game. They are never used by exported game and use unecessary processing power, memory and space in the `.pck`. 
 - The workflows have been slightly altered:
     * Editor + template are now created for Linux X11, Windows, MacOS. 
     * All Linux builds automatically strip the debug symbols now. 
@@ -45,4 +51,6 @@
 
 ### Removed
 
+- Parameters `[deps]` and `[params]` from `.import` files are no longer saved in the exported game. They are never used by exported game and use unecessary processing, memory and space in the `.pck`. 
+- Deprecated `enabled_focus_mode` has been completely removed
 - About menu has been simplified and most of the Godot donation and donors have been removed

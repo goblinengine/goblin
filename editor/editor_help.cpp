@@ -532,7 +532,7 @@ void EditorHelp::_update_doc() {
 				class_desc->push_cell();
 				class_desc->pop(); //cell
 			}
-
+			
 			property_line[cd.properties[i].name] = class_desc->get_line_count() - 2; //gets overridden if description
 
 			class_desc->push_cell();
