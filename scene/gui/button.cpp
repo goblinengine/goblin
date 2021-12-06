@@ -133,11 +133,22 @@ void Button::_notification(int p_what) {
 
 				} break;
 				case DRAW_HOVER: {
-					style = get_stylebox("hover");
-					if (!flat) {
+					// GOBLIN ENGINE combine button focus and hover behavior
+					// unify button focus hover mouse/keyboard button behavior
+					if (GLOBAL_GET("gui/theme/unify_button_focus_hover") && get_focus_mode() != FOCUS_NONE) {
+						style = get_stylebox("normal");
+						if (!flat) {
+							style->draw(ci, Rect2(Point2(0, 0), size));
+						}
+						color = get_color("font_color_focus");
+						grab_focus();
+					} else {
+						style = get_stylebox("hover");
+						if (!flat) {
 						style->draw(ci, Rect2(Point2(0, 0), size));
+						}
+						color = get_color("font_color_hover");
 					}
-					color = get_color("font_color_hover");
 					if (has_color("icon_color_hover")) {
 						color_icon = get_color("icon_color_hover");
 					}
@@ -339,6 +350,8 @@ void Button::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "clip_text"), "set_clip_text", "get_clip_text");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "align", PROPERTY_HINT_ENUM, "Left,Center,Right"), "set_text_align", "get_text_align");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "expand_icon"), "set_expand_icon", "is_expand_icon");
+
+	GLOBAL_DEF("gui/theme/unify_button_focus_hover", false); // GOBLIN ENGINE unify button focus hover
 }
 
 Button::Button(const String &p_text) {
