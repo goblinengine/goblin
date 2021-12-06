@@ -141,7 +141,8 @@ void MixinScriptInstance::notification(int p_notification) {
 		if (instances[i]) {
 			instances[i]->notification(p_notification);
 
-			// hack to enforce the calling of _ready, _enter_tree, _exit_tree equally on all scripts
+			// enforce the calling of _ready and _enter_tree on all scripts
+			// skips first occurences so they don't get called twice
 			if (p_notification == 13) {
 				if (_ready_skip) {
 					if (instances[i]->has_method("_ready")) instances[i]->call("_ready");
