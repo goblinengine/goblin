@@ -17,28 +17,25 @@ The goal of this project is multifold:
 - Maintain full compatibility with latest Godot 3.x branch
 - All new functionality is lean and compact adding very little overhead
 
-Goblin is compatible with Godot 3.x but implements some custom functionality that Godot does not have. Some of this functionality overlaps with [Goost Engine](https://goostengine.github.io/).
-
 Please have a look at list of [Goblin Changes](https://github.com/goblinengine/goblin/blob/main/CHANGELOG.md) to find out more.
 
 ## Builds
 
-Note that at this time Goblin has no official releases since is very new. You would need to compile it from scratch yourself for now or you can download test builds. 
+Note that at this time Goblin has no official releases since is very new. 
 
-To download test builds look beside the commit hashtag for the green checkmark click that then Details then Summary. 
+You would need to compile it from scratch or you can download test builds [from here](https://github.com/goblinengine/goblin/actions).
 
-All test builds there use [thin LTO](http://blog.llvm.org/2016/06/thinlto-scalable-and-incremental-lto.html) which is 90% of the speed/size of a full release, have no debug symbols and provide a release template and an editor if supported for each platform. The builds are created automatically by GitHub in a sterile environment  but have no certificates making OSes complain but are safe to run.
+All test builds use [thin LTO](http://blog.llvm.org/2016/06/thinlto-scalable-and-incremental-lto.html) which is 90% of the speed/size of a full release, have no debug symbols and provide a release template and an editor if supported for each platform. The builds are created automatically by GitHub in a sterile environment but have no certificates making OSes complain but are safe to run. They might not run on M1 macs since they are not codesigned. A workaround is to run it in Rosetta compatibility mode.
 
-Goblin will not provide any Mono builds since the goal is to keep the engine lean and compact. The focus is primarily on GDScript and GDNative. 
+Goblin will not provide any Mono builds since the goal is to keep the engine lean and compact. The focus is primarily on GDScript and GDNative plugins/languages. 
 
 
 ## Community and contributing
 
 There is no community as of yet but PRs welcome. There are a number of features that I am still looking to add: 
-- backport ECS module by Andrea Catania to 3.x
-- adapt a very old Lambdas, callable functions and signals to newer GDScript
-- implement custom functionality into new GDScript
-- backport typed Dictionaries and type compiling from GDScript 2
+- performance fixes
+- custom GDScript functionality
+- various module or PR backports or forwardports
 
 ## Documentation and demos
 
