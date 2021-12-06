@@ -88,7 +88,7 @@ void ViewportTexture::set_viewport_path_in_scene(const NodePath &p_path) {
 	path = p_path;
 
 	if (get_local_scene()) {
-		setup_local_to_scene();
+		call_deferred("setup_local_to_scene"); // GOBLIN ENGINE stop ViewportTexture spam
 	}
 }
 
