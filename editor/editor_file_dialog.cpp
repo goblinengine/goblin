@@ -747,6 +747,11 @@ void EditorFileDialog::update_file_list() {
 			continue;
 		}
 
+		// GOBLIN ENGINE hide .import folder
+		if (cdir == "res://" && item == ".import") {
+			continue;
+		}
+
 		if (show_hidden_files || !dir_access->current_is_hidden()) {
 			if (!dir_access->current_is_dir()) {
 				files.push_back(item);
