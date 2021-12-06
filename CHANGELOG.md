@@ -5,6 +5,7 @@
 
 ### New
 
+- External editor now has additional external editor presets for different editors. This is based on an older PR found [here](https://github.com/godotengine/godot/pull/42736).
 - Implemented a `PackedScene.instance_add($node)` and `Class.new_add($node, ...)` (experimental features) to quickly add nodes into the scene. The new_add requires more work to get it right and will crash the game if the prameter count is not exact but works perfectly if parameter count is correct. The ideas came from this [rejected pr](https://github.com/godotengine/godot/pull/33974). Both functions return the added scene node.
 - Added a new class `MidiPlayer` which plays `.mid` Midi songs using `.sf2` SoundFont2 audio samples. It loads all data as generic MidiFile (for now internal format is not implemented). It plays from memory from the imported data rather than from file which makes it work in the exported game. SoundFont files can be somewhat large so they will make the executable larger. It can also play nodes individually, can silence all notes or specific notes, can pitchwheel, change midi program, use different instruments. All these advanced functions require more in depth understanding about MIDI. 
 - Brought back `_fixed_process` from Godot 2 but works differently. Fixed process runs in sync with physics process but can be set on a lower frame rate controlled by `application\run\fixed_process_frames` setting. A value of 1 means it is called on every physics frame. By default is 20 which means it is called every 20 frames. Maximum is set to 400. The purpose is to create an alternative physics process for lower latency game logic. 
@@ -22,6 +23,8 @@
 
 ### Changes
 
+- ViewportTexture now calls updating deferred removing all the missing Viewport spam.
+- Layer buttons now have the option to remove the text label making them smaller. The option is found in Editor setting under `interface/inspector/layer_labels`
 - Clarified AudioEffectCapture docs
 - Unify Focus and Hover behavior for Buttons that have keyboard focus enabled. A Project Setting option under `gui/theme/unify_button_focus_hover` will turn this on and off. This brings back old behavior where there was only one focus shared by mouse and keyboard.
 - GDScript Plugins will now fall back to X11 if no Server plugins found. This may fail if Server is not on Linux.
