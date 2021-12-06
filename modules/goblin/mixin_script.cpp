@@ -135,18 +135,31 @@ void MixinScriptInstance::call_multilevel(const StringName &p_method, const Vari
 }
 
 void MixinScriptInstance::notification(int p_notification) {
+	bool _ready_skip = false;
+	bool _enter_tree_skip = false;
 	for (int i = 0; i < instances.size(); i++) {
-		ScriptInstance *instance = instances[i];
-		if (instance) {
-			instance->notification(p_notification);
+		if (instances[i]) {
+			instances[i]->notification(p_notification);
 
 			// hack to enforce the calling of _ready, _enter_tree, _exit_tree equally on all scripts
 			if (p_notification == 13) {
-				if (instance->has_method("_ready")) instance->call("_ready");
-				else if (instance->has_method("_Ready")) instance->call("_Ready");
+				if (_ready_skip) {
+					if (instances[i]->has_method("_ready")) instances[i]->call("_ready");
+					else if (instances[i]->has_method("_Ready")) instances[i]->call("_Ready");
+				} 
+
+				if (instances[i]->has_method("_ready") || instances[i]->has_method("_Ready")) {
+					_ready_skip = true;
+				}
 			} else if (p_notification == 10) {
-				if (instance->has_method("_enter_tree")) instance->call("_enter_tree");
-				else if (instance->has_method("_EnterTree")) instance->call("_EnterTree");
+				if (_enter_tree_skip) {
+					if (instances[i]->has_method("_enter_tree")) instances[i]->call("_enter_tree");
+					else if (instances[i]->has_method("_EnterTree")) instances[i]->call("_EnterTree");
+				}
+				
+				if (instances[i]->has_method("_enter_tree") || instances[i]->has_method("_EnterTree")) {
+					_enter_tree_skip = true;
+				}
 			}
 		}
 	}
