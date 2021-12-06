@@ -34,13 +34,17 @@ Goblin will not provide any Mono builds since the goal is to keep the engine lea
 
 ## Community and contributing
 
-There is no community as of yet but PRs welcome.
+There is no community as of yet but PRs welcome. There are a number of features that I am still looking to add: 
+- backport ECS module by Andrea Catania to 3.x
+- adapt a very old Lambdas, callable functions and signals to newer GDScript
+- implement custom functionality into new GDScript
+- backport typed Dictionaries and type compiling from GDScript 2
 
 ## Documentation and demos
 
 Since Goblin Engine is compatible with latest 3.x Godot branch, you can find most the documentation you need over at [Godot Docs](https://docs.godotengine.org/en/stable/).
 
-The [class reference](https://docs.godotengine.org/en/latest/classes/) is also accessible from Goblin. Goblin adds some new functionality which is only documented in the built in Class references.
+Goblin adds some new functionality which is only documented in the built in Class references. The class reference is also accessible from the Goblin Editor.
 
 The official demos are maintained in their own [GitHub repository](https://github.com/godotengine/godot-demo-projects)
 as well. There are also a number of other
