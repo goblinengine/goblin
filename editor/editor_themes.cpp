@@ -937,8 +937,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	// These styleboxes can be used on tabs against the base color background (e.g. nested tabs).
 	// GOBLIN ENGINE tabs at bottom
 	Ref<StyleBoxFlat> style_content_panel_bottom = style_content_panel->duplicate();
-	style_content_panel->set_default_margin(MARGIN_TOP, (2 + margin_size_extra) * EDSCALE);
-	style_content_panel->set_default_margin(MARGIN_BOTTOM, margin_size_extra * EDSCALE);
+	style_content_panel_bottom->set_default_margin(MARGIN_TOP, (2 + margin_size_extra) * EDSCALE);
 
 	Ref<StyleBoxFlat> style_tab_selected_odd = style_tab_selected->duplicate();
 	style_tab_selected_odd->set_bg_color(color_disabled_bg);
