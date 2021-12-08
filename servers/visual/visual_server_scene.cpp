@@ -1971,7 +1971,7 @@ bool VisualServerScene::_light_instance_update_shadow(Instance *p_instance, cons
 			if (depth_range_mode == VS::LIGHT_DIRECTIONAL_SHADOW_DEPTH_RANGE_OPTIMIZED) {
 				//optimize min/max
 				Vector<Plane> planes = p_cam_projection.get_projection_planes(p_cam_transform);
-				int cull_count = p_scenario->sps->cull_convex(planes, instance_shadow_cull_result, MAX_INSTANCE_CULL, VS::INSTANCE_GEOMETRY_MASK);
+				int cull_count = p_scenario->sps->cull_convex(planes, instance_shadow_cull_result, max_instance_cull, VS::INSTANCE_GEOMETRY_MASK); // GOBLIN ENGINE expose max renderable scene elements
 				Plane base(p_cam_transform.origin, -p_cam_transform.basis.get_axis(2));
 				//check distance max and min
 
@@ -2175,7 +2175,7 @@ bool VisualServerScene::_light_instance_update_shadow(Instance *p_instance, cons
 				light_frustum_planes.write[4] = Plane(z_vec, z_max + 1e6);
 				light_frustum_planes.write[5] = Plane(-z_vec, -z_min); // z_min is ok, since casters further than far-light plane are not needed
 
-				int cull_count = p_scenario->sps->cull_convex(light_frustum_planes, instance_shadow_cull_result, MAX_INSTANCE_CULL, VS::INSTANCE_GEOMETRY_MASK);
+				int cull_count = p_scenario->sps->cull_convex(light_frustum_planes, instance_shadow_cull_result, max_instance_cull, VS::INSTANCE_GEOMETRY_MASK); // GOBLIN ENGINE expose max renderable scene elements
 
 				// a pre pass will need to be needed to determine the actual z-near to be used
 
@@ -2236,7 +2236,7 @@ bool VisualServerScene::_light_instance_update_shadow(Instance *p_instance, cons
 					planes.write[4] = light_transform.xform(Plane(Vector3(0, -1, z).normalized(), radius));
 					planes.write[5] = light_transform.xform(Plane(Vector3(0, 0, -z), 0));
 
-					int cull_count = p_scenario->sps->cull_convex(planes, instance_shadow_cull_result, MAX_INSTANCE_CULL, VS::INSTANCE_GEOMETRY_MASK);
+					int cull_count = p_scenario->sps->cull_convex(planes, instance_shadow_cull_result, max_instance_cull, VS::INSTANCE_GEOMETRY_MASK); // GOBLIN ENGINE expose max renderable scene elements
 					Plane near_plane(light_transform.origin, light_transform.basis.get_axis(2) * z);
 
 					for (int j = 0; j < cull_count; j++) {
@@ -2288,7 +2288,7 @@ bool VisualServerScene::_light_instance_update_shadow(Instance *p_instance, cons
 
 					Vector<Plane> planes = cm.get_projection_planes(xform);
 
-					int cull_count = _cull_convex_from_point(p_scenario, light_transform.origin, planes, instance_shadow_cull_result, MAX_INSTANCE_CULL, light->previous_room_id_hint, VS::INSTANCE_GEOMETRY_MASK);
+					int cull_count = _cull_convex_from_point(p_scenario, light_transform.origin, planes, instance_shadow_cull_result, max_instance_cull, light->previous_room_id_hint, VS::INSTANCE_GEOMETRY_MASK); // GOBLIN ENGINE expose max renderable scene elements
 
 					Plane near_plane(xform.origin, -xform.basis.get_axis(2));
 					for (int j = 0; j < cull_count; j++) {
@@ -2323,7 +2323,7 @@ bool VisualServerScene::_light_instance_update_shadow(Instance *p_instance, cons
 			cm.set_perspective(angle * 2.0, 1.0, 0.01, radius);
 
 			Vector<Plane> planes = cm.get_projection_planes(light_transform);
-			int cull_count = _cull_convex_from_point(p_scenario, light_transform.origin, planes, instance_shadow_cull_result, MAX_INSTANCE_CULL, light->previous_room_id_hint, VS::INSTANCE_GEOMETRY_MASK);
+			int cull_count = _cull_convex_from_point(p_scenario, light_transform.origin, planes, instance_shadow_cull_result, max_instance_cull, light->previous_room_id_hint, VS::INSTANCE_GEOMETRY_MASK); // GOBLIN ENGINE expose max renderable scene elements
 
 			Plane near_plane(light_transform.origin, -light_transform.basis.get_axis(2));
 			for (int j = 0; j < cull_count; j++) {
@@ -2502,7 +2502,7 @@ void VisualServerScene::_prepare_scene(const Transform p_cam_transform, const Ca
 	float z_far = p_cam_projection.get_z_far();
 
 	/* STEP 2 - CULL */
-	instance_cull_count = _cull_convex_from_point(scenario, p_cam_transform.origin, planes, instance_cull_result, MAX_INSTANCE_CULL, r_previous_room_id_hint);
+	instance_cull_count = _cull_convex_from_point(scenario, p_cam_transform.origin, planes, instance_cull_result, max_instance_cull, r_previous_room_id_hint); // GOBLIN ENGINE expose max renderable scene elements
 	light_cull_count = 0;
 
 	reflection_probe_cull_count = 0;
@@ -2529,7 +2529,7 @@ void VisualServerScene::_prepare_scene(const Transform p_cam_transform, const Ca
 		if ((camera_layer_mask & ins->layer_mask) == 0) {
 			//failure
 		} else if (ins->base_type == VS::INSTANCE_LIGHT && ins->visible) {
-			if (light_cull_count < MAX_LIGHTS_CULLED) {
+			if (light_cull_count < max_lights_culled) { // GOBLIN ENGINE expose max renderable scene elements
 				InstanceLightData *light = static_cast<InstanceLightData *>(ins->base_data);
 
 				if (!light->geometries.empty()) {
@@ -2544,7 +2544,7 @@ void VisualServerScene::_prepare_scene(const Transform p_cam_transform, const Ca
 				}
 			}
 		} else if (ins->base_type == VS::INSTANCE_REFLECTION_PROBE && ins->visible) {
-			if (reflection_probe_cull_count < MAX_REFLECTION_PROBES_CULLED) {
+			if (reflection_probe_cull_count < max_reflection_probes_culled) { // GOBLIN ENGINE expose max renderable scene elements
 				InstanceReflectionProbeData *reflection_probe = static_cast<InstanceReflectionProbeData *>(ins->base_data);
 
 				if (p_reflection_probe != reflection_probe->instance) {
@@ -2662,7 +2662,7 @@ void VisualServerScene::_prepare_scene(const Transform p_cam_transform, const Ca
 		int directional_shadow_count = 0;
 
 		for (List<Instance *>::Element *E = scenario->directional_lights.front(); E; E = E->next()) {
-			if (light_cull_count + directional_light_count >= MAX_LIGHTS_CULLED) {
+			if (light_cull_count + directional_light_count >= max_lights_culled) { // GOBLIN ENGINE GOBLIN ENGINE expose max renderable scene elements
 				break;
 			}
 
@@ -4124,10 +4124,31 @@ VisualServerScene::VisualServerScene() {
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/spatial_partitioning/bvh_collision_margin", PropertyInfo(Variant::REAL, "rendering/quality/spatial_partitioning/bvh_collision_margin", PROPERTY_HINT_RANGE, "0.0,2.0,0.01"));
 
 	_visual_server_callbacks = nullptr;
+
+	// GOBLIN ENGINE expose max renderable scene elements
+	max_instance_cull = GLOBAL_DEF_RST("rendering/limits/culling/max_instance_cull", (int)VisualServerScene::MAX_INSTANCE_CULL); // GOBLIN ENGINE expose max renderable scene elements
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/limits/culling/max_instance_cull", PropertyInfo(Variant::INT, "rendering/limits/culling/max_instance_cull", PROPERTY_HINT_RANGE, "1024,1000000,1"));
+	max_lights_culled = GLOBAL_DEF("rendering/limits/culling/max_lights_culled", (int)VisualServerScene::MAX_LIGHTS_CULLED); // GOBLIN ENGINE expose max renderable scene elements
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/limits/culling/max_lights_culled", PropertyInfo(Variant::INT, "rendering/limits/culling/max_lights_culled", PROPERTY_HINT_RANGE, "16,4096,1"));
+	max_reflection_probes_culled = GLOBAL_DEF("rendering/limits/culling/max_reflection_probes_culled", (int)VisualServerScene::MAX_REFLECTION_PROBES_CULLED);
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/limits/culling/max_reflection_probes_culled", PropertyInfo(Variant::INT, "rendering/limits/culling/max_reflection_probes_culled", PROPERTY_HINT_RANGE, "8,4096,1"));
+
+	instance_cull_result = memnew_arr(Instance *, max_instance_cull);
+	instance_shadow_cull_result = memnew_arr(Instance *, max_instance_cull);
+	light_cull_result = memnew_arr(Instance *, max_lights_culled);
+	light_instance_cull_result = memnew_arr(RID, max_lights_culled);
+	reflection_probe_instance_cull_result = memnew_arr(RID, max_reflection_probes_culled);
 }
 
 VisualServerScene::~VisualServerScene() {
 	probe_bake_thread_exit = true;
 	probe_bake_sem.post();
 	probe_bake_thread.wait_to_finish();
+
+	// GOBLIN ENGINE expose max renderable scene elements
+	memdelete_arr(instance_cull_result);
+	memdelete_arr(instance_shadow_cull_result);
+	memdelete_arr(light_cull_result);
+	memdelete_arr(light_instance_cull_result);
+	memdelete_arr(reflection_probe_instance_cull_result);
 }

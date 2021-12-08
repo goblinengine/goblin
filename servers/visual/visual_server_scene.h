@@ -46,13 +46,23 @@
 class VisualServerScene {
 public:
 	enum {
-
+		
 		MAX_INSTANCE_CULL = 65536,
 		MAX_LIGHTS_CULLED = 4096,
 		MAX_REFLECTION_PROBES_CULLED = 4096,
 		MAX_ROOM_CULL = 32,
 		MAX_EXTERIOR_PORTALS = 128,
 	};
+
+	// GOBLIN ENGINE expose max renderable scene elements
+	// this was implemented already in Godot 4
+	// implemented from this unapproved PR https://github.com/godotengine/godot/pull/1116
+	// testing shows that increasing value past the limit doesn't have any side effects on the octree
+	// the limit appears to be artificial
+	// performance of the octree is very poor when a large amount of objets are being rendered at the same time
+	int max_instance_cull;
+	int max_lights_culled;
+	int max_reflection_probes_culled;
 
 	uint64_t render_pass;
 	static VisualServerScene *singleton;
@@ -499,14 +509,16 @@ public:
 		}
 	};
 
+	// GOBLIN ENGINE GOBLIN ENGINE expose max renderable scene elements
 	int instance_cull_count;
-	Instance *instance_cull_result[MAX_INSTANCE_CULL];
-	Instance *instance_shadow_cull_result[MAX_INSTANCE_CULL]; //used for generating shadowmaps
-	Instance *light_cull_result[MAX_LIGHTS_CULLED];
-	RID light_instance_cull_result[MAX_LIGHTS_CULLED];
+	Instance **instance_cull_result;
+	Instance **instance_shadow_cull_result; //used for generating shadowmaps
+	Instance **light_cull_result;
+	RID *light_instance_cull_result;
+
 	int light_cull_count;
 	int directional_light_count;
-	RID reflection_probe_instance_cull_result[MAX_REFLECTION_PROBES_CULLED];
+	RID *reflection_probe_instance_cull_result; // GOBLIN ENGINE expose max renderable scene elements
 	int reflection_probe_cull_count;
 
 	RID_Owner<Instance> instance_owner;
