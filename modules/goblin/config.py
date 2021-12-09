@@ -10,11 +10,11 @@ def configure(env):
 
 
 def get_icons_path():
-    return "editor/icons"
+    return "icons"
 
 
 def get_doc_path():
-    return "doc"
+    return "doc_classes"
 
 
 def get_doc_classes():
