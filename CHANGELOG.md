@@ -5,6 +5,7 @@
 
 ### New
 
+- Added [SQLite Module](https://github.com/godot-extended-libraries/godot-sqlite/tree/3.2) by K. S. Ernest (iFire) Lee (fire). By default it is disabled but will be included in server and editor builds only. Use `module_sqlite_enabled=yes` to build.
 - Maximum number of culled lights, instances and reflection probes have been exposed to the Project Settings. This was implemented from this [rejected PR](https://github.com/godotengine/godot/pull/35447). Is already implemented in Godot 4. I have tested with 1 million meshes and although it is slow, it has no side effects. The octree used in Godot is not very efficient which is why the limit was probably set in the first place. There are still hard limits to minimum and maximum to prevent crashes but are much higher. The new settings are `rendering/limits/culling/max_instance_cull`, `rendering/limits/culling/max_lights_culled`, and `rendering/limits/culling/max_reflection_probes_culled`. 
 - External editor now has additional external editor presets for different editors. This is based on an older PR found [here](https://github.com/godotengine/godot/pull/42736).
 - Implemented a `PackedScene.instance_add($node)` and `Class.new_add($node, ...)` (experimental features) to quickly add nodes into the scene. The new_add requires more work to get it right and will crash the game if the prameter count is not exact but works perfectly if parameter count is correct. The ideas came from this [rejected pr](https://github.com/godotengine/godot/pull/33974). Both functions return the added scene node.

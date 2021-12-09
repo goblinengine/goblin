@@ -21,11 +21,12 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - name: Editor (target=release_debug, tools=yes)
+          - name: Editor (target=release_debug, tools=yes, module_sqlite_enabled=yes)
             cache-name: windows-editor
             target: release_debug
             tools: true
             bin: "./bin/goblin.windows.opt.tools.64.exe"
+            sconsflags: module_sqlite_enabled=yes
 
           - name: Template (target=release, tools=no)
             cache-name: windows-template

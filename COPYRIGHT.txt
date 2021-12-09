@@ -409,6 +409,10 @@ Comment: Tiny Soundfont Library
 Copyright: 2017, 2018, 2020 Bernhard Schelling
 License: Expat
 
+Files: ./modules/sqlite/thirdparty/sqlite
+Comment: SQLite
+Copyright: Hipp, Wyrick & Company, Inc., or "Hwaci"
+License: Public Domain
 
 License: Apache-2.0
  Licensed under the Apache License, Version 2.0 (the "License");

@@ -4,7 +4,7 @@ on: [push, pull_request]
 # Global Settings
 env:
   GODOT_BASE_BRANCH: main
-  SCONSFLAGS: verbose=yes warnings=all werror=yes debug_symbols=no use_thinlto=yes deprecated=no use_llvm=yes -j8
+  SCONSFLAGS: verbose=yes warnings=all werror=yes debug_symbols=no use_thinlto=yes deprecated=no use_llvm=yes module_sqlite_enabled=yes -j8
 
 concurrency:
   group: ci-${{github.actor}}-${{github.head_ref || github.run_number}}-${{github.ref}}-server
@@ -18,12 +18,12 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - name: Linux Headless (target=release_debug, tools=yes)
+          - name: Linux Headless (target=release_debug, tools=yes, module_sqlite_enabled=yes)
             cache-name: server-editor
             target: release_debug
             tools: true
 
-          - name: Linux Server (target=release, tools=no)
+          - name: Linux Server (target=release, tools=no, module_sqlite_enabled=yes)
             cache-name: server-template
             target: release
             tools: false
