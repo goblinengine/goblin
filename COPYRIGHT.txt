@@ -47,14 +47,6 @@ Copyright: 2007-2021, Juan Linietsky, Ariel Manzur.
  2014-2021, Godot Engine contributors.
 License: Expat
 
-Files: ./icon.png
- ./icon.svg
- ./logo.png
- ./logo.svg
-Comment: Godot Engine logo
-Copyright: 2017, Andrea Calabró
-License: CC-BY-4.0
-
 Files: ./core/math/convex_hull.cpp
  ./core/math/convex_hull.h
 Comment: Bullet Continuous Collision Detection and Physics Library
