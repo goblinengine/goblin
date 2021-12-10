@@ -448,6 +448,13 @@ void main() {
 	color *= texture2D(color_texture, uv);
 #endif
 
+// GOBLIN ENGINE distance field
+#ifdef USE_DISTANCE_FIELD
+	const float smoothing = 1.0/16.0; 
+	float distance = texture2D(color_texture, uv).a;
+	color.a = smoothstep(0.5 - smoothing, 0.5 + smoothing, distance) * color.a;
+#endif
+
 #ifdef SCREEN_UV_USED
 	vec2 screen_uv = gl_FragCoord.xy * screen_pixel_size;
 #endif

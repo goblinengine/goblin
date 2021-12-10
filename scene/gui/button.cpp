@@ -251,6 +251,9 @@ void Button::_notification(int p_what) {
 
 			text_ofs.y += font->get_ascent();
 			font->draw(ci, text_ofs.floor(), xl_text, color, clip_text ? text_clip : -1);
+			
+			// GOBLIN ENGINE distance field
+			VisualServer::get_singleton()->canvas_item_set_distance_field_mode(get_canvas_item(), font.is_valid() && font->is_distance_field_hint());
 
 			if (!_icon.is_null() && icon_region.size.width > 0) {
 				draw_texture_rect_region(_icon, icon_region, Rect2(Point2(), _icon->get_size()), color_icon);

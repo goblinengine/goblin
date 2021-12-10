@@ -54,6 +54,9 @@ void ProgressBar::_notification(int p_what) {
 		Ref<Font> font = get_font("font");
 		Color font_color = get_color("font_color");
 
+		// GOBLIN ENGINE distance field
+		VisualServer::get_singleton()->canvas_item_set_distance_field_mode(get_canvas_item(), font.is_valid() && font->is_distance_field_hint());
+
 		draw_style_box(bg, Rect2(Point2(), get_size()));
 		float r = get_as_ratio();
 		int mp = fg->get_minimum_size().width;

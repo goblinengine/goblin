@@ -1221,6 +1221,7 @@ void RasterizerCanvasGLES2::canvas_render_items_implementation(Item *p_item_list
 	ris.item_group_modulate = p_modulate;
 	ris.item_group_light = p_light;
 	ris.item_group_base_transform = p_base_transform;
+	ris.prev_distance_field = false; // GOBLIN ENGINE distance field
 
 	state.canvas_shader.set_conditional(CanvasShaderGLES2::USE_SKELETON, false);
 
@@ -1568,6 +1569,13 @@ bool RasterizerCanvasGLES2::try_join_item(Item *p_ci, RenderItemState &r_ris, bo
 // Should be removed after testing phase to avoid duplicate codepaths.
 void RasterizerCanvasGLES2::_legacy_canvas_render_item(Item *p_ci, RenderItemState &r_ris) {
 	storage->info.render._2d_item_count++;
+
+	// GOBLIN ENGINE distance field
+	if (r_ris.prev_distance_field != p_ci->distance_field) {
+		state.canvas_shader.set_conditional(CanvasShaderGLES2::USE_DISTANCE_FIELD, p_ci->distance_field);
+		r_ris.prev_distance_field = p_ci->distance_field;
+		r_ris.rebind_shader = true;
+	}
 
 	if (r_ris.current_clip != p_ci->final_clip_owner) {
 		r_ris.current_clip = p_ci->final_clip_owner;
@@ -1929,6 +1937,13 @@ void RasterizerCanvasGLES2::render_joined_item(const BItemJoined &p_bij, RenderI
 
 	// all the joined items will share the same state with the first item
 	Item *ci = bdata.item_refs[p_bij.first_item_ref].item;
+
+	// GOBLIN ENGINE distance field
+	if (r_ris.prev_distance_field != ci->distance_field) {
+		state.canvas_shader.set_conditional(CanvasShaderGLES2::USE_DISTANCE_FIELD, ci->distance_field);
+		r_ris.prev_distance_field = ci->distance_field;
+		r_ris.rebind_shader = true;
+	}
 
 	if (r_ris.current_clip != ci->final_clip_owner) {
 		r_ris.current_clip = ci->final_clip_owner;

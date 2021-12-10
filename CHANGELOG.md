@@ -25,6 +25,7 @@
 
 ### Changes
 
+- Fixed Signed Distance Field for Bitmap Fonts. As of today December 10 2021, this has been an open issue in Godot 3 since 2018 see [this post](https://github.com/godotengine/godot/issues/8022). It has been fixed in Godot 4 but not in 3. Had to completely re-implement it in GLES2 based on older Godot 2.1 code, fix it for GLES3 and manually add it to some of the controls. Before it only worked for Label and only in GLES3 and that's it. Now it works pefectly in GLES2 and GLES3 but only for the specific controls. The controls which have it enabled are Button, Label, RichTextLabel, OptionButton, ItemList, ProgressBar, LineEdit, Tabs and any control that extends or implements those controls.
 - ViewportTexture now calls updating deferred removing all the missing Viewport spam.
 - Layer buttons now have the option to remove the text label making them smaller. The option is found in Editor setting under `interface/inspector/layer_labels`
 - Clarified AudioEffectCapture docs

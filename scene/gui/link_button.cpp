@@ -112,6 +112,9 @@ void LinkButton::_notification(int p_what) {
 
 			Ref<Font> font = get_font("font");
 
+			// GOBLIN ENGINE distance field
+			VisualServer::get_singleton()->canvas_item_set_distance_field_mode(get_canvas_item(), font.is_valid() && font->is_distance_field_hint());
+
 			draw_string(font, Vector2(0, font->get_ascent()), xl_text, color);
 
 			if (do_underline) {

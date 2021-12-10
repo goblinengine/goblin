@@ -481,6 +481,10 @@ void PopupMenu::_notification(int p_what) {
 			Ref<StyleBox> style = get_stylebox("panel");
 			Ref<StyleBox> hover = get_stylebox("hover");
 			Ref<Font> font = get_font("font");
+
+			// GOBLIN ENGINE distance field
+			VisualServer::get_singleton()->canvas_item_set_distance_field_mode(get_canvas_item(), font.is_valid() && font->is_distance_field_hint());
+
 			// In Item::checkable_type enum order (less the non-checkable member)
 			Ref<Texture> check[] = { get_icon("checked"), get_icon("radio_checked") };
 			Ref<Texture> uncheck[] = { get_icon("unchecked"), get_icon("radio_unchecked") };

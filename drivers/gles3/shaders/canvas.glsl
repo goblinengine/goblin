@@ -583,17 +583,15 @@ void main() {
 
 #if !defined(COLOR_USED)
 	//default behavior, texture by color
+	color *= texture(color_texture, uv);
+#endif
 
 #ifdef USE_DISTANCE_FIELD
-	const float smoothing = 1.0 / 32.0;
-	float distance = textureLod(color_texture, uv, 0.0).a;
+	const float smoothing = 1.0 / 16.0; // GOBLIN ENGINE distance field
+	float distance = texture(color_texture, uv, 0.0).a;
 	color.a = smoothstep(0.5 - smoothing, 0.5 + smoothing, distance) * color.a;
-#else
-	color *= texture(color_texture, uv);
-
 #endif
 
-#endif
 
 	vec3 normal;
 
