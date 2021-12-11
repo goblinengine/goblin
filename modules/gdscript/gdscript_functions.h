@@ -36,6 +36,7 @@
 class GDScriptFunctions {
 public:
 	enum Function {
+		MATH_EVAL,  // GOBLIN ENGINE eval
 		MATH_SIN,
 		MATH_COS,
 		MATH_TAN,

@@ -39,11 +39,13 @@
 #include "core/reference.h"
 #include "core/variant_parser.h"
 #include "gdscript.h"
+#include "core/math/expression.h"
 
 const char *GDScriptFunctions::get_func_name(Function p_func) {
 	ERR_FAIL_INDEX_V(p_func, FUNC_MAX, "");
 
 	static const char *_names[FUNC_MAX] = {
+		"eval", // GOBLIN ENGINE eval
 		"sin",
 		"cos",
 		"tan",
@@ -176,6 +178,19 @@ void GDScriptFunctions::call(Function p_func, const Variant **p_args, int p_arg_
 	//using a switch, so the compiler generates a jumptable
 
 	switch (p_func) {
+		case MATH_EVAL: { // GOBLIN ENGINE eval
+			VALIDATE_ARG_COUNT(1);
+			if (p_args[0]->get_type() == Variant::STRING) {
+				Expression expr;
+				if (expr.parse(*p_args[0]) == OK) {
+					r_ret = expr.execute(Array(), Variant(), false);
+				} 
+			} else {
+				r_error.error = Variant::CallError::CALL_ERROR_INVALID_ARGUMENT;
+				r_error.argument = 0;
+				r_error.expected = Variant::STRING;
+			}
+		} break;
 		case MATH_SIN: {
 			VALIDATE_ARG_COUNT(1);
 			VALIDATE_ARG_NUM(0);
@@ -1470,11 +1485,17 @@ MethodInfo GDScriptFunctions::get_info(Function p_func) {
 	//using a switch, so the compiler generates a jumptable
 
 	switch (p_func) {
+		case MATH_EVAL: {  // GOBLIN ENGINE eval
+			MethodInfo mi("eval", PropertyInfo(Variant::STRING, "s"));
+			mi.return_val.type = Variant::NIL;
+			mi.return_val.usage |= PROPERTY_USAGE_NIL_IS_VARIANT;
+			return mi;
+		} break;
 		case MATH_SIN: {
 			MethodInfo mi("sin", PropertyInfo(Variant::REAL, "s"));
 			mi.return_val.type = Variant::REAL;
 			return mi;
-
+			
 		} break;
 		case MATH_COS: {
 			MethodInfo mi("cos", PropertyInfo(Variant::REAL, "s"));
