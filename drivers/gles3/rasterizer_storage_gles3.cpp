@@ -8189,14 +8189,14 @@ void RasterizerStorageGLES3::initialize() {
 		if (effectively_on) {
 			if (config.shader_cache_enabled) {
 				if (config.program_binary_supported) {
-					print_line("Shader cache: ON");
+					if (OS::get_singleton()->is_stdout_verbose()) print_line("Shader cache: ON"); // GOBLIN ENGINE hide shader cache
 					shaders.cache = memnew(ShaderCacheGLES3);
 					shaders.cache_write_queue = memnew(ThreadedCallableQueue<GLuint>());
 				} else {
-					print_line("Shader cache: OFF (enabled, but not supported)");
+					if (OS::get_singleton()->is_stdout_verbose()) print_line("Shader cache: OFF (enabled, but not supported)"); // GOBLIN ENGINE hide shader cache
 				}
 			} else {
-				print_line("Shader cache: OFF");
+				if (OS::get_singleton()->is_stdout_verbose()) print_line("Shader cache: OFF"); // GOBLIN ENGINE hide shader cache
 			}
 		}
 	} else {
