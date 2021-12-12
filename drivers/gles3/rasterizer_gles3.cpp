@@ -185,9 +185,7 @@ void RasterizerGLES3::initialize() {
 	}
 	*/
 
-	if (OS::get_singleton()->is_stdout_verbose()) {  // GOBLIN ENGINE
-		print_line("OpenGL ES 3.0 Renderer: " + VisualServer::get_singleton()->get_video_adapter_name());
-	}	
+	print_verbose("OpenGL ES 3.0 Renderer: " + VisualServer::get_singleton()->get_video_adapter_name()); // GOBLIN ENGINE
 	storage->initialize();
 	canvas->initialize();
 	scene->initialize();
@@ -293,7 +291,7 @@ void RasterizerGLES3::set_boot_image(const Ref<Image> &p_image, const Color &p_c
 	glClear(GL_COLOR_BUFFER_BIT);
 	canvas->canvas_begin();
 
-	RID texture = storage->texture_create();
+	RID texture = RID_PRIME(storage->texture_create());
 	storage->texture_allocate(texture, p_image->get_width(), p_image->get_height(), 0, p_image->get_format(), VS::TEXTURE_TYPE_2D, p_use_filter ? (uint32_t)VS::TEXTURE_FLAG_FILTER : 0);
 	storage->texture_set_data(texture, p_image);
 
@@ -499,7 +497,10 @@ RasterizerGLES3::RasterizerGLES3() {
 }
 
 RasterizerGLES3::~RasterizerGLES3() {
-	memdelete(storage);
-	memdelete(canvas);
 	memdelete(scene);
+	memdelete(canvas);
+
+	// storage must be deleted last,
+	// because it contains RID_owners that are used by scene and canvas destructors
+	memdelete(storage);
 }

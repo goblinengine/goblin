@@ -6142,9 +6142,6 @@ void RasterizerStorageGLES3::particles_set_emitting(RID p_particles, bool p_emit
 	Particles *particles = particles_owner.getornull(p_particles);
 	ERR_FAIL_COND(!particles);
 
-	if (p_emitting && !particles->emitting) {
-		particles_request_process(p_particles);
-	}
 	particles->emitting = p_emitting;
 }
 
@@ -8152,8 +8149,7 @@ void RasterizerStorageGLES3::initialize() {
 			MaxShaderCompilerThreads(ShaderGLES3::max_simultaneous_compiles);
 		} else {
 #ifdef DEBUG_ENABLED
-			// GOBLIN ENGINE hide async
-			if (OS::get_singleton()->is_stdout_verbose()) print_line("Async. shader compilation: No MaxShaderCompilerThreads function found.");
+			print_line("Async. shader compilation: No MaxShaderCompilerThreads function found.");
 #endif
 		}
 #endif
@@ -8173,35 +8169,31 @@ void RasterizerStorageGLES3::initialize() {
 	bool effectively_on = false;
 	if (config.async_compilation_enabled) {
 		if (config.parallel_shader_compile_supported) {
-			// GOBLIN ENGINE hide async
-			if (OS::get_singleton()->is_stdout_verbose()) print_line("Async. shader compilation: ON (full native support)");
+			print_verbose("Async. shader compilation: ON (full native support)"); // GOBLIN ENGINE hide async
 			effectively_on = true;
 		} else if (config.program_binary_supported && OS::get_singleton()->is_offscreen_gl_available()) {
 			shaders.compile_queue = memnew(ThreadedCallableQueue<GLuint>());
 			shaders.compile_queue->enqueue(0, []() { OS::get_singleton()->set_offscreen_gl_current(true); });
-			// GOBLIN ENGINE hide async
-			if (OS::get_singleton()->is_stdout_verbose())  print_line("Async. shader compilation: ON (via secondary context)");
+			print_verbose("Async. shader compilation: ON (via secondary context)"); // GOBLIN ENGINE hide async
 			effectively_on = true;
 		} else {
-			// GOBLIN ENGINE hide async
-			if (OS::get_singleton()->is_stdout_verbose()) print_line("Async. shader compilation: OFF (enabled for " + String(Engine::get_singleton()->is_editor_hint() ? "editor" : "project") + ", but not supported)");
+			print_verbose("Async. shader compilation: OFF (enabled for " + String(Engine::get_singleton()->is_editor_hint() ? "editor" : "project") + ", but not supported)"); // GOBLIN ENGINE hide async
 		}
 		if (effectively_on) {
 			if (config.shader_cache_enabled) {
 				if (config.program_binary_supported) {
-					if (OS::get_singleton()->is_stdout_verbose()) print_line("Shader cache: ON"); // GOBLIN ENGINE hide shader cache
+					print_verbose("Shader cache: ON");  // GOBLIN ENGINE hide shader cache
 					shaders.cache = memnew(ShaderCacheGLES3);
 					shaders.cache_write_queue = memnew(ThreadedCallableQueue<GLuint>());
 				} else {
-					if (OS::get_singleton()->is_stdout_verbose()) print_line("Shader cache: OFF (enabled, but not supported)"); // GOBLIN ENGINE hide shader cache
+					print_verbose("Shader cache: OFF (enabled, but not supported)");  // GOBLIN ENGINE hide shader cache
 				}
 			} else {
-				if (OS::get_singleton()->is_stdout_verbose()) print_line("Shader cache: OFF"); // GOBLIN ENGINE hide shader cache
+				print_verbose("Shader cache: OFF");  // GOBLIN ENGINE hide shader cache
 			}
 		}
 	} else {
-		// GOBLIN ENGINE hide async
-		if (OS::get_singleton()->is_stdout_verbose()) print_line("Async. shader compilation: OFF");
+		print_verbose("Async. shader compilation: OFF");  // GOBLIN ENGINE hide shader cache
 	}
 	ShaderGLES3::compile_queue = shaders.compile_queue;
 	ShaderGLES3::parallel_compile_supported = config.parallel_shader_compile_supported;

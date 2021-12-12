@@ -348,7 +348,7 @@ ShaderLanguage::Token ShaderLanguage::_get_token() {
 
 					} break;
 					case '/': { // line comment skip
-						
+
 						while (true) {
 							if (GETCHAR(0) == '\n') {
 								tk_line++;
@@ -5649,7 +5649,7 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 	// GOBLIN ENGINE import shader
 	Set<String> includes;
 	int include_depth = 0;
-	
+
 	while (tk.type != TK_EOF) {
 		switch (tk.type) {
 			// GOBLIN ENGINE import shader
@@ -7221,7 +7221,7 @@ String ShaderLanguage::get_error_text() {
 }
 
 int ShaderLanguage::get_error_line() {
-	return error_line - include_lines;
+	return error_line - include_lines; // GOBLIN ENGINE import shader
 }
 
 ShaderLanguage::ShaderNode *ShaderLanguage::get_shader() {
