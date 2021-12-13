@@ -312,8 +312,9 @@
 		<member name="debug/gdscript/warnings/constant_used_as_function" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], enables warnings when a constant is used as a function.
 		</member>
+		<!-- GOBLINE ENGINE remove some deprecated features -->
 		<member name="debug/gdscript/warnings/deprecated_keyword" type="bool" setter="" getter="" default="true">
-			If [code]true[/code], enables warnings when deprecated keywords such as [code]slave[/code] are used.
+			If [code]true[/code], enables warnings when deprecated keywords.
 		</member>
 		<member name="debug/gdscript/warnings/enable" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], enables specific GDScript warnings (see [code]debug/gdscript/warnings/*[/code] settings). If [code]false[/code], disables all GDScript warnings.
