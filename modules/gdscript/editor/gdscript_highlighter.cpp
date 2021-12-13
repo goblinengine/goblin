@@ -366,10 +366,10 @@ void GDScriptSyntaxHighlighter::_update_cache() {
 
 	if (default_theme || EditorSettings::get_singleton()->is_dark_theme()) {
 		function_definition_color = Color(0.4, 0.9, 1.0);
-		node_path_color = Color(0.39, 0.76, 0.35);
+		node_path_color = Color(0.75, 0.65, 0.56); // GOBLIN ENGINE change script syntax
 	} else {
 		function_definition_color = Color(0.0, 0.65, 0.73);
-		node_path_color = Color(0.32, 0.55, 0.29);
+		node_path_color = Color(0.65, 0.55, 0.46); // GOBLIN ENGINE change script syntax
 	}
 
 	EDITOR_DEF("text_editor/highlighting/gdscript/function_definition_color", function_definition_color);
