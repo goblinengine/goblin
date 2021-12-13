@@ -65,9 +65,14 @@ static Ref<StyleBoxEmpty> make_empty_stylebox(float p_margin_left = -1, float p_
 	return style;
 }
 
-static Ref<StyleBoxFlat> make_flat_stylebox(Color p_color, float p_margin_left = -1, float p_margin_top = -1, float p_margin_right = -1, float p_margin_bottom = -1) {
+// GOBLIN ENGINE rounded editor controls
+static Ref<StyleBoxFlat> make_flat_stylebox(Color p_color, float p_margin_left = -1, float p_margin_top = -1, float p_margin_right = -1, float p_margin_bottom = -1, int p_corner_width = 0) {
 	Ref<StyleBoxFlat> style(memnew(StyleBoxFlat));
 	style->set_bg_color(p_color);
+	// GOBLIN ENGINE rounded editor controls
+	// Adjust level of detail based on the corners' effective sizes.
+	style->set_corner_detail(Math::ceil(1.5 * p_corner_width * EDSCALE));
+	style->set_corner_radius_all(p_corner_width);
 	style->set_default_margin(MARGIN_LEFT, p_margin_left * EDSCALE);
 	style->set_default_margin(MARGIN_RIGHT, p_margin_right * EDSCALE);
 	style->set_default_margin(MARGIN_BOTTOM, p_margin_bottom * EDSCALE);
@@ -312,6 +317,10 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 		accent_color = EDITOR_GET("interface/theme/accent_color");
 		base_color = EDITOR_GET("interface/theme/base_color");
 		contrast = EDITOR_GET("interface/theme/contrast");
+	} else if (preset == "Breeze Dark") { // GOBLIN ENGINE theme
+		preset_accent_color = Color(0.26, 0.76, 1.00);
+		preset_base_color = Color(0.24, 0.26, 0.28);
+		preset_contrast = 0.3;
 	} else if (preset == "Alien") {
 		preset_accent_color = Color(0.11, 1.0, 0.6);
 		preset_base_color = Color(0.18, 0.22, 0.25);
@@ -459,13 +468,17 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	Color tab_color = highlight_tabs ? base_color.linear_interpolate(font_color, contrast) : base_color;
 	// Ensure borders are visible when using an editor scale below 100%.
 	const int border_width = CLAMP(border_size, 0, 3) * MAX(1, EDSCALE);
+	int corner_radius = EDITOR_GET("interface/theme/corner_radius");
+	const int corner_width = CLAMP(corner_radius, 0, 10) * EDSCALE;
 
 	const int default_margin_size = 4;
 	const int margin_size_extra = default_margin_size + CLAMP(border_size, 0, 3);
 
 	// styleboxes
 	// this is the most commonly used stylebox, variations should be made as duplicate of this
-	Ref<StyleBoxFlat> style_default = make_flat_stylebox(base_color, default_margin_size, default_margin_size, default_margin_size, default_margin_size);
+	Ref<StyleBoxFlat> style_default = make_flat_stylebox(base_color, default_margin_size, default_margin_size, default_margin_size, default_margin_size, corner_width);
+	// Work around issue about antialiased edges being blurrier (GH-35279). // GOBLIN ENGINE rounded editor controls
+	style_default->set_anti_aliased(false);
 	style_default->set_border_width_all(border_width);
 	style_default->set_border_color(base_color);
 	style_default->set_draw_center(true);
@@ -541,13 +554,19 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	style_tab_selected->set_default_margin(MARGIN_BOTTOM, tab_default_margin_vertical);
 	style_tab_selected->set_default_margin(MARGIN_TOP, tab_default_margin_vertical);
 	style_tab_selected->set_bg_color(tab_color);
+	// GOBLIN ENGINE tabs at bottom + rounded editor controls
+	style_tab_selected->set_corner_radius(CORNER_BOTTOM_LEFT, 0);
+	style_tab_selected->set_corner_radius(CORNER_BOTTOM_RIGHT, 0);
+	style_tab_selected->set_expand_margin_size(MARGIN_BOTTOM, corner_width > 0 ? corner_width : border_width);
 
-	// GOBLIN ENGINE tabs at bottom
 	Ref<StyleBoxFlat> style_tab_selected_bottom = style_tab_selected->duplicate();
 	style_tab_selected_bottom->set_border_width(MARGIN_TOP, 0);
 	style_tab_selected_bottom->set_border_width(MARGIN_BOTTOM, Math::round(2 * EDSCALE));
 	style_tab_selected_bottom->set_expand_margin_size(MARGIN_TOP, border_width);
-
+	style_tab_selected_bottom->set_corner_radius(CORNER_TOP_LEFT, 0);
+	style_tab_selected_bottom->set_corner_radius(CORNER_TOP_RIGHT, 0);
+	style_tab_selected_bottom->set_expand_margin_size(MARGIN_BOTTOM, 0);
+	style_tab_selected_bottom->set_expand_margin_size(MARGIN_TOP, corner_width > 0 ? corner_width : border_width);
 
 	Ref<StyleBoxFlat> style_tab_unselected = style_tab_selected->duplicate();
 	style_tab_unselected->set_bg_color(dark_color_1);
@@ -1093,16 +1112,16 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	// HSlider
 	theme->set_icon("grabber_highlight", "HSlider", theme->get_icon("GuiSliderGrabberHl", "EditorIcons"));
 	theme->set_icon("grabber", "HSlider", theme->get_icon("GuiSliderGrabber", "EditorIcons"));
-	theme->set_stylebox("slider", "HSlider", make_flat_stylebox(dark_color_3, 0, default_margin_size / 2, 0, default_margin_size / 2));
-	theme->set_stylebox("grabber_area", "HSlider", make_flat_stylebox(contrast_color_1, 0, default_margin_size / 2, 0, default_margin_size / 2));
-	theme->set_stylebox("grabber_area_highlight", "HSlider", make_flat_stylebox(contrast_color_1, 0, default_margin_size / 2, 0, default_margin_size / 2));
+	theme->set_stylebox("slider", "HSlider", make_flat_stylebox(dark_color_3, 0, default_margin_size / 2, 0, default_margin_size / 2, corner_width));
+	theme->set_stylebox("grabber_area", "HSlider", make_flat_stylebox(contrast_color_1, 0, default_margin_size / 2, 0, default_margin_size / 2, corner_width));
+	theme->set_stylebox("grabber_area_highlight", "HSlider", make_flat_stylebox(contrast_color_1, 0, default_margin_size / 2, 0, default_margin_size / 2, corner_width));
 
 	// VSlider
 	theme->set_icon("grabber", "VSlider", theme->get_icon("GuiSliderGrabber", "EditorIcons"));
 	theme->set_icon("grabber_highlight", "VSlider", theme->get_icon("GuiSliderGrabberHl", "EditorIcons"));
-	theme->set_stylebox("slider", "VSlider", make_flat_stylebox(dark_color_3, default_margin_size / 2, 0, default_margin_size / 2, 0));
-	theme->set_stylebox("grabber_area", "VSlider", make_flat_stylebox(contrast_color_1, default_margin_size / 2, 0, default_margin_size / 2, 0));
-	theme->set_stylebox("grabber_area_highlight", "VSlider", make_flat_stylebox(contrast_color_1, default_margin_size / 2, 0, default_margin_size / 2, 0));
+	theme->set_stylebox("slider", "VSlider", make_flat_stylebox(dark_color_3, default_margin_size / 2, 0, default_margin_size / 2, 0, corner_width));
+	theme->set_stylebox("grabber_area", "VSlider", make_flat_stylebox(contrast_color_1, default_margin_size / 2, 0, default_margin_size / 2, 0, corner_width));
+	theme->set_stylebox("grabber_area_highlight", "VSlider", make_flat_stylebox(contrast_color_1, default_margin_size / 2, 0, default_margin_size / 2, 0, corner_width));
 
 	//RichTextLabel
 	theme->set_color("default_color", "RichTextLabel", font_color);
@@ -1116,7 +1135,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_color("headline_color", "EditorHelp", mono_color);
 
 	// Panel
-	theme->set_stylebox("panel", "Panel", make_flat_stylebox(dark_color_1, 6, 4, 6, 4));
+	theme->set_stylebox("panel", "Panel", make_flat_stylebox(dark_color_1, 6, 4, 6, 4, corner_width));
 
 	// Label
 	theme->set_stylebox("normal", "Label", style_empty);

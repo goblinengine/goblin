@@ -354,7 +354,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 
 	// Theme
 	_initial_set("interface/theme/preset", "Default");
-	hints["interface/theme/preset"] = PropertyInfo(Variant::STRING, "interface/theme/preset", PROPERTY_HINT_ENUM, "Default,Alien,Arc,Godot 2,Godot 3,Light,Solarized (Dark),Solarized (Light),Custom", PROPERTY_USAGE_DEFAULT); // GOBLIN ENGINE theme
+	hints["interface/theme/preset"] = PropertyInfo(Variant::STRING, "interface/theme/preset", PROPERTY_HINT_ENUM, "Default,Breeze Dark,Alien,Arc,Godot 2,Godot 3,Light,Solarized (Dark),Solarized (Light),Custom", PROPERTY_USAGE_DEFAULT); // GOBLIN ENGINE theme
 	_initial_set("interface/theme/icon_and_font_color", 0);
 	hints["interface/theme/icon_and_font_color"] = PropertyInfo(Variant::INT, "interface/theme/icon_and_font_color", PROPERTY_HINT_ENUM, "Auto,Dark,Light", PROPERTY_USAGE_DEFAULT);
 	_initial_set("interface/theme/base_color", Color(0.24, 0.24, 0.24)); // GOBLIN ENGINE theme
@@ -365,6 +365,8 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	hints["interface/theme/contrast"] = PropertyInfo(Variant::REAL, "interface/theme/contrast", PROPERTY_HINT_RANGE, "-1, 1, 0.01");
 	_initial_set("interface/theme/relationship_line_opacity", 0.1);
 	hints["interface/theme/relationship_line_opacity"] = PropertyInfo(Variant::REAL, "interface/theme/relationship_line_opacity", PROPERTY_HINT_RANGE, "0.00, 1, 0.01");
+	_initial_set("interface/theme/corner_radius", 3);
+	hints["interface/theme/corner_radius"] = PropertyInfo(Variant::INT, "interface/theme/corner_radius", PROPERTY_HINT_RANGE, "0,10,1", PROPERTY_USAGE_DEFAULT);
 	_initial_set("interface/theme/highlight_tabs", false);
 	_initial_set("interface/theme/border_size", 0); // GOBLIN ENGINE theme
 	_initial_set("interface/theme/use_graph_node_headers", false);
