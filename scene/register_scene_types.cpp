@@ -386,7 +386,7 @@ void register_scene_types() {
 
 #ifndef DISABLE_DEPRECATED // GOBLIN ENGINE remove some deprecated features
 	ClassDB::register_class<AnimationTreePlayer>();
-#endif;
+#endif
 	ClassDB::register_class<AnimationTree>();
 	ClassDB::register_class<AnimationNode>();
 	ClassDB::register_class<AnimationRootNode>();
