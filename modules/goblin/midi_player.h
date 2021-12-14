@@ -124,7 +124,7 @@ public:
 	Ref<MidiFile> get_midi() const;
 
 	void set_looping(bool p_looping);
-	bool get_looping();
+	bool is_looping();
 	void set_midi_speed(float p_speed);
 	float get_midi_speed();
 

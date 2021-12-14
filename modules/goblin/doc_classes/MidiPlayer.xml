@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="MidiPlayer" inherits="AudioStreamPlayer" version="3.5">
 	<brief_description>
-		[b]A Midi and SoundFont player class.[/b]
+		A Midi and SoundFont player class.
 	</brief_description>
 	<description>
 		The MidiPlayer class can play MIDI files. It does this using a collection of sounds called SoundFont which was originally invented in the early 1990s by Creative Labs for their SoundBlaser AWE32 sound card. The MIDI specification is even older from 1983.
@@ -224,17 +224,17 @@
 		</method>
 		<method name="load_midi">
 			<return type="void" />
-			<argument index="0" name="midi_file" type="String" />
+			<argument index="0" name="midi_resource_path" type="String" />
 			<description>
-				Loads a MidiFile resource by specifying an internal resource path. It must FORMAT_MIDI format.
+				Loads a MidiFile resource by specifying an internal resource path. It must [constant FORMAT_MIDI] format.
 				[b]Note:[/b] A SoundFont and a playback stream must exist in order for the file to actually play.
 			</description>
 		</method>
 		<method name="load_soundfont">
 			<return type="void" />
-			<argument index="0" name="soundfont_file" type="String" />
+			<argument index="0" name="soundfont_resource_path" type="String" />
 			<description>
-				Loads a  MidiFile SoundFont by specifying an internal resource path. It must be FORMAT_SF2 format.
+				Loads a MidiFile SoundFont by specifying an internal resource path. It must be [constant FORMAT_SF2] format.
 			</description>
 		</method>
 		<method name="note_off">
@@ -262,7 +262,7 @@
 		</method>
 	</methods>
 	<members>
-		<member name="looping" type="bool" setter="set_looping" getter="get_looping" default="true">
+		<member name="looping" type="bool" setter="set_looping" getter="is_looping" default="true">
 			When set to [code]true[/code], midi file will loop forever.
 		</member>
 		<member name="midi" type="MidiFile" setter="set_midi" getter="get_midi">

@@ -32,7 +32,7 @@ SOFTWARE.
 
 // MIDIFILE
 Error MidiFile::load(const String fileName) {
-	if(!(fileName.ends_with("sf2") || fileName.ends_with("mid") || fileName.ends_with("midi"))) {
+	if(!(fileName.get_extension().to_lower() == "sf2" || fileName.get_extension().to_lower() == "mid" || fileName.get_extension().to_lower() == "midi") ) {
 		ERR_FAIL_COND_V("Incorrect file type", FAILED);
 	}
 
@@ -47,6 +47,8 @@ Error MidiFile::load(const String fileName) {
 	PoolVector<uint8_t>::Write w = theData.write();
 	int theReadSize = f->get_buffer(&w[0], size);
 
+	memdelete(f);
+
 	if (theReadSize < size) { 
 		theData.resize(size);
 	}
@@ -54,7 +56,7 @@ Error MidiFile::load(const String fileName) {
 
 	set_data(theData);
 
-	if (fileName.ends_with("sf2")) {
+	if (fileName.get_extension().to_lower() == "sf2") {
 		set_format(FORMAT_SF2);
 	} else {
 		set_format(FORMAT_MIDI);
@@ -106,27 +108,9 @@ void ResourceImporterMidiFile::get_recognized_extensions(List<String> *p_extensi
 }
 
 Error ResourceImporterMidiFile::import(const String &p_source_file, const String &p_save_path, const Map<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files, Variant *r_metadata) {
-	FileAccess *f = FileAccess::open(p_source_file, FileAccess::READ);
-	ERR_FAIL_COND_V(!f, ERR_FILE_CANT_OPEN);
-	
-	uint64_t len = f->get_len();
-
-	PoolVector<uint8_t> data;
-	data.resize(len);
-	PoolVector<uint8_t>::Write w = data.write();
-
-	f->get_buffer(w.ptr(), len);
-
-	memdelete(f);
-
 	Ref<MidiFile> mdf;
 	mdf.instance();
-	mdf->set_data(data);
-	ERR_FAIL_COND_V(!mdf->get_data().size(), ERR_FILE_CORRUPT);
-
-	if (p_source_file.ends_with("sf2")) {
-		mdf->set_format(1);
-	}
+	mdf->load(p_source_file);
 
 	return ResourceSaver::save(p_save_path + ".mdf", mdf);
 
@@ -526,7 +510,7 @@ void MidiPlayer::set_looping(bool p_looping) {
 	looping = p_looping;
 }
 
-bool MidiPlayer::get_looping() {
+bool MidiPlayer::is_looping() {
 	return looping;
 }
 
@@ -579,8 +563,8 @@ void MidiPlayer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("channel_get_tuning", "channel"), &MidiPlayer::channel_get_tuning);
 
 	ClassDB::bind_method(D_METHOD("set_looping", "looping"), &MidiPlayer::set_looping);
-	ClassDB::bind_method(D_METHOD("get_looping"), &MidiPlayer::get_looping);
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "looping", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), "set_looping", "get_looping");
+	ClassDB::bind_method(D_METHOD("is_looping"), &MidiPlayer::is_looping);
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "looping", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), "set_looping", "is_looping");
 	ClassDB::bind_method(D_METHOD("set_midi_speed", "speed"), &MidiPlayer::set_midi_speed);
 	ClassDB::bind_method(D_METHOD("get_midi_speed"), &MidiPlayer::get_midi_speed);
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "midi_speed", PROPERTY_HINT_RANGE, "0,8,0.1", PROPERTY_USAGE_EDITOR), "set_midi_speed", "get_midi_speed");
