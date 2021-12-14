@@ -479,7 +479,16 @@ int _OS::execute(const String &p_path, const Vector<String> &p_arguments, bool p
 		args.push_back(p_arguments[i]);
 	}
 	String pipe;
-	Error err = OS::get_singleton()->execute(p_path, args, p_blocking, &pid, &pipe, &exitcode, p_read_stderr);
+	// GOBLIN ENGINE fix windows execute 
+	String path = p_path;
+	
+	if (OS::get_singleton()->get_name() == "Windows") {
+		args.push_front(p_path);
+		args.push_front("\"/C\"");
+		path = "CMD.exe";
+	}
+
+	Error err = OS::get_singleton()->execute(path, args, p_blocking, &pid, &pipe, &exitcode, p_read_stderr);
 	p_output.clear();
 	p_output.push_back(pipe);
 	if (err != OK) {

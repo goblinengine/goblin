@@ -2100,6 +2100,14 @@ bool ScriptEditor::edit(const RES &p_resource, int p_line, int p_col, bool p_gra
 			args.push_back(script_path);
 		}
 
+		// GOBLIN ENGINE fix windows execute 
+		if (OS::get_singleton()->get_name() == "Windows") {
+			args.push_front(path);
+			args.push_front("\"/C\"");
+			path = "CMD.exe";
+		}
+
+
 		Error err = OS::get_singleton()->execute(path, args, false);
 		if (err == OK) {
 			return false;
