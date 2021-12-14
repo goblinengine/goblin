@@ -335,7 +335,11 @@ class ScriptEditor : public PanelContainer {
 	void _show_debugger(bool p_show);
 	void _script_created(Ref<Script> p_script);
 
-	ScriptEditorBase *_get_current_editor() const;
+	ScriptEditorBase *_get_current_editor() const;	
+	// GOBLIN ENGINE external editor presets updates when changed
+	int last_external_editor_preset;
+	void _update_external_editor_preset();
+	static void _get_external_editor_preset(const int p_preset, String &r_path, String &r_flags);
 
 	void _save_layout();
 	void _editor_settings_changed();
