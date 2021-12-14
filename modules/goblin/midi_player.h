@@ -54,6 +54,8 @@ public:
 	// set default format
 	int format = FORMAT_MIDI; 
 
+	Error MidiFile::load(const String fileName);
+	
 	void set_format(int f) { format = f; }
 	int get_format() const { return format; }
 

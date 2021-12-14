@@ -31,7 +31,41 @@ SOFTWARE.
 #include "libs/tml.h"
 
 // MIDIFILE
+Error MidiFile::load(const String fileName) {
+	if(!(fileName.ends_with("sf2") || fileName.ends_with("mid") || fileName.ends_with("midi"))) {
+		ERR_FAIL_COND_V("Incorrect file type", FAILED);
+	}
+
+	FileAccess *f = FileAccess::open(fileName, FileAccess::READ);
+	ERR_FAIL_COND_V_MSG(!f, FAILED, "Couldn't open file " + fileName + ".");
+
+	uint64_t size = f->get_len();
+
+	PoolVector<uint8_t> theData;
+	theData.resize(size);
+
+	PoolVector<uint8_t>::Write w = theData.write();
+	int theReadSize = f->get_buffer(&w[0], size);
+
+	if (theReadSize < size) { 
+		theData.resize(size);
+	}
+	ERR_FAIL_COND_V_MSG(theReadSize == 0, FAILED, "Could't read file.");
+
+	set_data(theData);
+
+	if (fileName.ends_with("sf2")) {
+		set_format(FORMAT_SF2);
+	} else {
+		set_format(FORMAT_MIDI);
+	}
+
+	return OK;
+}
+
 void MidiFile::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("load", "file_path"), &MidiFile::load);
+
 	ClassDB::bind_method(D_METHOD("set_data", "data"), &MidiFile::set_data);
 	ClassDB::bind_method(D_METHOD("get_data"), &MidiFile::get_data);
 	ADD_PROPERTY(PropertyInfo(Variant::POOL_BYTE_ARRAY, "data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR), "set_data", "get_data");
