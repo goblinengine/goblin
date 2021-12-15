@@ -5084,6 +5084,9 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const Map<StringName, Bui
 				cf->blocks.push_back(block);
 				err = _parse_block(block, p_builtin_types, true, p_can_break, p_can_continue);
 
+				if (err) {
+					return err;
+				}
 			} else {
 				_set_tkpos(pos); //rollback
 			}
