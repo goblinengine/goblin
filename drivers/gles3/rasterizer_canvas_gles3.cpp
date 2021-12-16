@@ -293,7 +293,7 @@ void RasterizerCanvasGLES3::_legacy_canvas_render_item(Item *p_ci, RenderItemSta
 				}
 
 			} break;
-			case RasterizerStorageGLES3::Shader::CanvasItem::BLEND_MODE_PMALPHA: {
+			case RasterizerStorageGLES3::Shader::CanvasItem::BLEND_MODE_PMALPHA: { // GOBLIN ENGINE add blend_premul_alpha to shaders
 				glBlendEquation(GL_FUNC_ADD);
 				if (storage->frame.current_rt && storage->frame.current_rt->flags[RasterizerStorage::RENDER_TARGET_TRANSPARENT]) {
 					glBlendFuncSeparate(GL_ONE, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
@@ -1373,7 +1373,7 @@ void RasterizerCanvasGLES3::render_joined_item(const BItemJoined &p_bij, RenderI
 				}
 
 			} break;
-			case RasterizerStorageGLES3::Shader::CanvasItem::BLEND_MODE_PMALPHA: {
+			case RasterizerStorageGLES3::Shader::CanvasItem::BLEND_MODE_PMALPHA: { // GOBLIN ENGINE add blend_premul_alpha to shaders
 				glBlendEquation(GL_FUNC_ADD);
 				if (storage->frame.current_rt && storage->frame.current_rt->flags[RasterizerStorage::RENDER_TARGET_TRANSPARENT]) {
 					glBlendFuncSeparate(GL_ONE, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
