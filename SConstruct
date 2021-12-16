@@ -419,7 +419,7 @@ if selected_platform in platform_list:
     # Prepending to make it possible to override
     # This needs to come after `configure`, otherwise we don't have env.msvc.
     if selected_platform == "iphone": #GOBLIN ENGINE hack until github actions macos-latest image gets updated
-        env.Prepend(CFLAGS=["-std=gnu14"]) 
+        env.Prepend(CFLAGS=["-std=gnu11"]) 
         env.Prepend(CXXFLAGS=["-std=gnu++14"])
     elif not env.msvc:
         # Specifying GNU extensions support explicitly, which are supported by
