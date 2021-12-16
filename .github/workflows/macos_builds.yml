@@ -4,7 +4,7 @@ on: [push, pull_request]
 # Global Settings
 env:
   GODOT_BASE_BRANCH: main
-  SCONSFLAGS: verbose=yes warnings=all werror=yes debug_symbols=no use_thinlto=yes deprecated=no -j8
+  SCONSFLAGS: verbose=yes warnings=all werror=yes debug_symbols=no use_thinlto=yes deprecated=no
 
 concurrency:
   group: ci-${{github.actor}}-${{github.head_ref || github.run_number}}-${{github.ref}}-macos
@@ -23,6 +23,7 @@ jobs:
             target: release_debug
             tools: true
             bin: "./bin/goblin.osx.opt.tools.64"
+            sconsflags: module_sqlite_enabled=yes
 
           - name: Template (target=release, tools=no)
             cache-name: macos-template
@@ -35,7 +36,7 @@ jobs:
       - name: Setup Goblin build cache
         uses: ./.github/actions/goblin-cache
         with:
-          cache-name: ${{ matrix.cache-name }}
+          cache-name: ${{ matrix.cache-name }} ${{ matrix.sconsflags }}
         continue-on-error: true
 
       - name: Setup python and scons
