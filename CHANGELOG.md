@@ -5,7 +5,6 @@
 
 ### New
 
-- Visual Script nodes now move with comment node. Adapted from [this pr](https://github.com/godotengine/godot/pull/54970).
 - Added `eval("expression")` function in `@GDScript` which parses a string expression and outputs the result or null if couldn't parse. It does not take inputs like Expression but can be added since it actually uses Expression class in the backend. This is a common function in many interpeted languages. 
 - Added [SQLite Module](https://github.com/godot-extended-libraries/godot-sqlite/tree/3.2) by K. S. Ernest (iFire) Lee (fire). By default it is disabled but will be included in server and editor builds only. Use `module_sqlite_enabled=yes` to build.
 - Maximum number of culled lights, instances and reflection probes have been exposed to the Project Settings. This was implemented from this [rejected PR](https://github.com/godotengine/godot/pull/35447). Is already implemented in Godot 4. I have tested with 1 million meshes and although it is slow, it has no side effects. Note that GLES2 will crash with more than 32k instances (this is a built in limitation of GLES2 renderer) where as GLES3 can render any number but it will become exponentially slower after about 64k instances. The octree used in Godot is not very efficient and is not able to handle too many instances and would require core changes to make it more robust. There are still internal hard limits to minimum and maximum to prevent crashes but are much higher. The new settings are `rendering/limits/culling/max_instance_cull`, `rendering/limits/culling/max_lights_culled`, and `rendering/limits/culling/max_reflection_probes_culled`. Manually adjusting these values down should help game performance.
@@ -28,6 +27,8 @@
 
 ### Changes
  
+- Added `blend_premul_alpha` to scene shaders adapted from [this PR](https://github.com/godotengine/godot/pull/36747)
+- Visual Script nodes now move with comment node. Adapted from [this pr](https://github.com/godotengine/godot/pull/54970).
 - TSCN Text Scenes (tscn) are now converted to binary scn upon export. Optionally via `"filesystem/on_save/compress_binary_resources"`. This did not work previously. Adapted from a pr found [here](https://github.com/godotengine/godot/pull/51096).
 - OS.execute() has been changed on Windows to use CMD.exe by default so that it behaves similar to other operating systems. This change was also added to Script Editor Plugin when opening external editors. OS.execute is poorly implemented on Windows and causes some internal commands to not work properly. I suspect the reason exported icons never change is because it fails running rcedit 
 - Fixed Signed Distance Field for Bitmap Fonts. This has been an open issue in Godot 3 since 2018 see [this post](https://github.com/godotengine/godot/issues/8022). It has been fixed in Godot 4 but not in 3. Had to completely re-implement it in GLES2 based on older Godot 2.1 code, fix it for GLES3 and manually add it to some of the controls. Before it only worked for Label and only in GLES3 and that's it. Now it works in GLES2 and GLES3 but only for the specific controls. The controls which have it enabled are Button, Label, RichTextLabel, OptionButton, ItemList, ProgressBar, LineEdit, Tabs and any control that extends or implements those controls.
@@ -61,6 +62,7 @@
 
 ### Removed
 
+- Removed rendundant thread sync `draw_pending` function. See [this pr](https://github.com/godotengine/godot/pull/35758)
 - Parameters `[deps]` and `[params]` from `.import` files are no longer saved in the exported game. They are never used by exported game and use unecessary processing, memory and space in the `.pck`. 
 - Deprecated `enabled_focus_mode` has been completely removed
 - About menu has been simplified and most of the Godot donation and donors have been removed
