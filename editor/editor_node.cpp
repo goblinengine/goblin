@@ -1495,6 +1495,12 @@ static void _reset_animation_players(Node *p_node, List<Ref<AnimatedValuesBackup
 }
 
 void EditorNode::_save_scene(String p_file, int idx) {
+
+	// GOBLIN ENGINE disable saving 3D imported scenes to avoid errors
+	if (p_file.ends_with(".fbx") || p_file.ends_with(".gltf") || p_file.ends_with(".glb") || p_file.ends_with(".dae") || p_file.ends_with(".obj")) {
+		return;
+	}
+
 	Node *scene = editor_data.get_edited_scene_root(idx);
 
 	if (!scene) {

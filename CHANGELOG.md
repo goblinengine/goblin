@@ -28,6 +28,7 @@
 
 ### Changes
 
+- Imported 3D scenes are disabled from saving to a scene to avoid errors. From [this pr](https://github.com/godotengine/godot/pull/42367).
 - Displays "use onready var" error message when using `get_child()` and `get_parent()` without `onready`. Adapted to 3.x from [this pr](https://github.com/godotengine/godot/pull/36889)
 - Control `get_global_rect()` now returns correct rect from [this pr](https://github.com/godotengine/godot-proposals/issues/811)
 - Added `blend_premul_alpha` to scene shaders adapted from [this PR](https://github.com/godotengine/godot/pull/36747)
