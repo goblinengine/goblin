@@ -26,7 +26,8 @@
 - Tabs can now be moved to the bottom and have their own styles. Adapted from Godot 4.0 unmerged PR [#44420](https://github.com/godotengine/godot/pull/44420)
 
 ### Changes
- 
+
+- Displays 'use onready var' error message for .get_child() .get_parent() adapted to 3.x from [this pr](https://github.com/godotengine/godot/pull/36889)
 - `get_global_rect()` returns correct rect from [this pr](https://github.com/godotengine/godot-proposals/issues/811)
 - Added `blend_premul_alpha` to scene shaders adapted from [this PR](https://github.com/godotengine/godot/pull/36747)
 - Visual Script nodes now move with comment node. Adapted from [this pr](https://github.com/godotengine/godot/pull/54970).
