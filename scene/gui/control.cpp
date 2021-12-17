@@ -1836,7 +1836,7 @@ Size2 Control::get_size() const {
 }
 
 Rect2 Control::get_global_rect() const {
-	return Rect2(get_global_position(), get_size());
+	return Rect2(get_global_position(), get_size() * get_global_transform().get_scale()); // GODOT ENGINE control node global rect scale fix
 }
 
 Rect2 Control::get_window_rect() const {

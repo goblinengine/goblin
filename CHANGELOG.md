@@ -27,6 +27,7 @@
 
 ### Changes
  
+- `get_global_rect()` returns correct rect from [this pr](https://github.com/godotengine/godot-proposals/issues/811)
 - Added `blend_premul_alpha` to scene shaders adapted from [this PR](https://github.com/godotengine/godot/pull/36747)
 - Visual Script nodes now move with comment node. Adapted from [this pr](https://github.com/godotengine/godot/pull/54970).
 - TSCN Text Scenes (tscn) are now converted to binary scn upon export. Optionally via `"filesystem/on_save/compress_binary_resources"`. This did not work previously. Adapted from a pr found [here](https://github.com/godotengine/godot/pull/51096).
