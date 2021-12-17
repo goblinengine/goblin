@@ -18,9 +18,7 @@ The aim of this project is multifold:
 - All new functionality must be lean and compact adding very little overhead
 - Optimize, tweak, polish the current set of feature
 
-I think I should also clarify the design philsophy behind this project:
-
-The official project is in a permanent state of change. Every release brings new features and breaks old ones. Goblin aims to slow down and focus on what we have, add quality of life changes or add new but light weight features that expand what is possible to create with this tool. The aim is not to create a competitive game engine but rather a flexible multimedia tool that can be used for education, art, music, games, software or any other projects.
+The aim is not to create a competitive game engine but rather a flexible multimedia tool that can be used for education, art, music, games, software or any other projects in addition to games.
 
 Please have a look at list of [Goblin Changes](https://github.com/goblinengine/goblin/blob/main/CHANGELOG.md) to find out more details.
 
