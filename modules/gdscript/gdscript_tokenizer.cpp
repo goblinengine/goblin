@@ -559,34 +559,53 @@ void GDScriptTokenizerText::_advance() {
 						_make_token(TK_OP_ASSIGN_DIV);
 						INCPOS(1);
 					} break;
-					case '*': { // multiline comment
+					// GOBLIN ENGINE multiline comments 
+					// backported from Godot 1 
+					// c style tokenizer
+					case '*': { // block comment
+						int pos = code_pos+2;
+						int new_line=line;
+						int new_col=column+2;
 
-						INCPOS(1);
-						bool is_in_comment = true;
-						while (is_in_comment) {
-							INCPOS(1);
+						while(true) {
+							if (_code[pos]=='0') {
+								_make_error("Unterminated Comment");
+								code_pos=pos;
+								return;
+							}
+							if (_code[pos]=='*' && _code[pos+1]=='/') {
+								new_col+=2;
+								pos+=2; //compensate
+								break;
+							} else if (_code[pos]=='\n') {
+								new_line++;
+								new_col=0;
+							} else {
+								new_col++;
+							}
+							pos++;
+						}
 
-							switch (GETCHAR(0)) {
-								case 0: { // end of file
-									_make_error("Unterminated Comment");
-									_make_token(TK_EOF);
-									return;
-								} break;
-								case '\n': { // newline
-									INCPOS(1);
-									column = 1;
-									line++;
-								} break;
-								case '*': { // candidate for end of comment
-									if (GETCHAR(1) == '/') { // end of comment
-										INCPOS(1);
-										is_in_comment = false;
-									}
-								} break;
+						column=new_col;
+						line=new_line;
+						code_pos=pos;
+						continue;
+
+					} break;
+					case '/': { // line comment skip
+
+						while(GETCHAR(0)!='\n') {
+							code_pos++;
+							if (GETCHAR(0)==0) { //end of file
+								_make_error("Unterminated Comment");
+								return;
 							}
 						}
-						INCPOS(1)
-						continue; // get the token after this comment
+						INCPOS(1);
+						column=0;
+						line++;
+						continue;
+
 					} break;
 					default:
 						_make_token(TK_OP_DIV);
