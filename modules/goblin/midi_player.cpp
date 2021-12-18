@@ -32,7 +32,8 @@ SOFTWARE.
 
 // MIDIFILE
 Error MidiFile::load(const String fileName) {
-	if(!(fileName.get_extension().to_lower() == "sf2" || fileName.get_extension().to_lower() == "mid" || fileName.get_extension().to_lower() == "midi") ) {
+	String ext = fileName.get_extension().to_lower();
+	if(!(ext == "sf2" || ext == "mid" || ext == "midi")) {
 		ERR_FAIL_COND_V("Incorrect file type", FAILED);
 	}
 

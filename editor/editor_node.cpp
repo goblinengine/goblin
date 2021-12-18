@@ -1497,7 +1497,8 @@ static void _reset_animation_players(Node *p_node, List<Ref<AnimatedValuesBackup
 void EditorNode::_save_scene(String p_file, int idx) {
 
 	// GOBLIN ENGINE disable saving 3D imported scenes to avoid errors
-	if (p_file.ends_with(".fbx") || p_file.ends_with(".gltf") || p_file.ends_with(".glb") || p_file.ends_with(".dae") || p_file.ends_with(".obj")) {
+	String ext = p_file.get_extension().to_lower();
+	if (ext == "fbx" || ext == "gltf" || ext == "glb" || ext.to_lower() == "dae" || ext.to_lower() == "obj" ) {
 		return;
 	}
 
