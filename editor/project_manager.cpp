@@ -862,7 +862,7 @@ public:
 		rshb->add_child(rvb);
 		Button *rs_button = memnew(CheckBox);
 		rs_button->set_button_group(rasterizer_button_group);
-		rs_button->set_text(TTR("OpenGL ES 3.0"));
+		rs_button->set_text(TTR("OpenGL ES 3.0 / WebGL 2.0"));
 		rs_button->set_meta("driver_name", "GLES3");
 		rvb->add_child(rs_button);
 		if (gles3_viable) {
@@ -875,7 +875,13 @@ public:
 			rvb->add_child(l);
 		}
 		l = memnew(Label);
-		l->set_text(TTR("Higher visual quality\nAll features available\nIncompatible with older hardware\nNot recommended for web games"));
+		// GOBLIN ENGINE project manager extra renderer info
+		l->set_text(
+				String::utf8("•  ") + TTR("Higher visual quality.") +
+				String::utf8("\n•  ") + TTR("All features available.") +
+				String::utf8("\n•  ") + TTR("Incompatible with older hardware.") +
+				String::utf8("\n•  ") + TTR("Not recommended for web games."));
+		l->set_modulate(Color(1, 1, 1, 0.7));
 		rvb->add_child(l);
 
 		rshb->add_child(memnew(VSeparator));
@@ -885,12 +891,18 @@ public:
 		rshb->add_child(rvb);
 		rs_button = memnew(CheckBox);
 		rs_button->set_button_group(rasterizer_button_group);
-		rs_button->set_text(TTR("OpenGL ES 2.0"));
+		rs_button->set_text(TTR("OpenGL ES 2.0 / WebGL 1.0"));
 		rs_button->set_meta("driver_name", "GLES2");
 		rs_button->set_pressed(!gles3_viable);
 		rvb->add_child(rs_button);
 		l = memnew(Label);
-		l->set_text(TTR("Lower visual quality\nSome features not available\nWorks on most hardware\nRecommended for web games"));
+		// GOBLIN ENGINE project manager extra renderer info
+		l->set_text(
+				String::utf8("•  ") + TTR("Lower visual quality.") +
+				String::utf8("\n•  ") + TTR("Some features not available.") +
+				String::utf8("\n•  ") + TTR("Works on most hardware.") +
+				String::utf8("\n•  ") + TTR("Recommended for web games."));
+		l->set_modulate(Color(1, 1, 1, 0.7));
 		rvb->add_child(l);
 
 		l = memnew(Label);
