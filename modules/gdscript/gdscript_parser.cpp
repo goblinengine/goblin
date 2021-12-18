@@ -5733,6 +5733,7 @@ bool GDScriptParser::_parse_type(DataType &r_type, bool p_can_be_void) {
 					can_index = false;
 					tokenizer->advance();
 				} break;
+				case GDScriptTokenizer::TK_CURSOR: // GOBLIN ENGINE script completion suggest members of a script
 				case GDScriptTokenizer::TK_IDENTIFIER: {
 					if (can_index) {
 						_set_error("Unexpected identifier.");
