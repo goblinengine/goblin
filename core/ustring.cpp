@@ -2420,6 +2420,7 @@ String String::insert(int p_at_pos, const String &p_string) const {
 
 	return pre + p_string + post;
 }
+
 String String::substr(int p_from, int p_chars) const {
 	if (p_chars == -1) {
 		p_chars = length() - p_from;
@@ -2443,7 +2444,40 @@ String String::substr(int p_from, int p_chars) const {
 }
 
 int String::find_last(const String &p_str) const {
+	const int src_len = p_str.length();
+
+	const int len = length();
+
+	if (src_len == 0 || len == 0) {
+		return -1; // won't find anything!
+	}
+
+	if (src_len == 1) { // GOBLIN ENGINE optimized string functions
+		const CharType *str = p_str.c_str();
+		const CharType *src = c_str();
+
+		for (int i = len - 1; i > 0; i--) {
+			if (str[0] == src[i]) {
+				return i;
+			}
+		}
+	} else if (src_len == 2) {
+		if (len < 1) {
+			return -1;
+		}
+
+		const CharType *str = p_str.c_str();
+		const CharType *src = c_str();
+
+		for (int i = len - 1; i > 1; i--) {
+			if (str[0] == src[i-1] && str[1] == src[i]) {
+				return i-1;
+			}
+		}
+	}
+
 	int pos = -1;
+
 	int findfrom = 0;
 	int findres = -1;
 	while ((findres = find(p_str, findfrom)) != -1) {
@@ -2463,8 +2497,32 @@ int String::find(const String &p_str, int p_from) const {
 
 	const int len = length();
 
-	if (src_len == 0 || len == 0) {
+	if (src_len == 0 || len == 0 || p_from >= len || p_from < 0) {
 		return -1; // won't find anything!
+	}
+
+	if (src_len == 1) { // GOBLIN ENGINE optimized string functions
+	const CharType *str = p_str.c_str();
+	const CharType *src = c_str();
+
+		for (int i = p_from; i < len; i++) {
+			if (str[0] == src[i]) {
+				return i;
+			}
+		}
+	} else if (src_len == 2) {
+		if (len < 1) {
+			return -1;
+		}
+
+		const CharType *str = p_str.c_str();
+		const CharType *src = c_str();
+
+		for (int i = p_from; i < len-1; i++) {
+			if (str[0] == src[i] && str[1] == src[i+1]) {
+				return i;
+			}
+		}
 	}
 
 	const CharType *src = c_str();
