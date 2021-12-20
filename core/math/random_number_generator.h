@@ -53,14 +53,6 @@ public:
 
 	_FORCE_INLINE_ void randomize() { randbase.randomize(); }
 
-	_FORCE_INLINE_ Variant randchoice(const Variant &p_from); // GOBLIN ENGINE rng
-
-	_FORCE_INLINE_ void randshuffle(Array p_array); // GOBLIN ENGINE rng
-
-	_FORCE_INLINE_ bool randdecision(float probability) { return randbase.randf() <= probability; } // GOBLIN ENGINE rng
-
-	_FORCE_INLINE_ Variant randroll(uint32_t count, uint32_t sides); // GOBLIN ENGINE rng
-
 	_FORCE_INLINE_ uint32_t randi() { return randbase.rand(); }
 
 	_FORCE_INLINE_ real_t randf() { return randbase.randf(); }
@@ -70,12 +62,8 @@ public:
 	_FORCE_INLINE_ real_t randfn(real_t mean = 0.0, real_t deviation = 1.0) { return randbase.randfn(mean, deviation); }
 
 	_FORCE_INLINE_ int randi_range(int from, int to) {
-		unsigned int ret = randbase.rand();
-		if (to < from) {
-			return ret % (from - to + 1) + to;
-		} else {
-			return ret % (to - from + 1) + from;
-		}
+		// GOBLIN ENGINE rng randi optimization
+		return to < from ? randbase.rand() % (from - to + 1) + to : randbase.rand() % (to - from + 1) + from;
 	}
 
 	RandomNumberGenerator();

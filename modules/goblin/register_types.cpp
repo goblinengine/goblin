@@ -11,10 +11,12 @@
 #include "io/image_loader_indexed_png.h"
 #include "io/resource_saver_indexed_png.h"
 #include "midi_player.h"
+#include "rand.h"
 
 static ImageLoaderIndexedPNG *image_loader_indexed_png;
 static Ref<ResourceSaverIndexedPNG> resource_saver_indexed_png;
 static MixinScriptLanguage *script_mixin_script = nullptr;
+static Ref<Rand> random;
 
 #if defined(TOOLS_ENABLED)
 static ScriptEditorBase *create_editor(const RES &p_resource) {
@@ -30,6 +32,7 @@ static void mixin_script_register_editor_callback() {
 #endif
 
 void register_goblin_types() {
+	
     ClassDB::register_class<ImageIndexed>();
 
 	image_loader_indexed_png = memnew(ImageLoaderIndexedPNG);
@@ -45,6 +48,11 @@ void register_goblin_types() {
 
 	ClassDB::register_class<MidiPlayer>();
 	ClassDB::register_class<MidiFile>();
+
+	random.instance();
+	ClassDB::register_class<Rand>();
+	Object *random = Object::cast_to<Object>(Rand::get_singleton());
+	Engine::get_singleton()->add_singleton(Engine::Singleton("Rand", random));
 
 #ifdef TOOLS_ENABLED
 	EditorNode::add_plugin_init_callback(mixin_script_register_editor_callback);
@@ -67,4 +75,6 @@ void unregister_goblin_types() {
 
 	ScriptServer::unregister_language(script_mixin_script);
 	memdelete(script_mixin_script);
+
+	random.unref();
 }

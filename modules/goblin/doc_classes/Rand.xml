@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="Rand" inherits="RandomNumberGenerator" version="3.5">
+	<brief_description>
+		A singleton class for generating random values.
+	</brief_description>
+	<description>
+		Rand is equivalent to [RandomNumberGenerator] except is a singleton class and can be called directly without an instance. Rand provides additinal functonality and can be set to different algorithms. As a singleton it avoids GDScript overhead providing the same functionality at almost double the performance.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="i">
+			<return type="int" />
+			<argument index="0" name="from" type="int" />
+			<argument index="1" name="to" type="int" />
+			<description>
+				Returns a random integer value between from and to.
+			</description>
+		</method>
+		<method name="f">
+			<return type="float" />
+			<argument index="0" name="from" type="float" />
+			<argument index="1" name="to" type="float" />
+			<description>
+				Returns a random float value between from and to.
+			</description>
+		</method>
+		<method name="ia">
+			<return type="int" />
+			<argument index="0" name="from" type="int" />
+			<argument index="1" name="to" type="int" />
+			<argument index="2" name="algorithm" type="int" />
+			<description>
+				Returns a random integer value between from and to using a specific algorithm.
+			</description>
+		</method>
+		<method name="choice">
+			<return type="Variant" />
+			<argument index="0" name="from" type="Variant" />
+			<description>
+				Returns a random element from a container or indexable sequence, such as [Array], [Dictionary], [String]. If container is empty, prints an error and returns [code]null[/code].
+			</description>
+		</method>
+		<method name="shuffle">
+			<return type="void" />
+			<argument index="0" name="array" type="Array" />
+			<description>
+				Shuffles the array such that the items will have a random order. By default, this method uses the global random number generator in [RandomNumberGenerator] singletons, but unlike in [method Array.shuffle], local instances of [RandomNumberGenerator].
+			</description>
+		</method>
+		<method name="roll">
+			<return type="Array" />
+			<argument index="0" name="count" type="int" />
+			<argument index="1" name="sides" type="int" />
+			<description>
+				Simulates a random roll of dice based on [code]count[/code] and dice [code]sides[/code].
+				[b]Note:[/b] The result is an Array that contains the sum as index 0 and all the rolls index 1 to count. 
+				[b]Note:[/b] The maximum dice count is 1 - 100 and maximum dice sides is 2 - 144.
+				[codeblock]
+				Rand.roll(2, 6) # return a random 2d6 roll 
+				Rand.roll(4, 8)[0] # return the sum of a 4d8 roll
+				[/codeblock]
+			</description>
+		</method>
+		<method name="decision">
+			<return type="bool" />
+			<argument index="0" name="probability" type="float" />
+			<description>
+				Returns a boolean based on a given [code]probability[/code] value in the range of [code]0.0..1.0[/code]. The higher the probability value the higher the chance of this returning [code]true[/code].
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="seed" type="int" setter="set_seed" getter="get_seed" default="0">
+			Initializes the random number generator state based on the given seed value. A given seed will give a reproducible sequence of pseudo-random numbers.
+		</member>
+		<member name="state" type="int" setter="set_state" getter="get_state" default="0">
+			The current state of the random number generator. Save and restore this property to restore the generator to a previous state:
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>

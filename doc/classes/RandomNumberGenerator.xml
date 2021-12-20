@@ -61,46 +61,6 @@
 				Setups a time-based seed to generator.
 			</description>
 		</method>
-		<!-- GOBLIN ENGINE rng -->
-		<method name="randchoice">
-			<return type="Variant" />
-			<argument index="0" name="from" type="Variant" />
-			<description>
-				Returns a random element from a container or indexable sequence, such as [Array], [Dictionary], [String]. If container is empty, prints an error and returns [code]null[/code].
-			</description>
-		</method>
-		<!-- GOBLIN ENGINE rng -->
-		<method name="randshuffle">
-			<return type="void" />
-			<argument index="0" name="array" type="Array" />
-			<description>
-				Shuffles the array such that the items will have a random order. By default, this method uses the global random number generator in [RandomNumberGenerator] singletons, but unlike in [method Array.shuffle], local instances of [RandomNumberGenerator].
-			</description>
-		</method>
-		<!-- GOBLIN ENGINE rng -->
-		<method name="randroll">
-			<return type="Array" />
-			<argument index="0" name="count" type="int" />
-			<argument index="1" name="sides" type="int" />
-			<description>
-				Simulates a random roll of dice based on [code]count[/code] and dice [code]sides[/code].
-				[b]Note:[/b] The result is an Array that contains the sum as index 0 and all the rolls index 1 to count. 
-				[b]Note:[/b] The maximum dice count is 1 - 100 and maximum dice sides is 2 - 144.
-				[codeblock]
-				rng.randroll(2, 6) # return a random 2d6 roll 
-				rng.randroll(4, 8)[0] # return the sum of a 4d8 roll
-				[/codeblock]
-				[/codeblock]
-			</description>
-		</method>
-		<!-- GOBLIN ENGINE rng -->
-		<method name="randdecision">
-			<return type="bool" />
-			<argument index="0" name="probability" type="float" />
-			<description>
-				Returns a boolean based on a given [code]probability[/code] value in the range of [code]0.0..1.0[/code]. The higher the probability value the higher the chance of this returning [code]true[/code].
-			</description>
-		</method>
 	</methods>
 	<members>
 		<member name="seed" type="int" setter="set_seed" getter="get_seed" default="0">
