@@ -10,15 +10,11 @@
 
 [Goblin Engine](https://goblinengine.github.io) is a custom build of [Godot Engine](https://godotengine.org) created for educational and personal use. It provides additional functionality not officially supported.
 
-The aim of this project is multifold:
-- Make the engine more flexible by providing more functionality out of the box
+The goal of this project is multifold:
 - Implement useful features from scratch or from PRs, Godot forks, modules or adapt GDNative addons into modules so they can be shipped with the engine
 - Make minor changes to core without breaking compatibility
 - Maintain full compatibility with latest Godot 3.x branch
-- All new functionality must be lean and compact adding very little overhead
-- Optimize, tweak, polish the current set of feature
-
-The aim is not to create a competitive game engine but rather a flexible multimedia tool that can be used for education, art, music, games, software or any other projects in addition to games.
+- All new functionality primarily added as a Goblin module
 
 Please have a look at list of [Goblin Changes](https://github.com/goblinengine/goblin/blob/main/CHANGELOG.md) to find out more details.
 
