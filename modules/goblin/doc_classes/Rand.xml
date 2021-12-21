@@ -51,15 +51,56 @@
 		<method name="roll">
 			<return type="Array" />
 			<argument index="0" name="count" type="int" />
-			<argument index="1" name="sides" type="int" />
+			<argument index="1" name="faces" type="int" />
 			<description>
-				Simulates a random roll of dice based on [code]count[/code] and dice [code]sides[/code].
-				[b]Note:[/b] The result is an Array that contains the sum as index 0 and all the rolls index 1 to count. 
-				[b]Note:[/b] The maximum dice count is 1 - 100 and maximum dice sides is 2 - 144.
+				Simulates a random roll of dice using [parameter count] and [parameter faces].
+				[b]Note:[/b] The result is a Dictionary that contains the [code]sum[/code] and all the [code]rolls[/code]. 
 				[codeblock]
-				Rand.roll(2, 6) # return a random 2d6 roll 
-				Rand.roll(4, 8)[0] # return the sum of a 4d8 roll
+					{
+						"sum": int,
+						"rolls": []
+					}
 				[/codeblock]
+				[b]Note:[/b] The maximum dice count is 1 - 100 and maximum dice faces are 2 - 144.
+				[codeblock]
+					Rand.roll(2, 6) # return a random 2d6 roll 
+					Rand.roll(4, 8).sum # return the sum of a 4d8 roll
+				[/codeblock]
+			</description>
+		</method>
+		<method name="roll_notation">
+			<return type="Array" />
+			<argument index="0" name="dice_notation" type="String" />
+			<description>
+				Simulates a random roll of dice using [url=https://en.wikipedia.org/wiki/Dice_notation]dice notation[/url]. The function is meant to with any valid parameters even if they don't really make sense such as rolling 2 dice and dropping 100. It is also meant to fail silently. If you are not getting the results you expected or empty dictionary that means your parameters are wrong or your dice notation is incorrect.
+				[codeblock]
+				Dice notation: Rx ( AdX kdlhY U !E xC +-B )				
+				Rx: Repeat everything (max 100 times)
+				AdX: roll A dice with X faces (max 100 dice with 144 faces)
+				kdlhY: (k)eep/(d)iscard (l)ow/low Y number of dice (can only be used once)
+				U: unique rolls if possible (exploded dice don't have to be unique)
+				!E: explode (reroll and add to sum) when E is rolled (explosion happens after keeping/dropping and unique)
+				xC: multiply sum by C
+				+-B: add or subtract B from sum
+				[/codeblock]
+				[b]Note:[/b] The result is a Dictionary that contains [code]notation[/code], [code]sum[/code], [code]rolls[/code], [code]dropped_rolls[/code], [code]exploded_rolls[/code] and [code]exploded[/code]. 
+				[codeblock]
+					{
+						"dropped_rolls": [], # list of dropped rolls (are not counted in the sum)
+						"exploded_rolls": [], # list of exploded rolls (are counted in the sum)
+						"explodes": int, # number of times the dice exploded
+						"notation": String, # initial dice notation
+						"rolls": [] # list of rolled dice
+						"sum": int, # sum exploded and non dropped rolls
+					}
+				[/codeblock]
+				[b]Note:[/b] The maximum dice count is 1 - 100 and maximum dice faces are 2 - 144.
+				[codeblock]
+					Rand.roll_notation("4x(2d6!1)") # roll 2 dice with 6 faces explode on 1 repeat everything 4 times.
+					Rand.roll_notation("2d6") # 2d6 roll 2 dice with 6 faces
+					Rand.roll_notation("5x(3d10+1)") #roll 3 dice with 10 faces add 1 to the total sum then repeat everything 5 times and sum it all together
+					Rand.roll_notation("4d8dh2") # roll 4 dice with 8 faces discard 2 highest rolls
+				[/codeblock]	
 			</description>
 		</method>
 		<method name="decision">

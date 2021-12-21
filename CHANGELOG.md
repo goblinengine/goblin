@@ -5,6 +5,14 @@
 
 ### New
 
+- New `Rand` singleton that allows generating completely random values from anywhere:
+    * `shuffle(Array)` shuffles an Array
+    * `choice(Variant)` picks a random value from an Array or Dictionary or random character from a string
+    * `decision(double)` helps generates a random decisions based on a probability from `0.0` to `1.0` (0% to 100%)
+    * `roll(count,side)` simulates a random dice roll using count and side and returns an Array with sum at index 0 and all rolls starting with index 1. Count is 1 - 100, sides is 2 - 144. 
+    * `roll_notation(dice_notation`) simulated a dice roll using more complex dice notation such as 2d6, 2x(3d6!U) and so forth. Much of it is pretty standard.
+    * `i(from, to)` same as `rand_range` except is auto randomized and slightly faster.
+    * `f(from, to)` same as `randf_range` except is also auto randomized.
 - Added autotile auto-transforms pr found [here](https://github.com/godotengine/godot/pull/39046) to Goblin. The proposal is [here](https://github.com/godotengine/godot-proposals/issues/893). The idea here is to allow specific transforms on autotiles so that when looking up a specific bitmask the autotile is esentially transformed dynamically based on allowed transformations. This makes it so it requires less pre-made tile transforms. The drawback is the tile transforms are less unique but could work incredibly well in some situations. It also allows for much smaller texture file.
 - Added `eval("expression")` function in `@GDScript` which parses a string expression and outputs the result or null if couldn't parse. It does not take inputs like Expression but can be added since it actually uses Expression class in the backend. This is a common function in many interpeted languages. 
 - Added [SQLite Module](https://github.com/godot-extended-libraries/godot-sqlite/tree/3.2) by K. S. Ernest (iFire) Lee (fire). By default it is disabled but will be included in server and editor builds only. Use `module_sqlite_enabled=yes` to build.
@@ -19,11 +27,6 @@
 - You can now add C style multiline comments in GDScript `/* multi line commment */`. Implemented from a rejected PR found [here](https://github.com/godotengine/godot/pull/18258). I actually ended up re-implementing this from a Godot 1 [change](https://github.com/godotengine/godot/pull/838) as Godot originally had C style multiline. The first PR made error lines not work correctly which is fixed by the second pr.
 - New `import "<path>"` function for Shader Editor that allows for basic ability to import external shader code into current shader. For Visual Shader Editor use Global Expression node. Adapted from [basic import shader](https://github.com/lyuma/godot/commit/c6b72f1f6632311aa39fe1a01ee7e982f621ed49) by iFire and Lyuma. The import functionality seems to be able to pull the file from anywhere in the local path but `res://` is recommended. The imported path is highlighted using default string color.
 - New `ImageIndexed` class. Added as a custom module under modules/goblin just to keep it separated from the rest of Godot. Makes it easier to merge new 3.x changes back into Goblin. ImageIndexed allows working with pseudo-random indexed images and palettes. This was ported from [Goost Engine](https://github.com/goostengine) and implemented by Xrayez. There is internal documentation as well more documentation on over on [Goost Documentation](https://goost.readthedocs.io/en/latest/classes/class_imageindexed.html?highlight=imageindex) page in the official project.
-- New `RandomNumberGenerator` functions (based on code from [Goost Engine](https://github.com/goostengine)):
-    * `randshuffle(Array)` shuffles an Array
-    * `randchoice(Variant)` picks a random value from an Array or Dictionary or random character from a string
-    * `randdecision(double)` helps generates a random decisions based on a probability from `0.0` to `1.0` (0% to 100%)
-    * `randroll(count,side)` simulates a random dice roll using count and side and returns an Array with sum at index 0 and all rolls starting with index 1. Count is 1 - 100, sides is 2 - 144. 
 - Tabs can now be moved to the bottom and have their own styles. Adapted from Godot 4.0 unmerged PR [#44420](https://github.com/godotengine/godot/pull/44420)
 
 ### Changes

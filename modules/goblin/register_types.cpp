@@ -16,7 +16,7 @@
 static ImageLoaderIndexedPNG *image_loader_indexed_png;
 static Ref<ResourceSaverIndexedPNG> resource_saver_indexed_png;
 static MixinScriptLanguage *script_mixin_script = nullptr;
-static Ref<Rand> random;
+static Ref<Rand> rand_ref;
 
 #if defined(TOOLS_ENABLED)
 static ScriptEditorBase *create_editor(const RES &p_resource) {
@@ -49,10 +49,9 @@ void register_goblin_types() {
 	ClassDB::register_class<MidiPlayer>();
 	ClassDB::register_class<MidiFile>();
 
-	random.instance();
+	rand_ref.instance();
 	ClassDB::register_class<Rand>();
-	Object *random = Object::cast_to<Object>(Rand::get_singleton());
-	Engine::get_singleton()->add_singleton(Engine::Singleton("Rand", random));
+	Engine::get_singleton()->add_singleton(Engine::Singleton("Rand", Object::cast_to<Object>(Rand::get_singleton())));
 
 #ifdef TOOLS_ENABLED
 	EditorNode::add_plugin_init_callback(mixin_script_register_editor_callback);
@@ -76,5 +75,5 @@ void unregister_goblin_types() {
 	ScriptServer::unregister_language(script_mixin_script);
 	memdelete(script_mixin_script);
 
-	random.unref();
+	rand_ref.unref();
 }
