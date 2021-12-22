@@ -7,18 +7,17 @@
 Rand *Rand::singleton = nullptr;
 
 Rand::Rand() {
+	randomize();
 	singleton = this;
 	dice_regex.compile("^(?<repeat>\\d*[x])?\\(?(?<count>\\d{1,3})?d(?<faces>\\%|\\d{1,3})(?<unique>U)?(?<explode>!\\d{0,3})?(?<dropkeep>(?:[dk][lh]?\\d{0,2}))?(?<mult>[x]\\d+)?(?<addsub>[+-]\\d+)?\\)?$");
 }
 
 int Rand::i(int from, int to) {
 	// return int(abs(sin(OS::get_singleton()->get_ticks_usec() % to / 12.531)) * to * 11.31) % (to - from) + from;
-	randomize();
 	return randi_range(from, to);
 }
 
 real_t Rand::f(real_t from, real_t to) {
-	randomize();
 	return randf_range(from, to);
 }
 
@@ -72,7 +71,7 @@ bool Rand::decision(float probability) {
 Variant Rand::roll(uint32_t count, uint32_t faces) {
 	Dictionary roll_res;	
 
-	// silently fail if faces or rolls are to small or too big
+	// silently fail if faces or rolls are too small or too big
 	if (faces < 2 || faces > 144 || count < 1 || count > 100) {
 		return roll_res;
 	}
@@ -82,7 +81,7 @@ Variant Rand::roll(uint32_t count, uint32_t faces) {
 	int sum = 0;
 	
 	for (int c = 0; c < count; c++) {
-		val = i(1, faces);
+		val = randi_range(1, faces);
 		rolls.append(val);
 		sum += val;
 	}
@@ -94,15 +93,17 @@ Variant Rand::roll(uint32_t count, uint32_t faces) {
 }
 
 /*
-Rx ( AdX {kdlmMhY} U !E xC +-B )
+Rx ( AdX  U !E {kdlmMhY} xC +-B )
 
-Rx = Repeat(max 100 times)
-AdX = roll A dice with X faces (max 100d144)
-kdlmMhY = (k)eep/(d)iscard (l)ow/low (m)iddle/high (M)iddle/(h)igh Y number of dice
-U = unique rolls if possible (exploded dice don't have to be unique)
-! = explode (reroll and add to sum) when E is rolled (explosion happens after keeping/dropping and unique)
-xC = multiply sum by C
-+-B = add or subtract B from sum
+Rx: repeat everything R times (max 100 times)
+AdX: roll A dice with X faces (max 100 dice with 144 faces)
+U: unique rolls if possible (exploded dice don't have to be unique)
+!E: explode (reroll and add to sum) when E is rolled (explosion happens after unique but before keeping/dropping and exploded rolls go in their own array)
+kdlhY: (k)eep/(d)drop (l)ow/(h)igh Y number of dice (can only be used once after unique and exploded rolls don't get dropped)
+xC: multiply sum by C
++-B: add or subtract B from sum
+
+mM have not yet been implemented
 
 Example:
 2d6!1 = roll 2 dice with 6 faces and explode any time you roll 1
@@ -130,7 +131,7 @@ Variant Rand::roll_notation(const String dice_notation) {
 	int count = count_s.empty() ? 1 : count_s.to_int();
 	int faces = faces_s == "%" ? 100 : faces_s.to_int();
 
-	// silently fail if faces or rolls are to small or too big
+	// silently fail if faces or rolls are too small or too big
 	if (faces < 2 || faces > 144 || count < 1 || count > 100) {
 		return roll_res;
 	}
@@ -155,7 +156,7 @@ Variant Rand::roll_notation(const String dice_notation) {
 	for(int r = 0; r < repeat; r++) {
 		sum = 0;
 		for (int c = 0; c < count; c++) {
-			val = i(1, faces);
+			val = randi_range(1, faces);
 			if(!unique || (unique && rolls.size() < faces && !rolls.has(val))) {
 				rolls.append(val);
 				sum += val;
@@ -164,7 +165,7 @@ Variant Rand::roll_notation(const String dice_notation) {
 			}
 			if (explode > 0 && val > 0) {
 				while(val == explode) {
-					val = i(1, faces);
+					val = randi_range(1, faces);
 					exploded_rolls.append(val);
 					explodes++;
 					sum += val;
@@ -187,6 +188,7 @@ Variant Rand::roll_notation(const String dice_notation) {
 		if (dropkeep == 0) dropkeep = 1;
 		if(dropkeep_s.begins_with("d")) dropkeep = rolls.size() - dropkeep;
 
+		// TODO: implement mM
 		if (dropkeep_s.begins_with("kl") || dropkeep_s.begins_with("dh")) {
 			//keep lowest/drop highest
 			int dropkeep_index;
@@ -237,4 +239,7 @@ void Rand::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("decision", "probability"), &Rand::decision);
 	ClassDB::bind_method(D_METHOD("roll", "count", "faces"), &Rand::roll);
 	ClassDB::bind_method(D_METHOD("roll_notation", "dice_notation"), &Rand::roll_notation);
+
+	ADD_PROPERTY_DEFAULT("seed", 0);
+	ADD_PROPERTY_DEFAULT("state", 0);
 }

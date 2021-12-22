@@ -4,7 +4,8 @@
 		A singleton class for generating random values.
 	</brief_description>
 	<description>
-		Rand is equivalent to [RandomNumberGenerator] except is a singleton class and can be called directly without an instance. Rand provides additinal functonality and can be set to different algorithms. As a singleton it avoids GDScript overhead providing the same functionality at almost double the performance.
+		Rand builds on [RandomNumberGenerator] to provide additional functionality. Rand is a singleton and t herefore it can be called directly without an instance and as a singleton it appears to be somewhat faster than [RandomNumberGenerator] as it avoid much of the GDScript overhead.
+		Rand is randomized by default at editor/game restart but since it inherits from [RandomNumberGenerator] you can manually set the seed and state from saved data to make it completely predictable. Seeding changes state so always set seed first and state second.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -72,18 +73,18 @@
 			<return type="Array" />
 			<argument index="0" name="dice_notation" type="String" />
 			<description>
-				Simulates a random roll of dice using [url=https://en.wikipedia.org/wiki/Dice_notation]dice notation[/url]. The function is meant to with any valid parameters even if they don't really make sense such as rolling 2 dice and dropping 100. It is also meant to fail silently. If you are not getting the results you expected or empty dictionary that means your parameters are wrong or your dice notation is incorrect.
-				[codeblock]
-				Dice notation: Rx ( AdX kdlhY U !E xC +-B )				
-				Rx: Repeat everything (max 100 times)
+				Simulates a random roll of dice using [url=https://en.wikipedia.org/wiki/Dice_notation]dice notation[/url]. The function is meant to fail silently and will output an empty [Dictionary] on failure. It will also work with any parameters even if they don't make sense such as rolling 2 dice and dropping 100 and will only output what it can with the information given. Check your dice notation if you are not getting the results you expected.
+				Dice notation formula: [code]Rx(AdXU!EkdlhYxC+-B)[/code]
+				[codeblock]		
+				Rx: repeat everything R times (max 100 times)
 				AdX: roll A dice with X faces (max 100 dice with 144 faces)
-				kdlhY: (k)eep/(d)iscard (l)ow/low Y number of dice (can only be used once)
 				U: unique rolls if possible (exploded dice don't have to be unique)
-				!E: explode (reroll and add to sum) when E is rolled (explosion happens after keeping/dropping and unique)
+				!E: explode (reroll and add to sum) when E is rolled (explosion happens after unique but before keeping/dropping and exploded rolls go in their own array)
+				kdlhY: (k)eep/(d)drop (l)ow/(h)igh Y number of dice (can only be used once after unique and exploded rolls don't get dropped)
 				xC: multiply sum by C
 				+-B: add or subtract B from sum
 				[/codeblock]
-				[b]Note:[/b] The result is a Dictionary that contains [code]notation[/code], [code]sum[/code], [code]rolls[/code], [code]dropped_rolls[/code], [code]exploded_rolls[/code] and [code]exploded[/code]. 
+				[b]Note:[/b] The result is a Dictionary that contains [code]notation[/code], [code]sum[/code], [code]rolls[/code], [code]dropped_rolls[/code], [code]exploded_rolls[/code] and [code]explodes[/code] (tracks how many times the roll exploded). Explodes or keeps/drops only show in the result when those features are used. 
 				[codeblock]
 					{
 						"dropped_rolls": [], # list of dropped rolls (are not counted in the sum)
@@ -94,9 +95,9 @@
 						"sum": int, # sum exploded and non dropped rolls
 					}
 				[/codeblock]
-				[b]Note:[/b] The maximum dice count is 1 - 100 and maximum dice faces are 2 - 144.
+				[b]Note:[/b] The maximum dice count is 1 - 100 and maximum dice faces are 2 - 144. Also maximum repeats is set to 100.
 				[codeblock]
-					Rand.roll_notation("4x(2d6!1)") # roll 2 dice with 6 faces explode on 1 repeat everything 4 times.
+					Rand.roll_notation("4x(2d6!1)") # roll 2 dice with 6 faces explode on 1 repeat everything 4 times and sum it all together.
 					Rand.roll_notation("2d6") # 2d6 roll 2 dice with 6 faces
 					Rand.roll_notation("5x(3d10+1)") #roll 3 dice with 10 faces add 1 to the total sum then repeat everything 5 times and sum it all together
 					Rand.roll_notation("4d8dh2") # roll 4 dice with 8 faces discard 2 highest rolls
