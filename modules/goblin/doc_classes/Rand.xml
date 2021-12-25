@@ -77,7 +77,7 @@
 				Dice notation formula: [code]Rx(AdXU!EkdlhYxC+-B)[/code]
 				[codeblock]		
 				Rx: repeat everything R times (max 100 times)
-				AdX: roll A dice with X faces (max 100 dice with 144 faces)
+				AdX: roll A dice with X faces (max 100 dice with 144 faces). If A is omitted, it defaults to 1. X is and can be a number, a % symbol which will be converted to 100 (percentile dice) or an F which will be output -1 0 1 and will ignore explode or unique (fudge dice).
 				U: unique rolls if possible (exploded dice don't have to be unique)
 				!E: explode (reroll and add to sum) when E is rolled (explosion happens after unique but before keeping/dropping and exploded rolls go in their own array)
 				kdlhY: (k)eep/(d)drop (l)ow/(h)igh Y number of dice (can only be used once after unique and exploded rolls don't get dropped)

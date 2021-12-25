@@ -9,7 +9,7 @@ Rand *Rand::singleton = nullptr;
 Rand::Rand() {
 	randomize();
 	singleton = this;
-	dice_regex.compile("^(?<repeat>\\d*[x])?\\(?(?<count>\\d{1,3})?d(?<faces>\\%|\\d{1,3})(?<unique>U)?(?<explode>!\\d{0,3})?(?<dropkeep>(?:[dk][lh]?\\d{0,2}))?(?<mult>[x]\\d+)?(?<addsub>[+-]\\d+)?\\)?$");
+	dice_regex.compile("^(?<repeat>\\d*[x])?\\(?(?<count>\\d{1,3})?d(?<faces>F|\\%|\\d{1,3})(?<unique>U)?(?<explode>!\\d{0,3})?(?<dropkeep>(?:[dk][lh]?\\d{0,2}))?(?<mult>[x]\\d+)?(?<addsub>[+-]\\d+)?\\)?$");
 }
 
 int Rand::i(int from, int to) {
@@ -129,7 +129,8 @@ Variant Rand::roll_notation(const String dice_notation) {
 	String addsub_s = regex_res->get_string("addsub");
 
 	int count = count_s.empty() ? 1 : count_s.to_int();
-	int faces = faces_s == "%" ? 100 : faces_s.to_int();
+	bool fudge = faces_s == "F";
+	int faces = faces_s == "%" ? 100 : fudge ? 3 : faces_s.to_int();
 
 	// silently fail if faces or rolls are too small or too big
 	if (faces < 2 || faces > 144 || count < 1 || count > 100) {
@@ -157,7 +158,12 @@ Variant Rand::roll_notation(const String dice_notation) {
 		sum = 0;
 		for (int c = 0; c < count; c++) {
 			val = randi_range(1, faces);
-			if(!unique || (unique && rolls.size() < faces && !rolls.has(val))) {
+			if (fudge) {
+				val -= 2;
+				rolls.append(val);
+				sum += val;
+				continue;
+			} else if(!unique || (unique && rolls.size() < faces && !rolls.has(val))) {
 				rolls.append(val);
 				sum += val;
 			} else {
