@@ -319,7 +319,7 @@ int BaseButton::get_button_mask() const {
 }
 
 // GOBLIN ENGINE hide enabled focus mode deprecated feature
-/* void BaseButton::set_enabled_focus_mode(FocusMode p_mode) {
+/*  void BaseButton::set_enabled_focus_mode(FocusMode p_mode) {
 	enabled_focus_mode = p_mode;
 	if (!status.disabled) {
 		set_focus_mode(p_mode);
@@ -364,7 +364,7 @@ String BaseButton::get_tooltip(const Point2 &p_pos) const {
 	if (shortcut_in_tooltip && shortcut.is_valid() && shortcut->is_valid()) {
 		String text = shortcut->get_name() + " (" + shortcut->get_as_text() + ")";
 		if (shortcut->get_name().nocasecmp_to(tooltip) != 0) {
-			text += "\n" + tooltip;
+			text += "\n" + tr(tooltip);
 		}
 		tooltip = text;
 	}

@@ -24,7 +24,7 @@ name is available.
 
 ## Developers
 
-(Godot developers)
+(in alphabetical order, with over 10 commits excluding merges)
 
     Juan Linietsky (reduz)
     Ariel Manzur (punto-)
@@ -44,6 +44,7 @@ name is available.
     Anutrix
     Aren Villanueva (kurikaesu)
     Ariel Manzur (punto-)
+    Bartłomiej T. Listwon (Listwon)
     Bastiaan Olij (BastiaanOlij)
     Ben Brookshire (sheepandshepherd)
     Benjamin Larsson (Nallebeorn)
@@ -65,6 +66,7 @@ name is available.
     Daniel Rakos (aqnuep)
     dankan1890
     Danil Alexeev (dalexeev)
+    David Cambré (Gallilus)
     David Sichma (DavidSichma)
     David Snopek (dsnopek)
     Dharkael (lupoDharkael)
@@ -223,6 +225,7 @@ name is available.
     yg2f (SuperUserNameMan)
     Yuri Roubinsky (Chaosus)
     Yuri Sizov (pycbouh)
+    Zae Chao (zaevi)
     Zak Stam (zaksnet)
     Zher Huei Lee (leezh)
     ZuBsPaCe

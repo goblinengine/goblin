@@ -66,6 +66,8 @@
 #include "servers/arvr_server.h"
 #include "servers/audio_server.h"
 #include "servers/camera_server.h"
+#include "servers/navigation_2d_server.h"
+#include "servers/navigation_server.h"
 #include "servers/physics_2d_server.h"
 #include "servers/physics_server.h"
 #include "servers/register_server_types.h"
@@ -76,6 +78,7 @@
 #include "editor/doc/doc_data_class_path.gen.h"
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
+#include "editor/editor_translation.h"
 #include "editor/progress_dialog.h"
 #include "editor/project_manager.h"
 #ifndef NO_EDITOR_SPLASH
@@ -109,6 +112,8 @@ static ARVRServer *arvr_server = nullptr;
 static PhysicsServer *physics_server = nullptr;
 static Physics2DServer *physics_2d_server = nullptr;
 static VisualServerCallbacks *visual_server_callbacks = nullptr;
+static NavigationServer *navigation_server = nullptr;
+static Navigation2DServer *navigation_2d_server = nullptr;
 
 // We error out if setup2() doesn't turn this true
 static bool _start_success = false;
@@ -174,7 +179,7 @@ static String get_full_version_string() {
 	if (hash.length() != 0) {
 		hash = "." + hash.left(9);
 	}
-	return String(VERSION_GOBLIN_FULL_BUILD) + hash;
+	return String(VERSION_FULL_BUILD) + hash;
 }
 
 // FIXME: Could maybe be moved to PhysicsServerManager and Physics2DServerManager directly
@@ -213,6 +218,19 @@ void finalize_physics() {
 	memdelete(physics_2d_server);
 }
 
+void initialize_navigation_server() {
+	ERR_FAIL_COND(navigation_server != nullptr);
+	navigation_server = NavigationServerManager::new_default_server();
+	navigation_2d_server = memnew(Navigation2DServer);
+}
+
+void finalize_navigation_server() {
+	memdelete(navigation_server);
+	navigation_server = nullptr;
+	memdelete(navigation_2d_server);
+	navigation_2d_server = nullptr;
+}
+
 //#define DEBUG_INIT
 #ifdef DEBUG_INIT
 #define MAIN_PRINT(m_txt) print_line(m_txt)
@@ -221,8 +239,10 @@ void finalize_physics() {
 #endif
 
 void Main::print_help(const char *p_binary) {
-	print_line(String(VERSION_GOBLIN_FULL_NAME) + " - " + String(VERSION_WEBSITE));  // GOBLIN ENGINE
+	print_line(String(VERSION_NAME) + " v" + get_full_version_string() + " - " + String(VERSION_WEBSITE));
 	OS::get_singleton()->print("Free and open source software under the terms of the MIT license.\n");
+	OS::get_singleton()->print("(c) 2007-2021 Juan Linietsky, Ariel Manzur.\n");
+	OS::get_singleton()->print("(c) 2014-2021 Godot Engine contributors.\n");
 	OS::get_singleton()->print("\n");
 	OS::get_singleton()->print("Usage: %s [options] [path to scene or 'project.godot' file]\n", p_binary);
 	OS::get_singleton()->print("\n");
@@ -389,7 +409,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	ClassDB::register_class<Performance>();
 	engine->add_singleton(Engine::Singleton("Performance", performance));
 
-	GLOBAL_DEF("debug/settings/crash_handler/message", String("Please include this when reporting the bug on https://github.com/goblinengine/goblin/issues"));
+	GLOBAL_DEF("debug/settings/crash_handler/message", String("Please include this when reporting the bug on https://github.com/godotengine/godot/issues"));
 
 	MAIN_PRINT("Main: Parse CMDLine");
 
@@ -1309,6 +1329,22 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 	}
 #endif
 
+	if (GLOBAL_GET("debug/settings/stdout/print_fps") || print_fps) {
+		// Print requested V-Sync mode at startup to diagnose the printed FPS not going above the monitor refresh rate.
+		if (OS::get_singleton()->_use_vsync && OS::get_singleton()->_vsync_via_compositor) {
+#ifdef WINDOWS_ENABLED
+			// V-Sync via compositor is only supported on Windows.
+			print_line("Requested V-Sync mode: Enabled (via compositor) - FPS will likely be capped to the monitor refresh rate.");
+#else
+			print_line("Requested V-Sync mode: Enabled - FPS will likely be capped to the monitor refresh rate.");
+#endif
+		} else if (OS::get_singleton()->_use_vsync) {
+			print_line("Requested V-Sync mode: Enabled - FPS will likely be capped to the monitor refresh rate.");
+		} else {
+			print_line("Requested V-Sync mode: Disabled");
+		}
+	}
+
 #ifdef UNIX_ENABLED
 	// Print warning before initializing audio.
 	if (OS::get_singleton()->get_environment("USER") == "root" && !OS::get_singleton()->has_environment("GODOT_SILENCE_ROOT_WARNING")) {
@@ -1504,6 +1540,7 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 	camera_server = CameraServer::create();
 
 	initialize_physics();
+	initialize_navigation_server();
 	register_server_singletons();
 
 	register_driver_types();
@@ -1521,7 +1558,6 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 	VisualServer::get_singleton()->callbacks_register(visual_server_callbacks);
 
 	_start_success = true;
-	locale = String();
 
 	ClassDB::set_current_api(ClassDB::API_NONE); //no more api is registered at this point
 
@@ -1628,6 +1664,11 @@ bool Main::start() {
 #ifdef TOOLS_ENABLED
 	if (doc_tool_path != "") {
 		Engine::get_singleton()->set_editor_hint(true); // Needed to instance editor-only classes for their default values
+
+		// Translate the class reference only when `-l LOCALE` parameter is given.
+		if (!locale.empty() && locale != "en") {
+			load_doc_translations(locale);
+		}
 
 		{
 			DirAccessRef da = DirAccess::open(doc_tool_path);
@@ -2175,7 +2216,6 @@ bool Main::iteration() {
 
 	uint64_t physics_process_ticks = 0;
 	uint64_t idle_process_ticks = 0;
-	uint64_t visual_process_ticks = 0; // GOBLIN ENGINE visual profiler
 
 	frame += ticks_elapsed;
 
@@ -2208,6 +2248,7 @@ bool Main::iteration() {
 			break;
 		}
 
+		NavigationServer::get_singleton_mut()->process(frame_slice * time_scale);
 		message_queue->flush();
 
 		PhysicsServer::get_singleton()->step(frame_slice * time_scale);
@@ -2236,8 +2277,6 @@ bool Main::iteration() {
 	visual_server_callbacks->flush();
 	message_queue->flush();
 
-	uint64_t visual_begin = OS::get_singleton()->get_ticks_usec(); // GOBLIN ENGINE visual profiler
-
 	VisualServer::get_singleton()->sync(); //sync if still drawing from previous frames.
 
 	if (OS::get_singleton()->can_draw() && VisualServer::get_singleton()->is_render_loop_enabled()) {
@@ -2252,8 +2291,6 @@ bool Main::iteration() {
 			force_redraw_requested = false;
 		}
 	}
-
-	visual_process_ticks = OS::get_singleton()->get_ticks_usec() - visual_begin; // GOBLIN ENGINE visual profiler
 
 #ifndef TOOLS_ENABLED
 	// we can choose to sync delta from here, just after the draw
@@ -2275,12 +2312,6 @@ bool Main::iteration() {
 
 	if (script_debugger) {
 		if (script_debugger->is_profiling()) {
-			// GOBLIN ENGINE visual profiler
-			Array values;
-			values.push_back("visual_time");
-			values.push_back(USEC_TO_SEC(visual_process_ticks));
-			script_debugger->add_profiling_frame_data("visual", values);
-
 			script_debugger->profiling_set_frame_times(USEC_TO_SEC(frame_time), USEC_TO_SEC(idle_process_ticks), USEC_TO_SEC(physics_process_ticks), frame_slice);
 		}
 		script_debugger->idle_poll();
@@ -2417,6 +2448,7 @@ void Main::cleanup(bool p_force) {
 
 	OS::get_singleton()->finalize();
 	finalize_physics();
+	finalize_navigation_server();
 
 	if (packed_data) {
 		memdelete(packed_data);

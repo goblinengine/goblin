@@ -120,7 +120,7 @@ void TabContainer::_gui_input(const Ref<InputEvent> &p_event) {
 			if (popup) {
 				popup_ofs = menu->get_width();
 			}
-			
+
 			Ref<Texture> increment = get_icon("increment");
 			Ref<Texture> decrement = get_icon("decrement");
 			if (pos.x > size.width - increment->get_width() - popup_ofs) {
@@ -595,6 +595,9 @@ void TabContainer::add_child_notify(Node *p_child) {
 		return;
 	}
 
+	call_deferred("_repaint");
+	update();
+
 	bool first = false;
 
 	if (get_tab_count() != 1) {
@@ -1044,7 +1047,7 @@ Size2 TabContainer::get_minimum_size() const {
 		ms.y += MAX(MAX(tab_bg->get_minimum_size().y, tab_fg->get_minimum_size().y), tab_disabled->get_minimum_size().y);
 		// GOBLIN ENGINE tabs at bottom
 		ms.y += _get_tabs_margin();
-		ms.y += font->get_height();	
+		ms.y += font->get_height();
 	}
 
 	Ref<StyleBox> sb = get_stylebox(tabs_at_bottom ? "panel_bottom" : "panel"); // GOBLIN ENGINE tabs at bottom
@@ -1135,6 +1138,7 @@ void TabContainer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_use_hidden_tabs_for_min_size"), &TabContainer::get_use_hidden_tabs_for_min_size);
 
 	ClassDB::bind_method(D_METHOD("_child_renamed_callback"), &TabContainer::_child_renamed_callback);
+	ClassDB::bind_method(D_METHOD("_repaint"), &TabContainer::_repaint);
 	ClassDB::bind_method(D_METHOD("_on_theme_changed"), &TabContainer::_on_theme_changed);
 	ClassDB::bind_method(D_METHOD("_on_mouse_exited"), &TabContainer::_on_mouse_exited);
 	ClassDB::bind_method(D_METHOD("_update_current_tab"), &TabContainer::_update_current_tab);

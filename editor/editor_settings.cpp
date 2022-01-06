@@ -31,22 +31,18 @@
 #include "editor_settings.h"
 
 #include "core/io/certs_compressed.gen.h"
-#include "core/io/compression.h"
 #include "core/io/config_file.h"
-#include "core/io/file_access_memory.h"
 #include "core/io/ip.h"
 #include "core/io/resource_loader.h"
 #include "core/io/resource_saver.h"
-#include "core/io/translation_loader_po.h"
 #include "core/os/dir_access.h"
 #include "core/os/file_access.h"
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
 #include "core/project_settings.h"
 #include "core/version.h"
-#include "editor/doc_translations.gen.h"
 #include "editor/editor_node.h"
-#include "editor/editor_translations.gen.h"
+#include "editor/editor_translation.h"
 #include "scene/main/node.h"
 #include "scene/main/scene_tree.h"
 #include "scene/main/viewport.h"
@@ -268,17 +264,14 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 		const Vector<String> locales_to_skip = String("ar,bn,fa,he,hi,ml,si,ta,te,ur").split(",");
 
 		String best;
-
-		EditorTranslationList *etl = _editor_translations;
-
-		while (etl->data) {
-			const String &locale = etl->lang;
+		const Vector<String> &locales = get_editor_locales();
+		for (int i = 0; i < locales.size(); i++) {
+			const String &locale = locales[i];
 
 			// Skip locales which we can't render properly (see above comment).
 			// Test against language code without regional variants (e.g. ur_PK).
 			String lang_code = locale.get_slice("_", 0);
 			if (locales_to_skip.find(lang_code) != -1) {
-				etl++;
 				continue;
 			}
 
@@ -292,8 +285,6 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 			if (best == String() && host_lang.begins_with(locale)) {
 				best = locale;
 			}
-
-			etl++;
 		}
 
 		if (best == String()) {
@@ -365,7 +356,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	hints["interface/theme/contrast"] = PropertyInfo(Variant::REAL, "interface/theme/contrast", PROPERTY_HINT_RANGE, "-1, 1, 0.01");
 	_initial_set("interface/theme/relationship_line_opacity", 0.1);
 	hints["interface/theme/relationship_line_opacity"] = PropertyInfo(Variant::REAL, "interface/theme/relationship_line_opacity", PROPERTY_HINT_RANGE, "0.00, 1, 0.01");
-	_initial_set("interface/theme/corner_radius", 3);
+	_initial_set("interface/theme/corner_radius", 3); // GOBLIN ENGINE theme
 	hints["interface/theme/corner_radius"] = PropertyInfo(Variant::INT, "interface/theme/corner_radius", PROPERTY_HINT_RANGE, "0,10,1", PROPERTY_USAGE_DEFAULT);
 	_initial_set("interface/theme/highlight_tabs", false);
 	_initial_set("interface/theme/border_size", 0); // GOBLIN ENGINE theme
@@ -585,6 +576,8 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	// 3D: Freelook
 	_initial_set("editors/3d/freelook/freelook_navigation_scheme", false);
 	hints["editors/3d/freelook/freelook_navigation_scheme"] = PropertyInfo(Variant::INT, "editors/3d/freelook/freelook_navigation_scheme", PROPERTY_HINT_ENUM, "Default,Partially Axis-Locked (id Tech),Fully Axis-Locked (Minecraft)");
+	_initial_set("editors/3d/freelook/freelook_sensitivity", 0.25);
+	hints["editors/3d/freelook/freelook_sensitivity"] = PropertyInfo(Variant::REAL, "editors/3d/freelook/freelook_sensitivity", PROPERTY_HINT_RANGE, "0.01, 2, 0.001");
 	_initial_set("editors/3d/freelook/freelook_inertia", 0.0);
 	hints["editors/3d/freelook/freelook_inertia"] = PropertyInfo(Variant::REAL, "editors/3d/freelook/freelook_inertia", PROPERTY_HINT_RANGE, "0, 1, 0.001");
 	_initial_set("editors/3d/freelook/freelook_base_speed", 5.0);
@@ -1011,50 +1004,10 @@ void EditorSettings::setup_language() {
 	}
 
 	// Load editor translation for configured/detected locale.
-	EditorTranslationList *etl = _editor_translations;
-	while (etl->data) {
-		if (etl->lang == lang) {
-			Vector<uint8_t> data;
-			data.resize(etl->uncomp_size);
-			Compression::decompress(data.ptrw(), etl->uncomp_size, etl->data, etl->comp_size, Compression::MODE_DEFLATE);
-
-			FileAccessMemory *fa = memnew(FileAccessMemory);
-			fa->open_custom(data.ptr(), data.size());
-
-			Ref<Translation> tr = TranslationLoaderPO::load_translation(fa);
-
-			if (tr.is_valid()) {
-				tr->set_locale(etl->lang);
-				TranslationServer::get_singleton()->set_tool_translation(tr);
-				break;
-			}
-		}
-
-		etl++;
-	}
+	load_editor_translations(lang);
 
 	// Load class reference translation.
-	DocTranslationList *dtl = _doc_translations;
-	while (dtl->data) {
-		if (dtl->lang == lang) {
-			Vector<uint8_t> data;
-			data.resize(dtl->uncomp_size);
-			Compression::decompress(data.ptrw(), dtl->uncomp_size, dtl->data, dtl->comp_size, Compression::MODE_DEFLATE);
-
-			FileAccessMemory *fa = memnew(FileAccessMemory);
-			fa->open_custom(data.ptr(), data.size());
-
-			Ref<Translation> tr = TranslationLoaderPO::load_translation(fa);
-
-			if (tr.is_valid()) {
-				tr->set_locale(dtl->lang);
-				TranslationServer::get_singleton()->set_doc_translation(tr);
-				break;
-			}
-		}
-
-		dtl++;
-	}
+	load_doc_translations(lang);
 }
 
 void EditorSettings::setup_network() {
@@ -1347,7 +1300,7 @@ bool EditorSettings::is_dark_theme() {
 	int LIGHT_COLOR = 2;
 	Color base_color = get("interface/theme/base_color");
 	int icon_font_color_setting = get("interface/theme/icon_and_font_color");
-	return (icon_font_color_setting == AUTO_COLOR && ((base_color.r + base_color.g + base_color.b) / 3.0) < 0.5) || icon_font_color_setting == LIGHT_COLOR;
+	return (icon_font_color_setting == AUTO_COLOR && base_color.get_luminance() < 0.5) || icon_font_color_setting == LIGHT_COLOR;
 }
 
 void EditorSettings::list_text_editor_themes() {
@@ -1501,7 +1454,7 @@ float EditorSettings::get_auto_display_scale() const {
 	const int screen = OS::get_singleton()->get_current_screen();
 	// Use the smallest dimension to use a correct display scale on portait displays.
 	const int smallest_dimension = MIN(OS::get_singleton()->get_screen_size(screen).x, OS::get_singleton()->get_screen_size(screen).y);
-	
+
 	// GOBLIN ENGINE dpi calculations
 	if (OS::get_singleton()->get_screen_dpi(screen) >= 96 && smallest_dimension >= 600 && OS::get_singleton()->get_screen_dpi(screen) < 300 && smallest_dimension < 1400) {
 		return Math::stepify(OS::get_singleton()->get_screen_dpi(screen)/96.0, 0.25);
@@ -1517,7 +1470,6 @@ float EditorSettings::get_auto_display_scale() const {
 		// Icons won't look great, but this is better than having editor elements overflow from its window.
 		return 0.75;
 	}
-
 	return 1.0;
 #endif
 }

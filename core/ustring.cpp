@@ -2444,7 +2444,7 @@ String String::substr(int p_from, int p_chars) const {
 }
 
 int String::find_last(const String &p_str) const {
-	const int src_len = p_str.length();
+		const int src_len = p_str.length();
 
 	const int len = length();
 
@@ -2477,7 +2477,6 @@ int String::find_last(const String &p_str) const {
 	}
 
 	int pos = -1;
-
 	int findfrom = 0;
 	int findres = -1;
 	while ((findres = find(p_str, findfrom)) != -1) {
@@ -2497,7 +2496,7 @@ int String::find(const String &p_str, int p_from) const {
 
 	const int len = length();
 
-	if (src_len == 0 || len == 0 || p_from >= len || p_from < 0) {
+if (src_len == 0 || len == 0 || p_from >= len || p_from < 0) {
 		return -1; // won't find anything!
 	}
 
@@ -3200,6 +3199,27 @@ String String::right(int p_pos) const {
 CharType String::ord_at(int p_idx) const {
 	ERR_FAIL_INDEX_V(p_idx, length(), 0);
 	return operator[](p_idx);
+}
+
+String String::indent(const String &p_prefix) const {
+	String new_string;
+	int line_start = 0;
+
+	for (int i = 0; i < length(); i++) {
+		const char32_t c = operator[](i);
+		if (c == '\n') {
+			if (i == line_start) {
+				new_string += c; // Leave empty lines empty.
+			} else {
+				new_string += p_prefix + substr(line_start, i - line_start + 1);
+			}
+			line_start = i + 1;
+		}
+	}
+	if (line_start != length()) {
+		new_string += p_prefix + substr(line_start);
+	}
+	return new_string;
 }
 
 String String::dedent() const {

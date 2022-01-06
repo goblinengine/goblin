@@ -1268,6 +1268,8 @@ void RasterizerSceneGLES3::_setup_geometry(RenderList::Element *e, const Transfo
 			if (s->blend_shapes.size() && e->instance->blend_values.size()) {
 				//blend shapes, use transform feedback
 				storage->mesh_render_blend_shapes(s, e->instance->blend_values.read().ptr());
+				//disable octahedral compression as the result of blend shapes is always uncompressed cartesian coordinates
+				state.scene_shader.set_conditional(SceneShaderGLES3::ENABLE_OCTAHEDRAL_COMPRESSION, false);
 				//rebind shader
 				state.scene_shader.bind();
 #ifdef DEBUG_ENABLED
@@ -2079,7 +2081,6 @@ void RasterizerSceneGLES3::_render_list(RenderList::Element **p_elements, int p_
 							} else {
 								glBlendFuncSeparate(GL_DST_COLOR, GL_ZERO, GL_ZERO, GL_ONE);
 							}
-
 						} break;
 						// GOBLIN ENGINE add blend_premul_alpha to shaders
 						case RasterizerStorageGLES3::Shader::Spatial::BLEND_MODE_PMALPHA: {

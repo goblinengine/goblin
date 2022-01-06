@@ -163,7 +163,6 @@ private:
 	void _propagate_ready();
 	void _propagate_exit_tree();
 	void _propagate_after_exit_tree();
-	void _propagate_validate_owner();
 	void _print_stray_nodes();
 	void _propagate_pause_owner(Node *p_owner);
 	Array _get_node_and_resource(const NodePath &p_path);
@@ -334,7 +333,7 @@ public:
 	void set_physics_process(bool p_process);
 	float get_physics_process_delta_time() const;
 	bool is_physics_processing() const;
-	
+
 	void set_fixed_process(bool p_process); //GOBLIN ENGINE fixed process
 	bool is_fixed_processing() const;
 

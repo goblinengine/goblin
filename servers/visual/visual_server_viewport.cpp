@@ -288,6 +288,17 @@ void VisualServerViewport::draw_viewports() {
 
 		ERR_CONTINUE(!vp->render_target.is_valid());
 
+		if (vp->use_arvr) {
+			// In ARVR mode it is our interface that controls our size
+			if (arvr_interface.is_valid()) {
+				// override our size, make sure it matches our required size
+				vp->size = arvr_interface->get_render_targetsize();
+			} else {
+				// reset this, we can't render the output without a valid interface (this will likely be so when we're in the editor)
+				vp->size = Vector2(0, 0);
+			}
+		}
+
 		bool visible = vp->viewport_to_screen_rect != Rect2() || vp->update_mode == VS::VIEWPORT_UPDATE_ALWAYS || vp->update_mode == VS::VIEWPORT_UPDATE_ONCE || (vp->update_mode == VS::VIEWPORT_UPDATE_WHEN_VISIBLE && VSG::storage->render_target_was_used(vp->render_target));
 		visible = visible && vp->size.x > 1 && vp->size.y > 1;
 
@@ -298,8 +309,6 @@ void VisualServerViewport::draw_viewports() {
 		VSG::storage->render_target_clear_used(vp->render_target);
 
 		if (vp->use_arvr && arvr_interface.is_valid()) {
-			// override our size, make sure it matches our required size
-			vp->size = arvr_interface->get_render_targetsize();
 			VSG::storage->render_target_set_size(vp->render_target, vp->size.x, vp->size.y);
 
 			// render mono or left eye first
@@ -657,6 +666,13 @@ void VisualServerViewport::viewport_set_hdr(RID p_viewport, bool p_enabled) {
 	ERR_FAIL_COND(!viewport);
 
 	VSG::storage->render_target_set_flag(viewport->render_target, RasterizerStorage::RENDER_TARGET_HDR, p_enabled);
+}
+
+void VisualServerViewport::viewport_set_use_32_bpc_depth(RID p_viewport, bool p_enabled) {
+	Viewport *viewport = viewport_owner.getornull(p_viewport);
+	ERR_FAIL_COND(!viewport);
+
+	VSG::storage->render_target_set_flag(viewport->render_target, RasterizerStorage::RENDER_TARGET_USE_32_BPC_DEPTH, p_enabled);
 }
 
 void VisualServerViewport::viewport_set_usage(RID p_viewport, VS::ViewportUsage p_usage) {

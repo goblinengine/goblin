@@ -46,7 +46,7 @@
 class VisualServerScene {
 public:
 	enum {
-		
+
 		MAX_INSTANCE_CULL = 65536,
 		MAX_LIGHTS_CULLED = 4096,
 		MAX_REFLECTION_PROBES_CULLED = 4096,
@@ -515,7 +515,7 @@ public:
 	Instance **instance_shadow_cull_result; //used for generating shadowmaps
 	Instance **light_cull_result;
 	RID *light_instance_cull_result;
-
+	
 	int light_cull_count;
 	int directional_light_count;
 	RID *reflection_probe_instance_cull_result; // GOBLIN ENGINE expose max renderable scene elements

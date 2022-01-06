@@ -8,8 +8,8 @@ from collections import OrderedDict
 EXTRACT_TAGS = ["description", "brief_description", "member", "constant", "theme_item", "link"]
 HEADER = """\
 # LANGUAGE translation of the Godot Engine class reference.
-# Copyright (c) 2007 Filip Anton.
-# Copyright (c) 2007-2021 Godot Engine contributors (cf. AUTHORS.md).
+# Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.
+# Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).
 # This file is distributed under the same license as the Godot source code.
 #
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
@@ -17,8 +17,8 @@ HEADER = """\
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: Goblin Engine class reference\\n"
-"Report-Msgid-Bugs-To: https://github.com/goblinengine/goblin\\n"
+"Project-Id-Version: Godot Engine class reference\\n"
+"Report-Msgid-Bugs-To: https://github.com/godotengine/godot\\n"
 "MIME-Version: 1.0\\n"
 "Content-Type: text/plain; charset=UTF-8\\n"
 "Content-Transfer-Encoding: 8-bit\\n"
@@ -26,7 +26,7 @@ msgstr ""
 """
 # Some strings used by make_rst.py are normally part of the editor translations,
 # so we need to include them manually here for the online docs.
-BASE_STRINGS = [
+HEADINGS = [
     "Description",
     "Tutorials",
     "Properties",
@@ -37,6 +37,7 @@ BASE_STRINGS = [
     "Constants",
     "Property Descriptions",
     "Method Descriptions",
+    "Theme Property Descriptions",
 ]
 
 ## <xml-line-number-hack from="https://stackoverflow.com/a/36430270/10846399">
@@ -221,15 +222,15 @@ def _make_translation_catalog(classes):
 
 
 ## generate the catalog file
-def _generate_translation_catalog_file(unique_msgs, output):
+def _generate_translation_catalog_file(unique_msgs, output, location_line=False):
     with open(output, "w", encoding="utf8") as f:
         f.write(HEADER)
-        for msg in BASE_STRINGS:
+        for msg in HEADINGS:
             f.write("#: doc/tools/make_rst.py\n")
             f.write('msgid "{}"\n'.format(msg))
             f.write('msgstr ""\n\n')
         for msg in unique_msgs:
-            if len(msg) == 0 or msg in BASE_STRINGS:
+            if len(msg) == 0 or msg in HEADINGS:
                 continue
 
             f.write("#:")
@@ -238,7 +239,10 @@ def _generate_translation_catalog_file(unique_msgs, output):
                 path = desc.desc_list.path.replace("\\", "/")
                 if path.startswith("./"):
                     path = path[2:]
-                f.write(" {}:{}".format(path, desc.line_no))
+                if location_line:  # Can be skipped as diffs on line numbers are spammy.
+                    f.write(" {}:{}".format(path, desc.line_no))
+                else:
+                    f.write(" {}".format(path))
             f.write("\n")
 
             f.write('msgid "{}"\n'.format(msg))

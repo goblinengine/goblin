@@ -262,7 +262,7 @@ changes are marked with `// -- GODOT --` comments.
 ## mbedtls
 
 - Upstream: https://tls.mbed.org/
-- Version: 2.16.11 (aa1d4e097342af799ba80dfb13640efef498227c, 2021)
+- Version: 2.16.12 (cf4667126010c665341f9e50ef691b7ef8294188, 2021)
 - License: Apache 2.0
 
 File extracted from upstream release tarball:
@@ -275,11 +275,6 @@ File extracted from upstream release tarball:
 - Applied the patch in `patches/padlock.diff`. This disables VIA padlock
   support which defines a symbol `unsupported` which clashes with a
   pre-defined symbol.
-- Applied the patch in `patches/pr4948-fix-clang12-opt.patch`. Upstream bugfix
-  from PR 4948 to fix a bug caused by Clang 12 optimizations.
-- Applied the patch in `patches/pr4819-faster-base64.patch`. This fixes a certs
-  parsing speed regression since 2.16.10 (upstream PR:
-  https://github.com/ARMmbed/mbedtls/pull/4819).
 - Added 2 files `godot_core_mbedtls_platform.c` and `godot_core_mbedtls_config.h`
   providing configuration for light bundling with core.
 
@@ -491,6 +486,22 @@ Files extracted from upstream source:
 
 - `Recast/` folder without `CMakeLists.txt`
 - License.txt
+
+
+## rvo2
+
+- Upstream: https://github.com/snape/RVO2-3D
+- Version: 1.0.1 (e3883f288a9e55ecfed3633a01af3e12778c6acf, 2016)
+- License: Apache 2.0
+
+Files extracted from upstream source:
+
+- All .cpp and .h files in the `src/` folder except for RVO.h, RVOSimulator.cpp and RVOSimulator.h
+- LICENSE
+
+Important: Some files have Godot-made changes; so to enrich the features
+originally proposed by this library and better integrate this library with
+Godot. Please check the file to know what's new.
 
 
 ## squish

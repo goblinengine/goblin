@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  register_types.cpp                                                   */
+/*  packed_scene_gltf.h                                                  */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,34 +28,39 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "register_types.h"
-
-#include "navigation_mesh_editor_plugin.h"
-
 #ifdef TOOLS_ENABLED
-EditorNavigationMeshGenerator *_nav_mesh_generator = nullptr;
-#endif
 
-void register_recast_types() {
-#ifdef TOOLS_ENABLED
-	ClassDB::APIType prev_api = ClassDB::get_current_api();
-	ClassDB::set_current_api(ClassDB::API_EDITOR);
+#ifndef PACKED_SCENE_GLTF_H
+#define PACKED_SCENE_GLTF_H
 
-	EditorPlugins::add_by_type<NavigationMeshEditorPlugin>();
-	_nav_mesh_generator = memnew(EditorNavigationMeshGenerator);
+#include "scene/main/node.h"
+#include "scene/resources/packed_scene.h"
 
-	ClassDB::register_class<EditorNavigationMeshGenerator>();
+#include "gltf_state.h"
 
-	Engine::get_singleton()->add_singleton(Engine::Singleton("NavigationMeshGenerator", EditorNavigationMeshGenerator::get_singleton()));
+class PackedSceneGLTF : public PackedScene {
+	GDCLASS(PackedSceneGLTF, PackedScene);
 
-	ClassDB::set_current_api(prev_api);
-#endif
-}
+protected:
+	static void _bind_methods();
 
-void unregister_recast_types() {
-#ifdef TOOLS_ENABLED
-	if (_nav_mesh_generator) {
-		memdelete(_nav_mesh_generator);
-	}
-#endif
-}
+public:
+	virtual void save_scene(Node *p_node, const String &p_path, const String &p_src_path,
+			uint32_t p_flags, int p_bake_fps,
+			List<String> *r_missing_deps, Error *r_err = nullptr);
+	virtual void _build_parent_hierachy(Ref<GLTFState> state);
+	virtual Error export_gltf(Node *p_root, String p_path, int32_t p_flags = 0,
+			real_t p_bake_fps = 1000.0f);
+	virtual Node *import_scene(const String &p_path, uint32_t p_flags,
+			int p_bake_fps, uint32_t p_compress_flags,
+			List<String> *r_missing_deps,
+			Error *r_err,
+			Ref<GLTFState> r_state);
+	virtual Node *import_gltf_scene(const String &p_path, uint32_t p_flags, float p_bake_fps, uint32_t p_compress_flags, Ref<GLTFState> r_state = Ref<GLTFState>());
+	virtual void pack_gltf(String p_path, int32_t p_flags = 0,
+			real_t p_bake_fps = 1000.0f, uint32_t p_compress_flags = Mesh::ARRAY_COMPRESS_DEFAULT, Ref<GLTFState> r_state = Ref<GLTFState>());
+};
+
+#endif // PACKED_SCENE_GLTF_H
+
+#endif // TOOLS_ENABLED

@@ -154,11 +154,9 @@ public:
 		TK_ARG_OUT,
 		TK_ARG_INOUT,
 		TK_RENDER_MODE,
-
 		// GOBLIN ENGINE import shader
 		TK_IMPORT, 
 		TK_QUOTE,
-		
 		TK_HINT_WHITE_TEXTURE,
 		TK_HINT_BLACK_TEXTURE,
 		TK_HINT_NORMAL_TEXTURE,
@@ -297,6 +295,17 @@ public:
 	enum SubClassTag {
 		TAG_GLOBAL,
 		TAG_ARRAY,
+	};
+
+	struct VaryingFunctionNames {
+		StringName fragment;
+		StringName vertex;
+		StringName light;
+		VaryingFunctionNames() {
+			fragment = "fragment";
+			vertex = "vertex";
+			light = "light";
+		}
 	};
 
 	struct Node {
@@ -521,6 +530,7 @@ public:
 
 	struct MemberNode : public Node {
 		DataType basetype;
+		bool basetype_const;
 		StringName base_struct_name;
 		DataPrecision precision;
 		DataType datatype;
@@ -538,6 +548,7 @@ public:
 		MemberNode() :
 				Node(TYPE_MEMBER),
 				basetype(TYPE_VOID),
+				basetype_const(false),
 				datatype(TYPE_VOID),
 				array_size(0),
 				owner(nullptr),
@@ -760,7 +771,7 @@ private:
 	bool error_set;
 	String error_str;
 	int error_line;
-	int include_lines;
+	int include_lines; // GOBLIN ENGINE import shader
 
 	String code;
 	int char_idx;
@@ -769,13 +780,7 @@ private:
 	StringName current_function;
 	bool last_const = false;
 
-	struct VaryingUsage {
-		ShaderNode::Varying *var;
-		int line;
-	};
-	List<VaryingUsage> unknown_varying_usages;
-
-	bool _check_varying_usages(int *r_error_line, String *r_error_message) const;
+	VaryingFunctionNames varying_function_names;
 
 	TkPos _get_tkpos() {
 		TkPos tkp;
@@ -854,7 +859,6 @@ private:
 	bool _validate_function_call(BlockNode *p_block, OperatorNode *p_func, DataType *r_ret_type, StringName *r_ret_type_str);
 	bool _parse_function_arguments(BlockNode *p_block, const Map<StringName, BuiltInInfo> &p_builtin_types, OperatorNode *p_func, int *r_complete_arg = nullptr);
 	bool _validate_varying_assign(ShaderNode::Varying &p_varying, String *r_message);
-	bool _validate_varying_using(ShaderNode::Varying &p_varying, String *r_message);
 
 	Node *_parse_expression(BlockNode *p_block, const Map<StringName, BuiltInInfo> &p_builtin_types);
 	Node *_parse_array_constructor(BlockNode *p_block, const Map<StringName, BuiltInInfo> &p_builtin_types, DataType p_type, const StringName &p_struct_name, int p_array_size);

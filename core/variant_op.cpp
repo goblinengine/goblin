@@ -1210,7 +1210,7 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a,
 
 				_RETURN((l || r) && !(l && r));
 			}
-
+			
 			_RETURN_FAIL;
 		}
 
@@ -1500,7 +1500,7 @@ void Variant::set_named(const StringName &p_index, const Variant &p_value, bool 
 					v->set_hsv(v->get_h(), p_value._data._int, v->get_v(), v->a);
 					valid = true;
 				} else if (p_index == CoreStringNames::singleton->v) {
-					v->set_hsv(v->get_h(), v->get_v(), p_value._data._int, v->a);
+					v->set_hsv(v->get_h(), v->get_s(), p_value._data._int, v->a);
 					valid = true;
 				}
 			} else if (p_value.type == Variant::REAL) {

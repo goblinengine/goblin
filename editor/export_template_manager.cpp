@@ -150,6 +150,11 @@ void ExportTemplateManager::_download_template(const String &p_url, bool p_skip_
 	download_templates->set_download_file(EditorSettings::get_singleton()->get_cache_dir().plus_file("tmp_templates.tpz"));
 	download_templates->set_use_threads(true);
 
+	const String proxy_host = EDITOR_DEF("network/http_proxy/host", "");
+	const int proxy_port = EDITOR_DEF("network/http_proxy/port", -1);
+	download_templates->set_http_proxy(proxy_host, proxy_port);
+	download_templates->set_https_proxy(proxy_host, proxy_port);
+
 	Error err = download_templates->request(p_url);
 	if (err != OK) {
 		_set_current_progress_status(TTR("Error requesting URL:") + " " + p_url, true);
@@ -399,7 +404,7 @@ bool ExportTemplateManager::_install_file_selected(const String &p_file, bool p_
 		char fname[16384];
 		ret = unzGetCurrentFileInfo(pkg, &info, fname, 16384, nullptr, 0, nullptr, 0);
 
-		String file = fname;
+		String file = String::utf8(fname);
 		if (file.ends_with("version.txt")) {
 			Vector<uint8_t> data;
 			data.resize(info.uncompressed_size);
@@ -460,7 +465,7 @@ bool ExportTemplateManager::_install_file_selected(const String &p_file, bool p_
 		char fname[16384];
 		unzGetCurrentFileInfo(pkg, &info, fname, 16384, nullptr, 0, nullptr, 0);
 
-		String file_path(String(fname).simplify_path());
+		String file_path(String::utf8(fname).simplify_path());
 
 		String file = file_path.get_file();
 
@@ -706,7 +711,7 @@ Error ExportTemplateManager::install_android_template_from_file(const String &p_
 		char fpath[16384];
 		ret = unzGetCurrentFileInfo(pkg, &info, fpath, 16384, nullptr, 0, nullptr, 0);
 
-		String path = fpath;
+		String path = String::utf8(fpath);
 		String base_dir = path.get_base_dir();
 
 		if (!path.ends_with("/")) {

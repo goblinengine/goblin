@@ -42,7 +42,7 @@ public:
 	static bool get_instanced_node_original_property(Node *p_node, const StringName &p_prop, Variant &value, bool p_check_class_default = true);
 	static bool is_node_property_different(Node *p_node, const Variant &p_current, const Variant &p_orig);
 	static bool is_property_value_different(const Variant &p_a, const Variant &p_b);
-	static Variant get_property_revert_value(Object *p_object, const StringName &p_property);
+	static Variant get_property_revert_value(Object *p_object, const StringName &p_property, bool *r_is_valid);
 
 	static bool can_property_revert(Object *p_object, const StringName &p_property);
 };
@@ -53,6 +53,9 @@ class EditorProperty : public Container {
 public:
 	enum MenuItems {
 		MENU_PIN_VALUE,
+		MENU_COPY_PROPERTY,
+		MENU_PASTE_PROPERTY,
+		MENU_COPY_PROPERTY_PATH,
 	};
 
 private:
@@ -112,6 +115,7 @@ protected:
 	static void _bind_methods();
 
 	void _gui_input(const Ref<InputEvent> &p_event);
+	void _unhandled_key_input(const Ref<InputEvent> &p_event);
 
 public:
 	void emit_changed(const StringName &p_property, const Variant &p_value, const StringName &p_field = StringName(), bool p_changing = false);
@@ -308,6 +312,7 @@ class EditorInspector : public ScrollContainer {
 
 	String property_prefix; //used for sectioned inspector
 	String object_class;
+	Variant property_clipboard;
 
 	void _edit_set(const String &p_name, const Variant &p_value, bool p_refresh_all, const String &p_changed_field);
 
@@ -393,6 +398,9 @@ public:
 
 	void set_sub_inspector(bool p_enable);
 	bool is_sub_inspector() const { return sub_inspector; }
+
+	void set_property_clipboard(const Variant &p_value);
+	Variant get_property_clipboard() const;
 
 	EditorInspector();
 };
