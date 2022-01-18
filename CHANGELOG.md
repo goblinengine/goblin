@@ -5,6 +5,7 @@
 
 ### New
 
+- Implemented `Array` variant `for_each(obj, "function")` function which calls a function for each element of the array. The function can be any name but must have only 1 parameter to pass each element to. This is slighty faster than a for loop with 1 function and much faster than using `call()` in a for loop. Every function inside a for loop will slow down the loop by a factor of 6x where as using `call()` slows down by a factor of 14x and the effect is **cummulative!**. The idea is to use only 1 function per element to make looping faster.
 - New `Rand` singleton that allows generating completely random values from anywhere:
     * `shuffle(Array)` shuffles an Array
     * `choice(Variant)` picks a random value from an Array or Dictionary or random character from a string

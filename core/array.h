@@ -100,6 +100,8 @@ public:
 	Variant min() const;
 	Variant max() const;
 
+	void for_each(Object *p_obj, const StringName &p_function); // GOBLIN ENGINE Array for_each
+
 	const void *id() const;
 
 	Array(const Array &p_from);
