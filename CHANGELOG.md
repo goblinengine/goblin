@@ -1,10 +1,11 @@
 # Changelog
 
 
-## [1.0]
+## 1.0
 
-### New
+### Added
 
+- Added `tightness` to `AudioStreamPlayer3D` which controls how tight the sound playig encloses the player. Based on an unmerged 4.0 pr found [here](https://github.com/godotengine/godot/pull/42358).
 - Implemented `Array` variant `for_each(obj, "function")` function which calls a function for each element of the array. The function can be any name but must have only 1 parameter to pass each element to. This is slighty faster than a for loop with 1 function and much faster than using `call()` in a for loop. Every function inside a for loop will slow down the loop by a factor of 6x where as using `call()` slows down by a factor of 14x and the effect is **cummulative!**. The idea is to use only 1 function per element to make looping faster.
 - New `Rand` singleton that allows generating completely random values from anywhere:
     * `shuffle(Array)` shuffles an Array
@@ -30,7 +31,7 @@
 - New `ImageIndexed` class. Added as a custom module under modules/goblin just to keep it separated from the rest of Godot. Makes it easier to merge new 3.x changes back into Goblin. ImageIndexed allows working with pseudo-random indexed images and palettes. This was ported from [Goost Engine](https://github.com/goostengine) and implemented by Xrayez. There is internal documentation as well more documentation on over on [Goost Documentation](https://goost.readthedocs.io/en/latest/classes/class_imageindexed.html?highlight=imageindex) page in the official project.
 - Tabs can now be moved to the bottom and have their own styles. Adapted from Godot 4.0 unmerged PR [#44420](https://github.com/godotengine/godot/pull/44420)
 
-### Changes
+### Modified
 
 - Imported 3D scenes are disabled from saving to a scene to avoid errors. From [this pr](https://github.com/godotengine/godot/pull/42367).
 - Displays "use onready var" error message when using `get_child()` and `get_parent()` without `onready`. Adapted to 3.x from [this pr](https://github.com/godotengine/godot/pull/36889)
