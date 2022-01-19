@@ -6,6 +6,6 @@ minor = 5
 patch = 0
 status = "dev"
 module_config = ""
-year = 2021
+year = 2022
 website = "http://goblinengine.github.io"
 docs = "3.4"
