@@ -179,7 +179,7 @@ static String get_full_version_string() {
 	if (hash.length() != 0) {
 		hash = "." + hash.left(9);
 	}
-	return String(VERSION_FULL_BUILD) + hash;
+	return String(VERSION_GOBLIN_FULL_BUILD) + hash; // GOBLIN ENGINE version
 }
 
 // FIXME: Could maybe be moved to PhysicsServerManager and Physics2DServerManager directly
