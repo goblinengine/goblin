@@ -503,7 +503,7 @@ SQLite::~SQLite() {
 	// Close database
 	close();
 	// Make sure to invalidate all associated queries.
-	for (uint32_t i = 0; i < queries.size(); i += 1) {
+	for (int i = 0; i < queries.size(); i += 1) {
 		SQLiteQuery *query = Object::cast_to<SQLiteQuery>(queries[i]->get_ref());
 		if (query != nullptr) {
 			query->init(nullptr, "");
