@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -570,11 +570,6 @@ void EditorSpinSlider::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_value_input_closed"), &EditorSpinSlider::_value_input_closed);
 	ClassDB::bind_method(D_METHOD("_value_input_entered"), &EditorSpinSlider::_value_input_entered);
 	ClassDB::bind_method(D_METHOD("_value_focus_exited"), &EditorSpinSlider::_value_focus_exited);
-
-	// GOBLIN ENGINE expose hide slider
-	ClassDB::bind_method(D_METHOD("set_hide_slider", "hide"), &EditorSpinSlider::set_hide_slider);
-	ClassDB::bind_method(D_METHOD("is_hiding_slider"), &EditorSpinSlider::is_hiding_slider);
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "hide_slider"), "set_hide_slider", "is_hiding_slider");
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "label"), "set_label", "get_label");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "read_only"), "set_read_only", "is_read_only");

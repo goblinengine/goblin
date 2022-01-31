@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -471,10 +471,7 @@ void AudioStreamPlayer3D::_notification(int p_what) {
 
 				output.filter_gain = Math::db2linear(db_att);
 
-				//TODO: The lower the second parameter (tightness) the more the sound will "enclose" the listener (more undirected / playing from
-				//      speakers not facing the source) - this could be made distance dependent.
 				_calc_output_vol(local_pos.normalized(), tightness, output); // GOBLIN ENGINE audio 3d tightness
-
 				unsigned int cc = AudioServer::get_singleton()->get_channel_count();
 				for (unsigned int k = 0; k < cc; k++) {
 					output.vol[k] *= multiplier;

@@ -43,8 +43,8 @@ Source: https://github.com/godotengine/godot
 
 Files: *
 Comment: Godot Engine
-Copyright: 2007-2021, Juan Linietsky, Ariel Manzur.
- 2014-2021, Godot Engine contributors.
+Copyright: 2007-2022, Juan Linietsky, Ariel Manzur.
+ 2014-2022, Godot Engine contributors.
 License: Expat
 
 Files: ./icon.png
@@ -59,15 +59,15 @@ Files: ./core/math/convex_hull.cpp
  ./core/math/convex_hull.h
 Comment: Bullet Continuous Collision Detection and Physics Library
 Copyright: 2011, Ole Kniemeyer, MAXON, www.maxon.net
- 2007-2021, Juan Linietsky, Ariel Manzur.
- 2014-2021, Godot Engine contributors.
+ 2007-2022, Juan Linietsky, Ariel Manzur.
+ 2014-2022, Godot Engine contributors.
 License: Expat and Zlib
 
 Files: ./modules/fbx/fbx_parser/
 Comment: Open Asset Import Library (FBX parser)
 Copyright: 2006-2020, assimp team
- 2007-2021, Juan Linietsky, Ariel Manzur.
- 2014-2021, Godot Engine contributors.
+ 2007-2022, Juan Linietsky, Ariel Manzur.
+ 2014-2022, Godot Engine contributors.
 License: BSD-3-clause
 
 Files: ./platform/android/java/lib/aidl/com/android/vending/licensing/
@@ -92,8 +92,8 @@ Files: ./platform/android/power_android.cpp
  ./platform/x11/power_x11.cpp
 Comment: Simple DirectMedia Layer
 Copyright: 1997-2017, Sam Lantinga
- 2007-2021, Juan Linietsky, Ariel Manzur.
- 2014-2021, Godot Engine contributors.
+ 2007-2022, Juan Linietsky, Ariel Manzur.
+ 2014-2022, Godot Engine contributors.
 License: Expat and Zlib
 
 Files: ./servers/physics/collision_solver_sat.cpp
@@ -115,16 +115,16 @@ Files: ./servers/physics/gjk_epa.cpp
  ./servers/physics/shape_sw.h
 Comment: Bullet Continuous Collision Detection and Physics Library
 Copyright: 2003-2008, Erwin Coumans
- 2007-2021, Juan Linietsky, Ariel Manzur.
- 2014-2021, Godot Engine contributors.
+ 2007-2022, Juan Linietsky, Ariel Manzur.
+ 2014-2022, Godot Engine contributors.
 License: Expat and Zlib
 
 Files: ./servers/physics/joints/cone_twist_joint_sw.cpp
  ./servers/physics/joints/cone_twist_joint_sw.h
 Comment: Bullet Continuous Collision Detection and Physics Library
 Copyright: 2007, Starbreeze Studios
- 2007-2021, Juan Linietsky, Ariel Manzur.
- 2014-2021, Godot Engine contributors.
+ 2007-2022, Juan Linietsky, Ariel Manzur.
+ 2014-2022, Godot Engine contributors.
 License: Expat and Zlib
 
 Files: ./thirdparty/bullet/
@@ -176,7 +176,7 @@ License: Expat and Bitstream Vera Fonts Copyright
 
 Files: ./thirdparty/freetype/
 Comment: The FreeType Project
-Copyright: 1996-2020, David Turner, Robert Wilhelm, and Werner Lemberg.
+Copyright: 1996-2021, David Turner, Robert Wilhelm, and Werner Lemberg.
 License: FTL
 
 Files: ./thirdparty/glad/
@@ -404,20 +404,6 @@ Comment: Zstandard
 Copyright: 2016-2021, Facebook, Inc.
 License: BSD-3-clause
 
-Files: ./modules/goblin/libs/exoquant.c
-Comment: ExoQuant
-Copyright: 2004, Dennis Ranke
-License: ExoQuant
-
-Files: ./modules/goblin/libs/tsf/
-Comment: Tiny Soundfont Library
-Copyright: 2017, 2018, 2020 Bernhard Schelling
-License: Expat
-
-Files: ./modules/sqlite/thirdparty/sqlite
-Comment: SQLite
-Copyright: Hipp, Wyrick & Company, Inc., or "Hwaci"
-License: Public Domain
 
 
 License: Apache-2.0
@@ -1660,22 +1646,3 @@ License: Zlib
  2. Altered source versions must be plainly marked as such, and must not be
     misrepresented as being the original software.
  3. This notice may not be removed or altered from any source distribution.
-
-License: ExoQuant
- Permission is hereby granted, free of charge, to any person obtaining a copy 
- of this software and associated documentation files (the "Software"), to deal 
- in the Software without restriction, including without limitation the rights 
- to use, copy, modify, merge, publish, distribute, sublicense, and/or sell 
- copies of the Software, and to permit persons to whom the Software is furnished 
- to do so, subject to the following conditions:
- .
- The above copyright notice and this permission notice shall be included in 
- all copies or substantial portions of the Software.
- .
- THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL 
- THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING 
- FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
- DEALINGS IN THE SOFTWARE.

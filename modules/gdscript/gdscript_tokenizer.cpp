@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -558,53 +558,6 @@ void GDScriptTokenizerText::_advance() {
 
 						_make_token(TK_OP_ASSIGN_DIV);
 						INCPOS(1);
-					} break;
-					// GOBLIN ENGINE multiline comments 
-					// backported from Godot 1 
-					// c style tokenizer
-					case '*': { // block comment
-						int pos = code_pos+2;
-						int new_line=line;
-						int new_col=column+2;
-
-						while(true) {
-							if (_code[pos]=='0') {
-								_make_error("Unterminated Comment");
-								code_pos=pos;
-								return;
-							}
-							if (_code[pos]=='*' && _code[pos+1]=='/') {
-								new_col+=2;
-								pos+=2; //compensate
-								break;
-							} else if (_code[pos]=='\n') {
-								new_line++;
-								new_col=0;
-							} else {
-								new_col++;
-							}
-							pos++;
-						}
-
-						column=new_col;
-						line=new_line;
-						code_pos=pos;
-						continue;
-
-					} break;
-					case '/': { // line comment skip
-
-						while(GETCHAR(0)!='\n') {
-							code_pos++;
-							if (GETCHAR(0)==0) { //end of file
-								_make_error("Unterminated Comment");
-								return;
-							}
-						}
-						INCPOS(1);
-						column=0;
-						line++;
-						continue;
 
 					} break;
 					default:

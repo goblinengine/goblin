@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -140,7 +140,7 @@ EditorAbout::EditorAbout() {
 	}
 	version_btn->set_text(VERSION_GOBLIN_FULL_NAME + hash); // GOBLIN ENGINE
 	// Set the text to copy in metadata as it slightly differs from the button's text.
-	version_btn->set_meta(META_TEXT_TO_COPY, "v" VERSION_GOBLIN_FULL_BUILD + hash);
+	version_btn->set_meta(META_TEXT_TO_COPY, "v" VERSION_GOBLIN_FULL_BUILD + hash); // GOBLIN ENGINE
 	version_btn->set_underline_mode(LinkButton::UNDERLINE_MODE_ON_HOVER);
 	version_btn->set_tooltip(TTR("Click to copy."));
 	version_btn->connect("pressed", this, "_version_button_pressed");
@@ -148,7 +148,7 @@ EditorAbout::EditorAbout() {
 
 	Label *about_text = memnew(Label);
 	about_text->set_v_size_flags(Control::SIZE_SHRINK_CENTER);
-	about_text->set_text(String::utf8("\xc2\xa9 2021 Filip Anton.\n\xc2\xa9 2007-2021 ") +
+	about_text->set_text(String::utf8("\xc2\xa9 2022 Filip Anton.\n\xc2\xa9 2007-2021 ") +
 			TTR("Godot Engine contributors") + "\n");  // GOBLIN ENGINE
 	version_info_vbc->add_child(about_text);
 

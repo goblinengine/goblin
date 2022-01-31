@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -123,7 +123,6 @@ private:
 		// variables used to properly sort the node when processing, ignored otherwise
 		//should move all the stuff below to bits
 		bool physics_process;
-		bool fixed_process; //GOBLIN ENGINE fixed process
 		bool idle_process;
 		int process_priority;
 
@@ -333,9 +332,6 @@ public:
 	void set_physics_process(bool p_process);
 	float get_physics_process_delta_time() const;
 	bool is_physics_processing() const;
-
-	void set_fixed_process(bool p_process); //GOBLIN ENGINE fixed process
-	bool is_fixed_processing() const;
 
 	void set_process(bool p_idle_process);
 	float get_process_delta_time() const;

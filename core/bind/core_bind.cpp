@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -36,6 +36,7 @@
 #include "core/io/json.h"
 #include "core/io/marshalls.h"
 #include "core/math/geometry.h"
+#include "core/method_bind_ext.gen.inc"
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
 #include "core/project_settings.h"
@@ -219,6 +220,10 @@ void _OS::set_clipboard(const String &p_text) {
 
 String _OS::get_clipboard() const {
 	return OS::get_singleton()->get_clipboard();
+}
+
+bool _OS::has_clipboard() const {
+	return OS::get_singleton()->has_clipboard();
 }
 
 int _OS::get_video_driver_count() const {
@@ -471,7 +476,7 @@ Error _OS::shell_open(String p_uri) {
 	return OS::get_singleton()->shell_open(p_uri);
 };
 
-int _OS::execute(const String &p_path, const Vector<String> &p_arguments, bool p_blocking, Array p_output, bool p_read_stderr) {
+int _OS::execute(const String &p_path, const Vector<String> &p_arguments, bool p_blocking, Array p_output, bool p_read_stderr, bool p_open_console) {
 	OS::ProcessID pid = -2;
 	int exitcode = 0;
 	List<String> args;
@@ -488,7 +493,7 @@ int _OS::execute(const String &p_path, const Vector<String> &p_arguments, bool p
 		path = "CMD.exe";
 	}
 
-	Error err = OS::get_singleton()->execute(path, args, p_blocking, &pid, &pipe, &exitcode, p_read_stderr);
+	Error err = OS::get_singleton()->execute(p_path, args, p_blocking, &pid, &pipe, &exitcode, p_read_stderr, nullptr, p_open_console);
 	p_output.clear();
 	p_output.push_back(pipe);
 	if (err != OK) {
@@ -579,6 +584,10 @@ String _OS::keyboard_get_layout_language(int p_index) const {
 
 String _OS::keyboard_get_layout_name(int p_index) const {
 	return OS::get_singleton()->keyboard_get_layout_name(p_index);
+}
+
+uint32_t _OS::keyboard_get_scancode_from_physical(uint32_t p_scancode) const {
+	return OS::get_singleton()->keyboard_get_scancode_from_physical(p_scancode);
 }
 
 String _OS::get_model_name() const {
@@ -1231,6 +1240,7 @@ void _OS::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_clipboard", "clipboard"), &_OS::set_clipboard);
 	ClassDB::bind_method(D_METHOD("get_clipboard"), &_OS::get_clipboard);
+	ClassDB::bind_method(D_METHOD("has_clipboard"), &_OS::has_clipboard);
 
 	//will not delete for now, just unexpose
 	//ClassDB::bind_method(D_METHOD("set_video_mode","size","fullscreen","resizable","screen"),&_OS::set_video_mode,DEFVAL(0));
@@ -1320,7 +1330,7 @@ void _OS::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_processor_count"), &_OS::get_processor_count);
 
 	ClassDB::bind_method(D_METHOD("get_executable_path"), &_OS::get_executable_path);
-	ClassDB::bind_method(D_METHOD("execute", "path", "arguments", "blocking", "output", "read_stderr"), &_OS::execute, DEFVAL(true), DEFVAL(Array()), DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("execute", "path", "arguments", "blocking", "output", "read_stderr", "open_console"), &_OS::execute, DEFVAL(true), DEFVAL(Array()), DEFVAL(false), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("kill", "pid"), &_OS::kill);
 	ClassDB::bind_method(D_METHOD("shell_open", "uri"), &_OS::shell_open);
 	ClassDB::bind_method(D_METHOD("get_process_id"), &_OS::get_process_id);
@@ -1363,6 +1373,7 @@ void _OS::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("keyboard_set_current_layout", "index"), &_OS::keyboard_set_current_layout);
 	ClassDB::bind_method(D_METHOD("keyboard_get_layout_language", "index"), &_OS::keyboard_get_layout_language);
 	ClassDB::bind_method(D_METHOD("keyboard_get_layout_name", "index"), &_OS::keyboard_get_layout_name);
+	ClassDB::bind_method(D_METHOD("keyboard_get_scancode_from_physical", "scancode"), &_OS::keyboard_get_scancode_from_physical);
 
 	ClassDB::bind_method(D_METHOD("can_draw"), &_OS::can_draw);
 	ClassDB::bind_method(D_METHOD("is_userfs_persistent"), &_OS::is_userfs_persistent);

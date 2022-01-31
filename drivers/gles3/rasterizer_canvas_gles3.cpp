@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -293,7 +293,7 @@ void RasterizerCanvasGLES3::_legacy_canvas_render_item(Item *p_ci, RenderItemSta
 				}
 
 			} break;
-			case RasterizerStorageGLES3::Shader::CanvasItem::BLEND_MODE_PMALPHA: { // GOBLIN ENGINE add blend_premul_alpha to shaders
+			case RasterizerStorageGLES3::Shader::CanvasItem::BLEND_MODE_PMALPHA: {
 				glBlendEquation(GL_FUNC_ADD);
 				if (storage->frame.current_rt && storage->frame.current_rt->flags[RasterizerStorage::RENDER_TARGET_TRANSPARENT]) {
 					glBlendFuncSeparate(GL_ONE, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
@@ -1373,7 +1373,7 @@ void RasterizerCanvasGLES3::render_joined_item(const BItemJoined &p_bij, RenderI
 				}
 
 			} break;
-			case RasterizerStorageGLES3::Shader::CanvasItem::BLEND_MODE_PMALPHA: { // GOBLIN ENGINE add blend_premul_alpha to shaders
+			case RasterizerStorageGLES3::Shader::CanvasItem::BLEND_MODE_PMALPHA: {
 				glBlendEquation(GL_FUNC_ADD);
 				if (storage->frame.current_rt && storage->frame.current_rt->flags[RasterizerStorage::RENDER_TARGET_TRANSPARENT]) {
 					glBlendFuncSeparate(GL_ONE, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);

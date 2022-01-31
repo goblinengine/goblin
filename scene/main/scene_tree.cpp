@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -490,12 +490,6 @@ bool SceneTree::iteration(float p_time) {
 	if (GLOBAL_GET("physics/common/enable_pause_aware_picking")) {
 		call_group_flags(GROUP_CALL_REALTIME, "_viewports", "_process_picking", true);
 	}
-
-	//GOBLIN ENGINE fixed process
-	if (current_frame % (int)GLOBAL_GET("application/run/fixed_process_frames") == 0) {
-		call_group("fixed_process", "_fixed_process");
-	}
-	
 	_notify_group_pause("physics_process", Node::NOTIFICATION_PHYSICS_PROCESS);
 	_flush_ugc();
 	MessageQueue::get_singleton()->flush(); //small little hack

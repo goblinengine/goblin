@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -143,12 +143,12 @@ void Button::_notification(int p_what) {
 						color = get_color("font_color_focus");
 						grab_focus();
 					} else {
-						style = get_stylebox("hover");
-						if (!flat) {
+					style = get_stylebox("hover");
+					if (!flat) {
 						style->draw(ci, Rect2(Point2(0, 0), size));
-						}
-						color = get_color("font_color_hover");
 					}
+					color = get_color("font_color_hover");
+				}
 					if (has_color("icon_color_hover")) {
 						color_icon = get_color("icon_color_hover");
 					}
@@ -251,7 +251,7 @@ void Button::_notification(int p_what) {
 
 			text_ofs.y += font->get_ascent();
 			font->draw(ci, text_ofs.floor(), xl_text, color, clip_text ? text_clip : -1);
-			
+
 			// GOBLIN ENGINE distance field
 			VisualServer::get_singleton()->canvas_item_set_distance_field_mode(get_canvas_item(), font.is_valid() && font->is_distance_field_hint());
 
@@ -353,7 +353,6 @@ void Button::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "clip_text"), "set_clip_text", "get_clip_text");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "align", PROPERTY_HINT_ENUM, "Left,Center,Right"), "set_text_align", "get_text_align");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "expand_icon"), "set_expand_icon", "is_expand_icon");
-
 	GLOBAL_DEF("gui/theme/unify_button_focus_hover", false); // GOBLIN ENGINE unify button focus hover
 }
 

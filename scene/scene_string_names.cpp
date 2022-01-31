@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -88,8 +88,6 @@ SceneStringNames::SceneStringNames() {
 
 	_physics_process = StaticCString::create("_physics_process");
 	_process = StaticCString::create("_process");
-
-	_fixed_process = StaticCString::create("_fixed_process"); //GOBLIN ENGINE fixed process
 
 	_enter_tree = StaticCString::create("_enter_tree");
 	_exit_tree = StaticCString::create("_exit_tree");

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -172,9 +172,9 @@ void GDNativeLibrary::set_config_file(Ref<ConfigFile> p_config_file) {
 
 			bool skip = false;
 			for (int i = 0; i < tags.size(); i++) {
+				const bool has_feature = OS::get_singleton()->has_feature(tags[i]);
 				// GOBLIN ENGINE fallback to x11 for loading gdnative plugins
 				// see https://github.com/godotengine/godot/pull/38898
-				const bool has_feature = OS::get_singleton()->has_feature(tags[i]);
 				// Try looking for X11 libraries when running a server binary.
 				// This may not always succeed as server binaries can also be compiled for macOS,
 				// but in practice, most dedicated servers run Linux.

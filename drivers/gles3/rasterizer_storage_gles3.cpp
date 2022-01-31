@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -2192,7 +2192,7 @@ void RasterizerStorageGLES3::_update_shader(Shader *p_shader) const {
 			shaders.actions_canvas.render_mode_values["blend_mix"] = Pair<int *, int>(&p_shader->canvas_item.blend_mode, Shader::CanvasItem::BLEND_MODE_MIX);
 			shaders.actions_canvas.render_mode_values["blend_sub"] = Pair<int *, int>(&p_shader->canvas_item.blend_mode, Shader::CanvasItem::BLEND_MODE_SUB);
 			shaders.actions_canvas.render_mode_values["blend_mul"] = Pair<int *, int>(&p_shader->canvas_item.blend_mode, Shader::CanvasItem::BLEND_MODE_MUL);
-			shaders.actions_canvas.render_mode_values["blend_premul_alpha"] = Pair<int *, int>(&p_shader->canvas_item.blend_mode, Shader::CanvasItem::BLEND_MODE_PMALPHA); // GOBLIN ENGINE add blend_premul_alpha to shaders
+			shaders.actions_canvas.render_mode_values["blend_premul_alpha"] = Pair<int *, int>(&p_shader->canvas_item.blend_mode, Shader::CanvasItem::BLEND_MODE_PMALPHA);
 			shaders.actions_canvas.render_mode_values["blend_disabled"] = Pair<int *, int>(&p_shader->canvas_item.blend_mode, Shader::CanvasItem::BLEND_MODE_DISABLED);
 
 			shaders.actions_canvas.render_mode_values["unshaded"] = Pair<int *, int>(&p_shader->canvas_item.light_mode, Shader::CanvasItem::LIGHT_MODE_UNSHADED);
@@ -2242,7 +2242,7 @@ void RasterizerStorageGLES3::_update_shader(Shader *p_shader) const {
 			shaders.actions_scene.render_mode_values["blend_sub"] = Pair<int *, int>(&p_shader->spatial.blend_mode, Shader::Spatial::BLEND_MODE_SUB);
 			shaders.actions_scene.render_mode_values["blend_mul"] = Pair<int *, int>(&p_shader->spatial.blend_mode, Shader::Spatial::BLEND_MODE_MUL);
 			shaders.actions_scene.render_mode_values["blend_premul_alpha"] = Pair<int *, int>(&p_shader->spatial.blend_mode, Shader::Spatial::BLEND_MODE_PMALPHA); // GOBLIN ENGINE add blend_premul_alpha to shaders
-			
+
 			shaders.actions_scene.render_mode_values["depth_draw_opaque"] = Pair<int *, int>(&p_shader->spatial.depth_draw_mode, Shader::Spatial::DEPTH_DRAW_OPAQUE);
 			shaders.actions_scene.render_mode_values["depth_draw_always"] = Pair<int *, int>(&p_shader->spatial.depth_draw_mode, Shader::Spatial::DEPTH_DRAW_ALWAYS);
 			shaders.actions_scene.render_mode_values["depth_draw_never"] = Pair<int *, int>(&p_shader->spatial.depth_draw_mode, Shader::Spatial::DEPTH_DRAW_NEVER);
@@ -8130,14 +8130,11 @@ void RasterizerStorageGLES3::initialize() {
 #endif
 	config.parallel_shader_compile_supported = config.extensions.has("GL_KHR_parallel_shader_compile") || config.extensions.has("GL_ARB_parallel_shader_compile");
 #endif
-	if (Engine::get_singleton()->is_editor_hint()) {
-		config.async_compilation_enabled = false;
-		config.shader_cache_enabled = false;
-	} else {
-		int compilation_mode = ProjectSettings::get_singleton()->get("rendering/gles3/shaders/shader_compilation_mode");
-		config.async_compilation_enabled = compilation_mode >= 1;
-		config.shader_cache_enabled = compilation_mode == 2;
-	}
+
+	const int compilation_mode = ProjectSettings::get_singleton()->get("rendering/gles3/shaders/shader_compilation_mode");
+	config.async_compilation_enabled = compilation_mode >= 1;
+	config.shader_cache_enabled = compilation_mode == 2;
+
 	if (config.async_compilation_enabled) {
 		ShaderGLES3::max_simultaneous_compiles = MAX(1, (int)ProjectSettings::get_singleton()->get("rendering/gles3/shaders/max_simultaneous_compiles"));
 #ifdef GLES_OVER_GL
@@ -8202,7 +8199,7 @@ void RasterizerStorageGLES3::initialize() {
 					shaders.cache = memnew(ShaderCacheGLES3);
 					shaders.cache_write_queue = memnew(ThreadedCallableQueue<GLuint>());
 				} else {
-					print_verbose("Shader cache: OFF (enabled, but not supported)");  // GOBLIN ENGINE hide shader cache
+					print_verbose("Shader cache: OFF (enabled, but not supported)"); // GOBLIN ENGINE hide shader cache
 				}
 			} else {
 				print_verbose("Shader cache: OFF");  // GOBLIN ENGINE hide shader cache

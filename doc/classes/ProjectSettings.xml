@@ -163,6 +163,7 @@
 				[codeblock]
 				ProjectSettings.set_setting("application/config/name", "Example")
 				[/codeblock]
+				This can also be used to erase custom project settings. To do this change the setting value to [code]null[/code].
 			</description>
 		</method>
 	</methods>
@@ -526,6 +527,12 @@
 		</member>
 		<member name="editor/search_in_file_extensions" type="PoolStringArray" setter="" getter="" default="PoolStringArray( &quot;gd&quot;, &quot;gdshader&quot;, &quot;shader&quot; )">
 			Text-based file extensions to include in the script editor's "Find in Files" feature. You can add e.g. [code]tscn[/code] if you wish to also parse your scene files, especially if you use built-in scripts which are serialized in the scene files.
+		</member>
+		<member name="editor/version_control/autoload_on_startup" type="bool" setter="" getter="" default="false">
+			Load the previously opened VCS plugin when the editor starts up. This is set to [code]true[/code] whenever a new VCS plugin is initialized.
+		</member>
+		<member name="editor/version_control/plugin_name" type="String" setter="" getter="" default="&quot;&quot;">
+			Last loaded VCS plugin name. Used to autoload the plugin when the editor starts up.
 		</member>
 		<member name="gui/common/default_scroll_deadzone" type="int" setter="" getter="" default="0">
 			Default value for [member ScrollContainer.scroll_deadzone], which will be used for all [ScrollContainer]s unless overridden.
@@ -1145,11 +1152,6 @@
 			- When pause is started, every collision object that is hovered or captured (3D only) is released from that condition, getting the relevant mouse-exit callback, unless its pause mode makes it immune to pause.
 			- During pause, picking only considers collision objects immune to pause, sending input events and enter/exit callbacks to them as expected.
 			If disabled, the legacy behavior is used, which consists in queuing the picking input events during pause (so nodes won't get them) and flushing that queue on resume, against the state of the 2D/3D world at that point.
-		</member>		
-		<!-- GLOBAL ENGINE fixed process -->
-		<member name="application/run/fixed_process_frames" type="int" setter="" getter="" default="60">
-			The number of frames between fixed frame calls. Controls how long to wait until [method Node._fixed_process] methods are run.
-			[b]Note:[/b] This property is only read when the project starts.
 		</member>
 		<!-- GLOBAL ENGINE unify button focus hover -->
 		<member name="gui/theme/unify_button_focus_hover" type="bool" setter="" getter="" default="false">
@@ -1300,8 +1302,8 @@
 			That means that when a shader is first used under some new rendering situation, the game won't stall while such shader is being compiled. Instead, a fallback will be used and the real shader will be compiled in the background. Once the actual shader is compiled, it will be used the next times it's used to draw a frame.
 			Depending on the async mode configured for a given material/shader, the fallback will be an "ubershader" (the default) or just skip rendering any item it is applied to.
 			An ubershader is a very complex shader, slow but suited to any rendering situation, that the engine generates internally so it can be used from the beginning while the traditional conditioned, optimized version of it is being compiled.
-			In order to save some loading time, you can use [code]Asynchronous + Cache[/code], which also causes the ubershaders to be cached into storage so they can be ready faster next time they are used (provided the platform provides support for it).
-			[b]Warning:[/b] Async. compilation is currently only supported for spatial and particle materials/shaders.
+			To reduce loading times after the project has been launched at least once, you can use [code]Asynchronous + Cache[/code]. This also causes the ubershaders to be cached into storage so they can be ready faster next time they are used (provided the platform provides support for it).
+			[b]Note:[/b] Asynchronous compilation is currently only supported for spatial (3D) and particle materials/shaders. CanvasItem (2D) shaders will not use asynchronous compilation even if this setting is set to [code]Asynchronous[/code] or [code]Asynchronous + Cache[/code].
 		</member>
 		<member name="rendering/limits/buffers/blend_shape_max_buffer_size_kb" type="int" setter="" getter="" default="4096">
 			Max buffer size for blend shapes. Any blend shape bigger than this will not work.
@@ -1356,7 +1358,7 @@
 		<member name="rendering/portals/advanced/flip_imported_portals" type="bool" setter="" getter="" default="false">
 			The default convention is for portal normals to point outward (face outward) from the source room.
 			If you accidentally build your level with portals facing the wrong way, this setting can fix the problem.
-			It will flip named portal meshes (i.e. [code]-portal[/code]) on the initial convertion to [Portal] nodes.
+			It will flip named portal meshes (i.e. [code]-portal[/code]) on the initial conversion to [Portal] nodes.
 		</member>
 		<member name="rendering/portals/debug/logging" type="bool" setter="" getter="" default="true">
 			Show conversion logs.
@@ -1396,7 +1398,7 @@
 			If [code]true[/code], performs a previous depth pass before rendering materials. This increases performance in scenes with high overdraw, when complex materials and lighting are used.
 		</member>
 		<member name="rendering/quality/directional_shadow/size" type="int" setter="" getter="" default="4096">
-			The directional shadow's size in pixels. Higher values will result in sharper shadows, at the cost of performance. The value will be rounded up to the nearest power of 2.
+			The directional shadow's size in pixels. Higher values will result in sharper shadows, at the cost of performance. The value will be rounded up to the nearest power of 2. This setting can be changed at run-time; the change will be applied immediately.
 		</member>
 		<member name="rendering/quality/directional_shadow/size.mobile" type="int" setter="" getter="" default="2048">
 			Lower-end override for [member rendering/quality/directional_shadow/size] on mobile devices, due to performance concerns or driver support.

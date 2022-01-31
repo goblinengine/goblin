@@ -35,8 +35,8 @@ unique_str = []
 unique_loc = {}
 main_po = """
 # LANGUAGE translation of the Godot Engine editor.
-# Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.
-# Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).
+# Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.
+# Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).
 # This file is distributed under the same license as the Godot source code.
 #
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
@@ -211,7 +211,7 @@ def process_file(f, fname):
                 # Add additional location to previous occurrence too
                 msg_pos = main_po.find('\nmsgid "' + msg + '"')
                 if msg_pos == -1:
-                    print("Someone apparently thought writing Python was as easy as GDScript.")
+                    print("Someone apparently thought writing Python was as easy as GDScript. Ping Akien.")
                 main_po = main_po[:msg_pos] + " " + location + main_po[msg_pos:]
                 unique_loc[msg].append(location)
 

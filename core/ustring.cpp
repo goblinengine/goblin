@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -2443,8 +2443,9 @@ String String::substr(int p_from, int p_chars) const {
 	return s;
 }
 
+// GOBLIN ENGINE optimized string functions
 int String::find_last(const String &p_str) const {
-		const int src_len = p_str.length();
+	const int src_len = p_str.length();
 
 	const int len = length();
 
@@ -2487,6 +2488,7 @@ int String::find_last(const String &p_str) const {
 	return pos;
 }
 
+// GOBLIN ENGINE optimized string functions
 int String::find(const String &p_str, int p_from) const {
 	if (p_from < 0) {
 		return -1;
@@ -2496,7 +2498,7 @@ int String::find(const String &p_str, int p_from) const {
 
 	const int len = length();
 
-if (src_len == 0 || len == 0 || p_from >= len || p_from < 0) {
+	if (src_len == 0 || len == 0 || p_from >= len || p_from < 0) {
 		return -1; // won't find anything!
 	}
 
@@ -4119,7 +4121,7 @@ String String::get_base_dir() const {
 }
 
 String String::get_file() const {
-	int sep = MAX(find_last("/"), find_last("\\"));
+	int sep = MAX(rfind("/"), rfind("\\"));
 	if (sep == -1) {
 		return *this;
 	}
@@ -4128,8 +4130,8 @@ String String::get_file() const {
 }
 
 String String::get_extension() const {
-	int pos = find_last(".");
-	if (pos < 0 || pos < MAX(find_last("/"), find_last("\\"))) {
+	int pos = rfind(".");
+	if (pos < 0 || pos < MAX(rfind("/"), rfind("\\"))) {
 		return "";
 	}
 
@@ -4228,8 +4230,8 @@ String String::validate_node_name() const {
 }
 
 String String::get_basename() const {
-	int pos = find_last(".");
-	if (pos < 0 || pos < MAX(find_last("/"), find_last("\\"))) {
+	int pos = rfind(".");
+	if (pos < 0 || pos < MAX(rfind("/"), rfind("\\"))) {
 		return *this;
 	}
 

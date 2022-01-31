@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -42,7 +42,6 @@
 
 void GDScriptLanguage::get_comment_delimiters(List<String> *p_delimiters) const {
 	p_delimiters->push_back("#");
-	p_delimiters->push_back("/* */");
 }
 
 void GDScriptLanguage::get_string_delimiters(List<String> *p_delimiters) const {
@@ -83,11 +82,17 @@ Ref<Script> GDScriptLanguage::get_template(const String &p_class_name, const Str
 	String _template = "extends %BASE%\n"
 					   "\n"
 					   "\n"
-					   "# %BASE% ready.\n"
+					   "# Declare member variables here. Examples:\n"
+					   "# var a%INT_TYPE% = 2\n"
+					   "# var b%STRING_TYPE% = \"text\"\n"
+					   "\n"
+					   "\n"
+					   "# Called when the node enters the scene tree for the first time.\n"
 					   "func _ready()%VOID_RETURN%:\n"
-					   "%TS%pass\n"
+					   "%TS%pass # Replace with function body.\n"
 					   "\n"
 					   "\n"
+					   "# Called every frame. 'delta' is the elapsed time since the previous frame.\n"
 					   "#func _process(delta%FLOAT_TYPE%)%VOID_RETURN%:\n"
 					   "#%TS%pass\n";
 

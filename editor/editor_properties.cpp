@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -688,6 +688,7 @@ public:
 				if (!EDITOR_GET("interface/inspector/layer_labels")) {
 					scale = 3;
 				}
+				
 				const int bsize = (grid_size.height * 80 / 100) / scale;
 				const int h = bsize * 2 + 1;
 
@@ -739,7 +740,7 @@ public:
 
 								draw_string(font, rect2.position + offset, itos(layer_index + 1), on ? text_color_on : text_color);
 							}
-							
+
 							ofs.x += bsize + 1;
 
 							++layer_index;

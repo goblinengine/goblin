@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -163,8 +163,8 @@ public:
 	void set_pitch_scale(float p_pitch_scale);
 	float get_pitch_scale() const;
 
-	void set_tightness(float p_tightness);
-	float get_tightness() const;
+	void set_tightness(float p_tightness); // GOBLIN ENGINE audio 3d tightness
+	float get_tightness() const;  // GOBLIN ENGINE audio 3d tightness
 
 	void play(float p_from_pos = 0.0);
 	void seek(float p_seconds);

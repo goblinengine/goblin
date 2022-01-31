@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -1485,7 +1485,7 @@ MethodInfo GDScriptFunctions::get_info(Function p_func) {
 	//using a switch, so the compiler generates a jumptable
 
 	switch (p_func) {
-		case MATH_EVAL: {  // GOBLIN ENGINE eval
+		case MATH_EVAL: { // GOBLIN ENGINE eval
 			MethodInfo mi("eval", PropertyInfo(Variant::STRING, "s"));
 			mi.return_val.type = Variant::NIL;
 			mi.return_val.usage |= PROPERTY_USAGE_NIL_IS_VARIANT;
@@ -1495,7 +1495,7 @@ MethodInfo GDScriptFunctions::get_info(Function p_func) {
 			MethodInfo mi("sin", PropertyInfo(Variant::REAL, "s"));
 			mi.return_val.type = Variant::REAL;
 			return mi;
-			
+
 		} break;
 		case MATH_COS: {
 			MethodInfo mi("cos", PropertyInfo(Variant::REAL, "s"));

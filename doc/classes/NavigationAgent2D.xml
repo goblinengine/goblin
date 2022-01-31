@@ -18,7 +18,7 @@
 		<method name="get_final_location">
 			<return type="Vector2" />
 			<description>
-				Returns the reachable final location in global coordinates. This can change if the navigation path is altered in any way.
+				Returns the reachable final location in global coordinates. This can change if the navigation path is altered in any way. Because of this, it would be best to check this each frame.
 			</description>
 		</method>
 		<method name="get_nav_path" qualifiers="const">
@@ -43,6 +43,12 @@
 			<return type="Vector2" />
 			<description>
 				Returns a [Vector2] in global coordinates, that can be moved to, making sure that there are no static objects in the way. If the agent does not have a navigation path, it will return the position of the agent's parent.
+			</description>
+		</method>
+		<method name="get_rid" qualifiers="const">
+			<return type="RID" />
+			<description>
+				Returns the object's [RID].
 			</description>
 		</method>
 		<method name="get_target_location" qualifiers="const">
@@ -102,7 +108,7 @@
 			The distance to search for other agents.
 		</member>
 		<member name="path_max_distance" type="float" setter="set_path_max_distance" getter="get_path_max_distance" default="3.0">
-			The maximum distance the agent is allowed away from the ideal path to the final location. This can happen due to trying to avoid collisions. When the maximum distance is exceded, it recalculates the ideal path.
+			The maximum distance the agent is allowed away from the ideal path to the final location. This can happen due to trying to avoid collisions. When the maximum distance is exceeded, it recalculates the ideal path.
 		</member>
 		<member name="radius" type="float" setter="set_radius" getter="get_radius" default="10.0">
 			The radius of the agent.

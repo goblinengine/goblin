@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -255,24 +255,6 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_color("font_color_focus", "LinkButton", control_font_color_focus);
 
 	theme->set_constant("underline_spacing", "LinkButton", 2 * scale);
-
-	// ColorPickerButton
-
-	theme->set_stylebox("normal", "ColorPickerButton", sb_button_normal);
-	theme->set_stylebox("pressed", "ColorPickerButton", sb_button_pressed);
-	theme->set_stylebox("hover", "ColorPickerButton", sb_button_hover);
-	theme->set_stylebox("disabled", "ColorPickerButton", sb_button_disabled);
-	theme->set_stylebox("focus", "ColorPickerButton", sb_button_focus);
-
-	theme->set_font("font", "ColorPickerButton", default_font);
-
-	theme->set_color("font_color", "ColorPickerButton", Color(1, 1, 1, 1));
-	theme->set_color("font_color_pressed", "ColorPickerButton", Color(0.8, 0.8, 0.8, 1));
-	theme->set_color("font_color_hover", "ColorPickerButton", Color(1, 1, 1, 1));
-	theme->set_color("font_color_focus", "ColorPickerButton", Color(1, 1, 1, 1));
-	theme->set_color("font_color_disabled", "ColorPickerButton", Color(0.9, 0.9, 0.9, 0.3));
-
-	theme->set_constant("hseparation", "ColorPickerButton", 2 * scale);
 
 	// ToolButton
 
@@ -830,7 +812,33 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_icon("preset_bg", "ColorPicker", make_icon(mini_checkerboard_png));
 	theme->set_icon("overbright_indicator", "ColorPicker", make_icon(overbright_indicator_png));
 
+	// ColorPickerButton
+
 	theme->set_icon("bg", "ColorPickerButton", make_icon(mini_checkerboard_png));
+	theme->set_stylebox("normal", "ColorPickerButton", sb_button_normal);
+	theme->set_stylebox("pressed", "ColorPickerButton", sb_button_pressed);
+	theme->set_stylebox("hover", "ColorPickerButton", sb_button_hover);
+	theme->set_stylebox("disabled", "ColorPickerButton", sb_button_disabled);
+	theme->set_stylebox("focus", "ColorPickerButton", sb_button_focus);
+
+	theme->set_font("font", "ColorPickerButton", default_font);
+
+	theme->set_color("font_color", "ColorPickerButton", Color(1, 1, 1, 1));
+	theme->set_color("font_color_pressed", "ColorPickerButton", Color(0.8, 0.8, 0.8, 1));
+	theme->set_color("font_color_hover", "ColorPickerButton", Color(1, 1, 1, 1));
+	theme->set_color("font_color_focus", "ColorPickerButton", Color(1, 1, 1, 1));
+	theme->set_color("font_color_disabled", "ColorPickerButton", Color(0.9, 0.9, 0.9, 0.3));
+
+	theme->set_constant("hseparation", "ColorPickerButton", 2 * scale);
+
+	// ColorPresetButton
+
+	Ref<StyleBoxFlat> preset_sb = make_flat_stylebox(Color(1, 1, 1), 2, 2, 2, 2);
+	preset_sb->set_anti_aliased(false);
+
+	theme->set_stylebox("preset_fg", "ColorPresetButton", preset_sb);
+	theme->set_icon("preset_bg_icon", "ColorPresetButton", make_icon(mini_checkerboard_png));
+	theme->set_icon("overbright_indicator", "ColorPresetButton", make_icon(overbright_indicator_png));
 
 	// TooltipPanel
 
@@ -915,7 +923,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	// Visual Node Ports
 
 	theme->set_constant("port_grab_distance_horizontal", "GraphEdit", 24 * scale);
-	theme->set_constant("port_grab_distance_vertical", "GraphEdit", 6 * scale);
+	theme->set_constant("port_grab_distance_vertical", "GraphEdit", 26 * scale);
 
 	theme->set_stylebox("bg", "GraphEditMinimap", make_flat_stylebox(Color(0.24, 0.24, 0.24), 0, 0, 0, 0));
 	Ref<StyleBoxFlat> style_minimap_camera = make_flat_stylebox(Color(0.65, 0.65, 0.65, 0.2), 0, 0, 0, 0);

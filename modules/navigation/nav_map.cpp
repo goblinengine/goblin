@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -92,9 +92,13 @@ Vector<Vector3> NavMap::get_path(Vector3 p_origin, Vector3 p_destination, bool p
 		const gd::Polygon &p = polygons[i];
 
 		// For each point cast a face and check the distance between the origin/destination
-		for (size_t point_id = 2; point_id < p.points.size(); point_id++) {
-			Face3 f(p.points[point_id - 2].pos, p.points[point_id - 1].pos, p.points[point_id].pos);
-			Vector3 spoint = f.get_closest_point_to(p_origin);
+		for (size_t point_id = 0; point_id < p.points.size(); point_id++) {
+			const Vector3 p1 = p.points[point_id].pos;
+			const Vector3 p2 = p.points[(point_id + 1) % p.points.size()].pos;
+			const Vector3 p3 = p.points[(point_id + 2) % p.points.size()].pos;
+			const Face3 face(p1, p2, p3);
+
+			Vector3 spoint = face.get_closest_point_to(p_origin);
 			float dpoint = spoint.distance_to(p_origin);
 			if (dpoint < begin_d) {
 				begin_d = dpoint;
@@ -102,7 +106,7 @@ Vector<Vector3> NavMap::get_path(Vector3 p_origin, Vector3 p_destination, bool p
 				begin_point = spoint;
 			}
 
-			spoint = f.get_closest_point_to(p_destination);
+			spoint = face.get_closest_point_to(p_destination);
 			dpoint = spoint.distance_to(p_destination);
 			if (dpoint < end_d) {
 				end_d = dpoint;
@@ -668,10 +672,10 @@ void NavMap::sync() {
 		}
 
 		const float ecm_squared(edge_connection_margin * edge_connection_margin);
-#define LEN_TOLLERANCE 0.1
-#define DIR_TOLLERANCE 0.9
-		// In front of tollerance
-#define IFO_TOLLERANCE 0.5
+#define LEN_TOLERANCE 0.1
+#define DIR_TOLERANCE 0.9
+		// In front of tolerance
+#define IFO_TOLERANCE 0.5
 
 		// Find the compatible near edges.
 		//
@@ -693,9 +697,9 @@ void NavMap::sync() {
 
 				Vector3 rel_centers = other_edge.edge_center - edge.edge_center;
 				if (ecm_squared > rel_centers.length_squared() // Are enough closer?
-						&& ABS(edge.edge_len_squared - other_edge.edge_len_squared) < LEN_TOLLERANCE // Are the same length?
-						&& ABS(edge.edge_dir.dot(other_edge.edge_dir)) > DIR_TOLLERANCE // Are alligned?
-						&& ABS(rel_centers.normalized().dot(edge.edge_dir)) < IFO_TOLLERANCE // Are one in front the other?
+						&& ABS(edge.edge_len_squared - other_edge.edge_len_squared) < LEN_TOLERANCE // Are the same length?
+						&& ABS(edge.edge_dir.dot(other_edge.edge_dir)) > DIR_TOLERANCE // Are aligned?
+						&& ABS(rel_centers.normalized().dot(edge.edge_dir)) < IFO_TOLERANCE // Are one in front the other?
 				) {
 					// The edges can be connected
 					edge.is_free = false;

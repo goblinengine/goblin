@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -78,9 +78,7 @@ Size2 PopupMenu::get_minimum_size() const {
 
 		String text = items[i].xl_text;
 		size.width += font->get_string_size(text).width;
-		if (i > 0) {
-			size.height += vseparation;
-		}
+		size.height += vseparation;
 
 		if (items[i].accel || (items[i].shortcut.is_valid() && items[i].shortcut->is_valid())) {
 			int accel_w = hseparation * 2;
@@ -481,7 +479,6 @@ void PopupMenu::_notification(int p_what) {
 			Ref<StyleBox> style = get_stylebox("panel");
 			Ref<StyleBox> hover = get_stylebox("hover");
 			Ref<Font> font = get_font("font");
-
 			// GOBLIN ENGINE distance field
 			VisualServer::get_singleton()->canvas_item_set_distance_field_mode(get_canvas_item(), font.is_valid() && font->is_distance_field_hint());
 
@@ -526,7 +523,9 @@ void PopupMenu::_notification(int p_what) {
 			}
 
 			for (int i = 0; i < items.size(); i++) {
-				if (i > 0) {
+				if (i == 0) {
+					ofs.y += vseparation / 2;
+				} else {
 					ofs.y += vseparation;
 				}
 				Point2 item_ofs = ofs;

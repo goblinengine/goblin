@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -618,7 +618,13 @@ void EditorNode::_notification(int p_what) {
 			PopupMenu *p = help_menu->get_popup();
 			p->set_item_icon(p->get_item_index(HELP_SEARCH), gui_base->get_icon("HelpSearch", "EditorIcons"));
 			p->set_item_icon(p->get_item_index(HELP_DOCS), gui_base->get_icon("Instance", "EditorIcons"));
+			p->set_item_icon(p->get_item_index(HELP_QA), gui_base->get_icon("Instance", "EditorIcons"));
+			p->set_item_icon(p->get_item_index(HELP_REPORT_A_BUG), gui_base->get_icon("Instance", "EditorIcons"));
+			p->set_item_icon(p->get_item_index(HELP_SUGGEST_A_FEATURE), gui_base->get_icon("Instance", "EditorIcons"));
+			p->set_item_icon(p->get_item_index(HELP_SEND_DOCS_FEEDBACK), gui_base->get_icon("Instance", "EditorIcons"));
+			p->set_item_icon(p->get_item_index(HELP_COMMUNITY), gui_base->get_icon("Instance", "EditorIcons"));
 			p->set_item_icon(p->get_item_index(HELP_ABOUT), gui_base->get_icon("Godot", "EditorIcons"));
+			p->set_item_icon(p->get_item_index(HELP_SUPPORT_GODOT_DEVELOPMENT), gui_base->get_icon("Heart", "EditorIcons"));
 
 			_update_update_spinner();
 		} break;
@@ -1497,13 +1503,6 @@ static void _reset_animation_players(Node *p_node, List<Ref<AnimatedValuesBackup
 }
 
 void EditorNode::_save_scene(String p_file, int idx) {
-
-	// GOBLIN ENGINE disable saving 3D imported scenes to avoid errors
-	String ext = p_file.get_extension().to_lower();
-	if (ext == "fbx" || ext == "gltf" || ext == "glb" || ext.to_lower() == "dae" || ext.to_lower() == "obj" ) {
-		return;
-	}
-
 	Node *scene = editor_data.get_edited_scene_root(idx);
 
 	if (!scene) {
@@ -2436,8 +2435,20 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 						file->set_current_path(path.replacen("." + ext, "." + extensions.front()->get()));
 					}
 				}
-			} else if (extensions.size()) { //GOBLIN ENGINE default to snake_case file name
-				const String root_name = String(scene->get_name()).camelcase_to_underscore();
+			} else if (extensions.size()) {
+				String root_name = scene->get_name();
+				// Very similar to node naming logic.
+				switch (ProjectSettings::get_singleton()->get("editor/scene/scene_naming").operator int()) {
+					case SCENE_NAME_CASING_AUTO:
+						// Use casing of the root node.
+						break;
+					case SCENE_NAME_CASING_PASCAL_CASE: {
+						root_name = root_name.capitalize().replace(" ", "");
+					} break;
+					case SCENE_NAME_CASING_SNAKE_CASE:
+						root_name = root_name.capitalize().replace(" ", "").replace("-", "_").camelcase_to_underscore();
+						break;
+				}
 				file->set_current_path(root_name + "." + extensions.front()->get().to_lower());
 			}
 			file->popup_centered_ratio();
@@ -2665,8 +2676,8 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 				}
 			}
 		} break;
-		case RUN_PROJECT_DATA_FOLDER: {
-			// ensure_user_data_dir() to prevent the edge case: "Open Project Data Folder" won't work after the project was renamed in ProjectSettingsEditor unless the project is saved
+		case RUN_USER_DATA_FOLDER: {
+			// ensure_user_data_dir() to prevent the edge case: "Open User Data Folder" won't work after the project was renamed in ProjectSettingsEditor unless the project is saved
 			OS::get_singleton()->ensure_user_data_dir();
 			OS::get_singleton()->shell_open(String("file://") + OS::get_singleton()->get_user_data_dir());
 		} break;
@@ -2812,11 +2823,6 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 		case SETTINGS_TOGGLE_FULLSCREEN: {
 			OS::get_singleton()->set_window_fullscreen(!OS::get_singleton()->is_window_fullscreen());
 
-		} break;
-		case SETTINGS_TOGGLE_CONSOLE: {
-			bool was_visible = OS::get_singleton()->is_console_visible();
-			OS::get_singleton()->set_console_visible(!was_visible);
-			EditorSettings::get_singleton()->set_setting("interface/editor/hide_console_window", was_visible);
 		} break;
 		case EDITOR_SCREENSHOT: {
 			screenshot_timer->start();
@@ -5580,6 +5586,9 @@ void EditorNode::_feature_profile_changed() {
 }
 
 void EditorNode::_bind_methods() {
+	GLOBAL_DEF("editor/scene/scene_naming", SCENE_NAME_CASING_AUTO);
+	ProjectSettings::get_singleton()->set_custom_property_info("editor/scene/scene_naming", PropertyInfo(Variant::INT, "editor/scene/scene_naming", PROPERTY_HINT_ENUM, "Auto,PascalCase,snake_case"));
+
 	ClassDB::bind_method("_menu_option", &EditorNode::_menu_option);
 	ClassDB::bind_method("_tool_menu_option", &EditorNode::_tool_menu_option);
 	ClassDB::bind_method("_menu_confirm_current", &EditorNode::_menu_confirm_current);
@@ -5960,6 +5969,11 @@ EditorNode::EditorNode() {
 	EDITOR_DEF("interface/inspector/default_color_picker_mode", 0);
 	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::INT, "interface/inspector/default_color_picker_mode", PROPERTY_HINT_ENUM, "RGB,HSV,RAW", PROPERTY_USAGE_DEFAULT));
 	EDITOR_DEF("run/auto_save/save_before_running", true);
+	EDITOR_DEF("version_control/username", "");
+	EDITOR_DEF("version_control/ssh_public_key_path", "");
+	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::STRING, "version_control/ssh_public_key_path", PROPERTY_HINT_GLOBAL_FILE));
+	EDITOR_DEF("version_control/ssh_private_key_path", "");
+	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::STRING, "version_control/ssh_private_key_path", PROPERTY_HINT_GLOBAL_FILE));
 
 	theme_base = memnew(Control);
 	add_child(theme_base);
@@ -6268,8 +6282,8 @@ EditorNode::EditorNode() {
 
 	p = file_menu->get_popup();
 	p->set_hide_on_window_lose_focus(true);
-	p->add_shortcut(ED_SHORTCUT("editor/new_scene", TTR("New Scene")), FILE_NEW_SCENE);
-	p->add_shortcut(ED_SHORTCUT("editor/new_inherited_scene", TTR("New Inherited Scene...")), FILE_NEW_INHERITED_SCENE);
+	p->add_shortcut(ED_SHORTCUT("editor/new_scene", TTR("New Scene"), KEY_MASK_CMD + KEY_N), FILE_NEW_SCENE);
+	p->add_shortcut(ED_SHORTCUT("editor/new_inherited_scene", TTR("New Inherited Scene..."), KEY_MASK_CMD + KEY_MASK_SHIFT + KEY_N), FILE_NEW_INHERITED_SCENE);
 	p->add_shortcut(ED_SHORTCUT("editor/open_scene", TTR("Open Scene..."), KEY_MASK_CMD + KEY_O), FILE_OPEN_SCENE);
 	p->add_shortcut(ED_SHORTCUT("editor/reopen_closed_scene", TTR("Reopen Closed Scene"), KEY_MASK_CMD + KEY_MASK_SHIFT + KEY_T), FILE_OPEN_PREV);
 	p->add_submenu_item(TTR("Open Recent"), "RecentScenes", FILE_OPEN_RECENT);
@@ -6334,7 +6348,7 @@ EditorNode::EditorNode() {
 	p->add_separator();
 	p->add_shortcut(ED_SHORTCUT("editor/export", TTR("Export...")), FILE_EXPORT_PROJECT);
 	p->add_item(TTR("Install Android Build Template..."), FILE_INSTALL_ANDROID_SOURCE);
-	p->add_item(TTR("Open Project Data Folder"), RUN_PROJECT_DATA_FOLDER);
+	p->add_item(TTR("Open User Data Folder"), RUN_USER_DATA_FOLDER);
 
 	plugin_config_dialog = memnew(PluginConfigDialog);
 	plugin_config_dialog->connect("plugin_ready", this, "_on_plugin_ready");
@@ -6451,9 +6465,6 @@ EditorNode::EditorNode() {
 #else
 	p->add_shortcut(ED_SHORTCUT("editor/fullscreen_mode", TTR("Toggle Fullscreen"), KEY_MASK_SHIFT | KEY_F11), SETTINGS_TOGGLE_FULLSCREEN);
 #endif
-#ifdef WINDOWS_ENABLED
-	p->add_item(TTR("Toggle System Console"), SETTINGS_TOGGLE_CONSOLE);
-#endif
 	p->add_separator();
 
 	if (OS::get_singleton()->get_data_path() == OS::get_singleton()->get_config_path()) {
@@ -6487,14 +6498,14 @@ EditorNode::EditorNode() {
 #endif
 	p->add_separator();
 	p->add_icon_shortcut(gui_base->get_icon("Instance", "EditorIcons"), ED_SHORTCUT("editor/online_docs", TTR("Online Documentation")), HELP_DOCS);
-	/*p->add_icon_shortcut(gui_base->get_icon("Instance", "EditorIcons"), ED_SHORTCUT("editor/q&a", TTR("Questions & Answers")), HELP_QA);
+	p->add_icon_shortcut(gui_base->get_icon("Instance", "EditorIcons"), ED_SHORTCUT("editor/q&a", TTR("Questions & Answers")), HELP_QA);
 	p->add_icon_shortcut(gui_base->get_icon("Instance", "EditorIcons"), ED_SHORTCUT("editor/report_a_bug", TTR("Report a Bug")), HELP_REPORT_A_BUG);
 	p->add_icon_shortcut(gui_base->get_icon("Instance", "EditorIcons"), ED_SHORTCUT("editor/suggest_a_feature", TTR("Suggest a Feature")), HELP_SUGGEST_A_FEATURE);
 	p->add_icon_shortcut(gui_base->get_icon("Instance", "EditorIcons"), ED_SHORTCUT("editor/send_docs_feedback", TTR("Send Docs Feedback")), HELP_SEND_DOCS_FEEDBACK);
-	p->add_icon_shortcut(gui_base->get_icon("Instance", "EditorIcons"), ED_SHORTCUT("editor/community", TTR("Community")), HELP_COMMUNITY); */
-	p->add_separator(); 
-	p->add_icon_shortcut(gui_base->get_icon("Godot", "EditorIcons"), ED_SHORTCUT("editor/about", TTR("About Goblin")), HELP_ABOUT);
-	// p->add_icon_shortcut(gui_base->get_icon("Heart", "EditorIcons"), ED_SHORTCUT("editor/support_development", TTR("Support Godot Development")), HELP_SUPPORT_GODOT_DEVELOPMENT);
+	p->add_icon_shortcut(gui_base->get_icon("Instance", "EditorIcons"), ED_SHORTCUT("editor/community", TTR("Community")), HELP_COMMUNITY);
+	p->add_separator();
+	p->add_icon_shortcut(gui_base->get_icon("Godot", "EditorIcons"), ED_SHORTCUT("editor/about", TTR("About Godot")), HELP_ABOUT);
+	p->add_icon_shortcut(gui_base->get_icon("Heart", "EditorIcons"), ED_SHORTCUT("editor/support_development", TTR("Support Godot Development")), HELP_SUPPORT_GODOT_DEVELOPMENT);
 
 	HBoxContainer *play_hb = memnew(HBoxContainer);
 	menu_hb->add_child(play_hb);

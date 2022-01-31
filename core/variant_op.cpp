@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -1196,21 +1196,7 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a,
 				_RETURN(p_a._data._int ^ p_b._data._int);
 			}
 
-			// GOBLIN ENGINE allow bitwise ^ xor on boolean operations 
-			// based on this PR https://github.com/godotengine/godot/pull/22740
-			// XOR is same as != for booleans (but not for boolified variables)
-			// 1 != 2 is true where as 1 ^ 2 is false because both 1 and 2 convert to true
-			// to use this in GDScript (!1) ^ (!2) produces a logical xor operation
-			// i haven't figured out how to correctly add var ^ !var and var ^ bool
-			// dedicated ^^ xor requires more changes but it would be unecessary as the above ^
-			// also early hacky implementation  
-			CASE_TYPE_ALL_BUT_INT(math, OP_BIT_XOR) {
-				bool l = p_a.booleanize();
-				bool r = p_b.booleanize();
-
-				_RETURN((l || r) && !(l && r));
-			}
-			
+			CASE_TYPE_ALL_BUT_INT(math, OP_BIT_XOR)
 			_RETURN_FAIL;
 		}
 

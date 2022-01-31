@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -132,7 +132,7 @@ public:
 		virtual void force_collision_check(SpatialPartitionID p_handle) {}
 		virtual void update() {}
 		virtual void update_collisions() {}
-		virtual void set_pairable(SpatialPartitionID p_handle, bool p_pairable, uint32_t p_pairable_type, uint32_t p_pairable_mask) = 0;
+		virtual void set_pairable(Instance *p_instance, bool p_pairable, uint32_t p_pairable_type, uint32_t p_pairable_mask) = 0;
 		virtual int cull_convex(const Vector<Plane> &p_convex, Instance **p_result_array, int p_result_max, uint32_t p_mask = 0xFFFFFFFF) = 0;
 		virtual int cull_aabb(const AABB &p_aabb, Instance **p_result_array, int p_result_max, int *p_subindex_array = nullptr, uint32_t p_mask = 0xFFFFFFFF) = 0;
 		virtual int cull_segment(const Vector3 &p_from, const Vector3 &p_to, Instance **p_result_array, int p_result_max, int *p_subindex_array = nullptr, uint32_t p_mask = 0xFFFFFFFF) = 0;
@@ -160,7 +160,7 @@ public:
 		SpatialPartitionID create(Instance *p_userdata, const AABB &p_aabb = AABB(), int p_subindex = 0, bool p_pairable = false, uint32_t p_pairable_type = 0, uint32_t pairable_mask = 1);
 		void erase(SpatialPartitionID p_handle);
 		void move(SpatialPartitionID p_handle, const AABB &p_aabb);
-		void set_pairable(SpatialPartitionID p_handle, bool p_pairable, uint32_t p_pairable_type, uint32_t p_pairable_mask);
+		void set_pairable(Instance *p_instance, bool p_pairable, uint32_t p_pairable_type, uint32_t p_pairable_mask);
 		int cull_convex(const Vector<Plane> &p_convex, Instance **p_result_array, int p_result_max, uint32_t p_mask = 0xFFFFFFFF);
 		int cull_aabb(const AABB &p_aabb, Instance **p_result_array, int p_result_max, int *p_subindex_array = nullptr, uint32_t p_mask = 0xFFFFFFFF);
 		int cull_segment(const Vector3 &p_from, const Vector3 &p_to, Instance **p_result_array, int p_result_max, int *p_subindex_array = nullptr, uint32_t p_mask = 0xFFFFFFFF);
@@ -170,11 +170,59 @@ public:
 	};
 
 	class SpatialPartitioningScene_BVH : public SpatialPartitioningScene {
+		template <class T>
+		class UserPairTestFunction {
+		public:
+			static bool user_pair_check(const T *p_a, const T *p_b) {
+				// return false if no collision, decided by masks etc
+				return true;
+			}
+		};
+
+		template <class T>
+		class UserCullTestFunction {
+			// write this logic once for use in all routines
+			// double check this as a possible source of bugs in future.
+			static bool _cull_pairing_mask_test_hit(uint32_t p_maskA, uint32_t p_typeA, uint32_t p_maskB, uint32_t p_typeB) {
+				// double check this as a possible source of bugs in future.
+				bool A_match_B = p_maskA & p_typeB;
+
+				if (!A_match_B) {
+					bool B_match_A = p_maskB & p_typeA;
+					if (!B_match_A) {
+						return false;
+					}
+				}
+
+				return true;
+			}
+
+		public:
+			static bool user_cull_check(const T *p_a, const T *p_b) {
+				DEV_ASSERT(p_a);
+				DEV_ASSERT(p_b);
+
+				uint32_t a_mask = p_a->bvh_pairable_mask;
+				uint32_t a_type = p_a->bvh_pairable_type;
+				uint32_t b_mask = p_b->bvh_pairable_mask;
+				uint32_t b_type = p_b->bvh_pairable_type;
+
+				if (!_cull_pairing_mask_test_hit(a_mask, a_type, b_mask, b_type)) {
+					return false;
+				}
+
+				return true;
+			}
+		};
+
+	private:
 		// Note that SpatialPartitionIDs are +1 based when stored in visual server, to enable 0 to indicate invalid ID.
-		BVH_Manager<Instance, true, 256> _bvh;
+		BVH_Manager<Instance, 2, true, 256, UserPairTestFunction<Instance>, UserCullTestFunction<Instance>> _bvh;
+		Instance *_dummy_cull_object;
 
 	public:
 		SpatialPartitioningScene_BVH();
+		~SpatialPartitioningScene_BVH();
 		SpatialPartitionID create(Instance *p_userdata, const AABB &p_aabb = AABB(), int p_subindex = 0, bool p_pairable = false, uint32_t p_pairable_type = 0, uint32_t p_pairable_mask = 1);
 		void erase(SpatialPartitionID p_handle);
 		void move(SpatialPartitionID p_handle, const AABB &p_aabb);
@@ -183,7 +231,7 @@ public:
 		void force_collision_check(SpatialPartitionID p_handle);
 		void update();
 		void update_collisions();
-		void set_pairable(SpatialPartitionID p_handle, bool p_pairable, uint32_t p_pairable_type, uint32_t p_pairable_mask);
+		void set_pairable(Instance *p_instance, bool p_pairable, uint32_t p_pairable_type, uint32_t p_pairable_mask);
 		int cull_convex(const Vector<Plane> &p_convex, Instance **p_result_array, int p_result_max, uint32_t p_mask = 0xFFFFFFFF);
 		int cull_aabb(const AABB &p_aabb, Instance **p_result_array, int p_result_max, int *p_subindex_array = nullptr, uint32_t p_mask = 0xFFFFFFFF);
 		int cull_segment(const Vector3 &p_from, const Vector3 &p_to, Instance **p_result_array, int p_result_max, int *p_subindex_array = nullptr, uint32_t p_mask = 0xFFFFFFFF);
@@ -261,6 +309,11 @@ public:
 		float lod_end_hysteresis;
 		RID lod_instance;
 
+		// These are used for the user cull testing function
+		// in the BVH, this is precached rather than recalculated each time.
+		uint32_t bvh_pairable_mask;
+		uint32_t bvh_pairable_type;
+
 		uint64_t last_render_pass;
 		uint64_t last_frame_pass;
 
@@ -297,6 +350,9 @@ public:
 			lod_end = 0;
 			lod_begin_hysteresis = 0;
 			lod_end_hysteresis = 0;
+
+			bvh_pairable_mask = 0;
+			bvh_pairable_type = 0;
 
 			last_render_pass = 0;
 			last_frame_pass = 0;
@@ -509,13 +565,12 @@ public:
 		}
 	};
 
-	// GOBLIN ENGINE GOBLIN ENGINE expose max renderable scene elements
+	// GOBLIN ENGINE expose max renderable scene elements
 	int instance_cull_count;
 	Instance **instance_cull_result;
 	Instance **instance_shadow_cull_result; //used for generating shadowmaps
 	Instance **light_cull_result;
 	RID *light_instance_cull_result;
-	
 	int light_cull_count;
 	int directional_light_count;
 	RID *reflection_probe_instance_cull_result; // GOBLIN ENGINE expose max renderable scene elements
