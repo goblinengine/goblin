@@ -7,5 +7,5 @@ patch = 0
 status = "dev"
 module_config = ""
 year = 2022
-website = "http://goblinengine.github.io"
+website = "https://goblinengine.github.io"
 docs = "3.4"
