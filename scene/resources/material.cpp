@@ -1040,6 +1040,10 @@ void SpatialMaterial::_update_shader() {
 			case BLEND_MODE_MUL: {
 				code += "\tvec3 detail = mix(ALBEDO.rgb,ALBEDO.rgb*detail_tex.rgb,detail_tex.a);\n";
 			} break;
+			// GOBLIN ENGINE add blend_premul_alpha to shaders
+			case BLEND_MODE_PMALPHA: {
+				code += "blend_premul_alpha"; break;
+			}
 		}
 
 		code += "\tvec3 detail_norm = mix(NORMALMAP,detail_norm_tex.rgb,detail_tex.a);\n";
@@ -2207,6 +2211,7 @@ void SpatialMaterial::_bind_methods() {
 	BIND_ENUM_CONSTANT(BLEND_MODE_ADD);
 	BIND_ENUM_CONSTANT(BLEND_MODE_SUB);
 	BIND_ENUM_CONSTANT(BLEND_MODE_MUL);
+	BIND_ENUM_CONSTANT(BLEND_MODE_PMALPHA); // GOBLIN ENGINE add blend_premul_alpha to shaders
 
 	BIND_ENUM_CONSTANT(DEPTH_DRAW_OPAQUE_ONLY);
 	BIND_ENUM_CONSTANT(DEPTH_DRAW_ALWAYS);
