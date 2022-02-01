@@ -112,7 +112,7 @@ ScrollContainer *EditorAbout::_populate_list(const String &p_name, const List<St
 }
 
 EditorAbout::EditorAbout() {
-	set_title(TTR("Thanks from the Godot community!"));
+	set_title(TTR("Thanks from the Goblin community!"));
 	set_hide_on_ok(true);
 	set_resizable(true);
 
@@ -149,7 +149,7 @@ EditorAbout::EditorAbout() {
 	Label *about_text = memnew(Label);
 	about_text->set_v_size_flags(Control::SIZE_SHRINK_CENTER);
 	about_text->set_text(String::utf8("\xc2\xa9 2022 Filip Anton.\n\xc2\xa9 2007-2021 ") +
-			TTR("Godot Engine contributors") + "\n");  // GOBLIN ENGINE
+			TTR("Goblin Engine contributors") + "\n");  // GOBLIN ENGINE
 	version_info_vbc->add_child(about_text);
 
 	hbc->add_child(version_info_vbc);
