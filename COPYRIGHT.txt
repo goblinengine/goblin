@@ -43,7 +43,7 @@ Source: https://github.com/godotengine/godot
 
 Files: ./modules/goblin
 Comment: Goblin Engine
-Copyright: 2007-2022, Filip Anton.
+Copyright: 2021-2022, Filip Anton.
 License: Expat
 
 Files: *
