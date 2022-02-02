@@ -41,6 +41,11 @@ Upstream-Name: Godot Engine
 Upstream-Contact: Rémi Verschelde <contact@godotengine.org>
 Source: https://github.com/godotengine/godot
 
+Files: ./modules/goblin
+Comment: Goblin Engine
+Copyright: 2007-2022, Filip Anton.
+License: Expat
+
 Files: *
 Comment: Godot Engine
 Copyright: 2007-2022, Juan Linietsky, Ariel Manzur.
@@ -51,9 +56,9 @@ Files: ./icon.png
  ./icon.svg
  ./logo.png
  ./logo.svg
-Comment: Godot Engine logo
-Copyright: 2017, Andrea Calabró
-License: CC-BY-4.0
+Comment: Goblin Engine logo
+Copyright: 2021, Filip Anton
+License: All Rights Reserved
 
 Files: ./core/math/convex_hull.cpp
  ./core/math/convex_hull.h
@@ -403,6 +408,21 @@ Files: ./thirdparty/zstd/
 Comment: Zstandard
 Copyright: 2016-2021, Facebook, Inc.
 License: BSD-3-clause
+
+Files: ./modules/goblin/libs/exoquant.c
+Comment: ExoQuant
+Copyright: 2004, Dennis Ranke
+License: Expat
+
+Files: ./modules/goblin/libs/tsf/
+Comment: Tiny Soundfont Library
+Copyright: 2017, 2018, 2020 Bernhard Schelling
+License: Expat
+
+Files: ./modules/sqlite/thirdparty/sqlite
+Comment: SQLite
+Copyright: Hipp, Wyrick & Company, Inc., or "Hwaci"
+License: Public Domain
 
 
 
