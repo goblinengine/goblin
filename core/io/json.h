@@ -34,6 +34,7 @@
 #include "core/variant.h"
 
 class JSON {
+
 	enum TokenType {
 		TK_CURLY_BRACKET_OPEN,
 		TK_CURLY_BRACKET_CLOSE,
@@ -63,7 +64,12 @@ class JSON {
 
 	static const char *tk_name[TK_MAX];
 
-	static String _print_var(const Variant &p_var, const String &p_indent, int p_cur_indent, bool p_sort_keys, Set<const void *> &p_markers);
+	static bool _is_compatible_value(const Variant &p_var);
+
+	static String _print_var(const Variant &p_var, const String &p_indent, int p_cur_indent, bool p_sort_keys, bool p_at_key);
+	static String _print_value(const Variant &p_var, const String &p_indent, int p_cur_indent, bool p_sort_keys, bool p_at_key);
+	static String _print_array(const Variant &p_var, const String &p_indent, int p_cur_indent, bool p_sort_keys, bool p_at_key);
+	static String _print_object(const Variant &p_var, const String &p_indent, int p_cur_indent, bool p_sort_keys, bool p_at_key);
 
 	static Error _get_token(const CharType *p_str, int &index, int p_len, Token &r_token, int &line, String &r_err_str);
 	static Error _parse_value(Variant &value, Token &token, const CharType *p_str, int &index, int p_len, int &line, String &r_err_str);

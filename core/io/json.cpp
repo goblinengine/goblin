@@ -31,6 +31,7 @@
 #include "json.h"
 
 #include "core/print_string.h"
+#include "core/variant_parser.h"
 
 const char *JSON::tk_name[TK_MAX] = {
 	"'{'",
@@ -55,7 +56,53 @@ static String _make_indent(const String &p_indent, int p_size) {
 	return indent_text;
 }
 
-String JSON::_print_var(const Variant &p_var, const String &p_indent, int p_cur_indent, bool p_sort_keys, Set<const void *> &p_markers) {
+
+String JSON::_print_var(const Variant &p_var, const String &p_indent, int p_cur_indent, bool p_sort_keys, bool p_at_key) {
+	String s;
+
+	switch (p_var.get_type()) {
+		case Variant::ARRAY: {
+			s = _print_array(p_var, p_indent, p_cur_indent, p_sort_keys, p_at_key);
+		} break;
+		case Variant::DICTIONARY: {
+			s = _print_object(p_var, p_indent, p_cur_indent, p_sort_keys, p_at_key);
+		} break;
+		default: {
+			s = _print_value(p_var, p_indent, p_cur_indent, p_sort_keys, p_at_key);
+		}
+	}
+	return s;
+}
+
+
+String JSON::_print_array(const Variant &p_var, const String &p_indent, int p_cur_indent, bool p_sort_keys, bool p_at_key) {
+
+	String end_statement = "";
+
+	if (!p_indent.empty()) {
+		end_statement += "\n";
+	}
+	Array arr = p_var;
+
+	String s;
+	s = "[";
+	s += end_statement;
+
+	for (int i = 0; i < arr.size(); i++) {
+		if (i > 0) {
+			s += ",";
+			s += end_statement;
+		}
+		String str = _print_var(arr[i], p_indent, p_cur_indent + 1, p_sort_keys, p_at_key);
+		s += _make_indent(p_indent, p_cur_indent + 1) + str;
+	}
+	s += end_statement + _make_indent(p_indent, p_cur_indent) + "]";
+
+	return s;
+}
+
+String JSON::_print_object(const Variant &p_var, const String &p_indent, int p_cur_indent, bool p_sort_keys, bool p_at_key) {
+
 	String colon = ":";
 	String end_statement = "";
 
@@ -63,75 +110,102 @@ String JSON::_print_var(const Variant &p_var, const String &p_indent, int p_cur_
 		colon += " ";
 		end_statement += "\n";
 	}
+	Dictionary obj = p_var;
 
+	String s;
+	s = "{";
+	s += end_statement;
+
+	List<Variant> keys;
+	obj.get_key_list(&keys);
+
+	if (p_sort_keys) {
+		keys.sort();
+	}
+
+	for (List<Variant>::Element *E = keys.front(); E; E = E->next()) {
+		if (E != keys.front()) {
+			s += ",";
+			s += end_statement;
+		}
+		const Variant &key = E->get();
+		// Key
+		String str = _print_var(key, p_indent, p_cur_indent + 1, p_sort_keys, true);
+		if (!p_at_key && key.get_type() != Variant::STRING) {
+			// Done writing variants into a JSON string at key
+			str = str.json_escape().quote();
+		}
+		s += _make_indent(p_indent, p_cur_indent + 1) + str;
+
+		s += colon;
+
+		// Value
+		str = _print_var(obj[key], p_indent, p_cur_indent + 1, p_sort_keys, p_at_key);
+		s += str;
+	}
+	s += end_statement + _make_indent(p_indent, p_cur_indent) + "}";
+
+	return s;
+}
+
+String JSON::_print_value(const Variant &p_var, const String &p_indent, int p_cur_indent, bool p_sort_keys, bool p_at_key) {
+	String s;
+
+	if (p_at_key) {
+		// JSON only supports strings as object keys
+		VariantWriter::write_to_string(p_var, s);
+	} else {
+		// Write JSON compatible value, if possible
+		switch (p_var.get_type()) {
+			case Variant::NIL: {
+				s = "null";
+			} break;
+			case Variant::BOOL: {
+				p_var.operator bool() ? s = "true" : s = "false";
+			} break;
+			case Variant::INT: {
+				s = itos(p_var);
+				break;
+			} break;
+			case Variant::REAL: {
+				s = rtos(p_var);
+			} break;
+			case Variant::STRING: {
+				s = p_var;
+				s = s.quote();
+			} break;
+			case Variant::POOL_INT_ARRAY:
+			case Variant::POOL_REAL_ARRAY:
+			case Variant::POOL_STRING_ARRAY: {
+				s = _print_array(p_var, p_indent, p_cur_indent, p_sort_keys, p_at_key);
+			} break;
+			default: {
+				VariantWriter::write_to_string(p_var, s);
+				//s = "@" + s;
+				s = s.json_escape().quote();
+			}
+		}
+	}
+	return s;
+}
+
+bool JSON::_is_compatible_value(const Variant &p_var) {
 	switch (p_var.get_type()) {
 		case Variant::NIL:
-			return "null";
 		case Variant::BOOL:
-			return p_var.operator bool() ? "true" : "false";
 		case Variant::INT:
-			return itos(p_var);
 		case Variant::REAL:
-			return rtos(p_var);
-		case Variant::POOL_INT_ARRAY:
-		case Variant::POOL_REAL_ARRAY:
-		case Variant::POOL_STRING_ARRAY:
-		case Variant::ARRAY: {
-			String s = "[";
-			s += end_statement;
-			Array a = p_var;
-
-			ERR_FAIL_COND_V_MSG(p_markers.has(a.id()), "\"[...]\"", "Converting circular structure to JSON.");
-			p_markers.insert(a.id());
-
-			for (int i = 0; i < a.size(); i++) {
-				if (i > 0) {
-					s += ",";
-					s += end_statement;
-				}
-				s += _make_indent(p_indent, p_cur_indent + 1) + _print_var(a[i], p_indent, p_cur_indent + 1, p_sort_keys, p_markers);
-			}
-			s += end_statement + _make_indent(p_indent, p_cur_indent) + "]";
-			p_markers.erase(a.id());
-			return s;
-		};
-		case Variant::DICTIONARY: {
-			String s = "{";
-			s += end_statement;
-			Dictionary d = p_var;
-
-			ERR_FAIL_COND_V_MSG(p_markers.has(d.id()), "\"{...}\"", "Converting circular structure to JSON.");
-			p_markers.insert(d.id());
-
-			List<Variant> keys;
-			d.get_key_list(&keys);
-
-			if (p_sort_keys) {
-				keys.sort();
-			}
-
-			for (List<Variant>::Element *E = keys.front(); E; E = E->next()) {
-				if (E != keys.front()) {
-					s += ",";
-					s += end_statement;
-				}
-				s += _make_indent(p_indent, p_cur_indent + 1) + _print_var(String(E->get()), p_indent, p_cur_indent + 1, p_sort_keys, p_markers);
-				s += colon;
-				s += _print_var(d[E->get()], p_indent, p_cur_indent + 1, p_sort_keys, p_markers);
-			}
-
-			s += end_statement + _make_indent(p_indent, p_cur_indent) + "}";
-			p_markers.erase(d.id());
-			return s;
-		};
-		default:
-			return "\"" + String(p_var).json_escape() + "\"";
+		case Variant::STRING: {
+			return true;
+		}
+		default: {
+			return false;
+		}
 	}
 }
 
 String JSON::print(const Variant &p_var, const String &p_indent, bool p_sort_keys) {
-	Set<const void *> markers;
-	return _print_var(p_var, p_indent, 0, p_sort_keys, markers);
+	return _print_var(p_var, p_indent, 0, p_sort_keys, false);
 }
 
 Error JSON::_get_token(const CharType *p_str, int &index, int p_len, Token &r_token, int &line, String &r_err_str) {
@@ -338,7 +412,22 @@ Error JSON::_parse_value(Variant &value, Token &token, const CharType *p_str, in
 	} else if (token.type == TK_NUMBER) {
 		value = token.value;
 	} else if (token.type == TK_STRING) {
-		value = token.value;
+		// The string may contain a serialized variant, try to parse it
+		VariantParser::StreamString ss;
+		ss.s = token.value;
+		//ss.s = ss.s.substr(1);
+
+		String v_parse_err;
+		int v_err_line;
+		Error v_err;
+
+		
+		v_err = VariantParser::parse(&ss, value, v_parse_err, v_err_line);
+
+		if (v_err != OK || _is_compatible_value(value)) {
+			// Read the whole token value as a string instead
+			value = token.value;
+		}
 	} else {
 		r_err_str = "Expected value, got " + String(tk_name[token.type]) + ".";
 		return ERR_PARSE_ERROR;
@@ -373,21 +462,19 @@ Error JSON::_parse_array(Array &array, const CharType *p_str, int &index, int p_
 
 		Variant v;
 		err = _parse_value(v, token, p_str, index, p_len, line, r_err_str);
-		if (err) {
+		if (err)
 			return err;
-		}
 
 		array.push_back(v);
 		need_comma = true;
 	}
 
-	r_err_str = "Expected ']'";
 	return ERR_PARSE_ERROR;
 }
 
 Error JSON::_parse_object(Dictionary &object, const CharType *p_str, int &index, int p_len, int &line, String &r_err_str) {
 	bool at_key = true;
-	String key;
+	Variant key;
 	Token token;
 	bool need_comma = false;
 
@@ -416,8 +503,11 @@ Error JSON::_parse_object(Dictionary &object, const CharType *p_str, int &index,
 				r_err_str = "Expected key";
 				return ERR_PARSE_ERROR;
 			}
+			err = _parse_value(key, token, p_str, index, p_len, line, r_err_str);
+			if (err != OK) {
+				return err;
+			}
 
-			key = token.value;
 			err = _get_token(p_str, index, p_len, token, line, r_err_str);
 			if (err != OK) {
 				return err;
@@ -444,7 +534,6 @@ Error JSON::_parse_object(Dictionary &object, const CharType *p_str, int &index,
 		}
 	}
 
-	r_err_str = "Expected '}'";
 	return ERR_PARSE_ERROR;
 }
 
@@ -462,19 +551,6 @@ Error JSON::parse(const String &p_json, Variant &r_ret, String &r_err_str, int &
 	}
 
 	err = _parse_value(r_ret, token, str, idx, len, r_err_line, r_err_str);
-
-	// Check if EOF is reached
-	// or it's a type of the next token.
-	if (err == OK && idx < len) {
-		err = _get_token(str, idx, len, token, r_err_line, r_err_str);
-
-		if (err || token.type != TK_EOF) {
-			r_err_str = "Expected 'EOF'";
-			// Reset return value to empty `Variant`
-			r_ret = Variant();
-			return ERR_PARSE_ERROR;
-		}
-	}
 
 	return err;
 }
