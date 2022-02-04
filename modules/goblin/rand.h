@@ -23,6 +23,7 @@ public:
 	Variant roll(uint32_t count, uint32_t sides);
 	Variant roll_notation(const String notation);
 	Color color();
+	String uuid_v4();
 	
 	Rand();
 	~Rand() {};

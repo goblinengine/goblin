@@ -1,6 +1,7 @@
 #include "rand.h"
 #include "core/os/os.h"
 #include "modules/regex/regex.h"
+#include "core/crypto/crypto.h"
 
 #include <stdlib.h>
 
@@ -233,7 +234,24 @@ Variant Rand::roll_notation(const String dice_notation) {
 }
 
 Color Rand::color() {
-	return Color();
+	Color color;
+	color.set_hsv(randf(), randf_range(0.0, 1.0), randf_range(0.0, 1.0));
+	return color;
+}
+
+String Rand::uuid_v4() {
+	Ref<Crypto> crypto = Ref<Crypto>(Crypto::create());
+	PoolByteArray data = crypto->generate_random_bytes(16);
+
+	data.set(6, (data[6] & 0x0f) | 0x40);
+	data.set(8, (data[8] & 0x3f) | 0x80);
+
+	PoolByteArray::Read r = data.read();
+	return String::hex_encode_buffer(&r[0], 16)
+			.insert(8, "-")
+			.insert(13, "-")
+			.insert(18, "-")
+			.insert(23, "-");
 }
 
 void Rand::_bind_methods() { 
@@ -245,6 +263,8 @@ void Rand::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("decision", "probability"), &Rand::decision);
 	ClassDB::bind_method(D_METHOD("roll", "count", "faces"), &Rand::roll);
 	ClassDB::bind_method(D_METHOD("roll_notation", "dice_notation"), &Rand::roll_notation);
+	ClassDB::bind_method(D_METHOD("color"), &Rand::color);
+	ClassDB::bind_method(D_METHOD("uuid_v4"), &Rand::uuid_v4);
 
 	ADD_PROPERTY_DEFAULT("seed", 0);
 	ADD_PROPERTY_DEFAULT("state", 0);
