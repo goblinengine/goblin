@@ -1,0 +1,67 @@
+
+
+def can_build(env, platform):
+    return True
+
+
+def configure(env):
+    pass
+
+
+def get_doc_classes():
+    return [
+        "WorldArea",
+
+        "VoxelLight",
+        "VoxelLight",
+
+        "VoxelLevelGenerator",
+        "VoxelLevelGeneratorFlat",
+
+        "VoxelSurfaceMerger",
+        "VoxelSurfaceSimple",
+        "VoxelSurface",
+        "VoxelLibraryMerger",
+        "VoxelLibrarySimple",
+        "VoxelLibrary",
+
+        "VoxelCubePoints",
+        "VoxelMesherCubic",
+        "VoxelMeshData",
+
+        "MarchingCubesCellData",
+        "VoxelMesherMarchingCubes",
+
+        "VoxelMesher",
+
+        "EnvironmentData",
+        "VoxelChunk",
+        "VoxelChunkDefault",
+        "VoxelStructure",
+        "BlockVoxelStructure",
+        "VoxelWorld",
+
+        "VoxelMesherBlocky",
+        "VoxelWorldBlocky",
+        "VoxelChunkBlocky",
+        "VoxelMesherLiquidBlocky",
+
+        "VoxelWorldMarchingCubes",
+        "VoxelChunkMarchingCubes",
+
+        "VoxelMesherCubic",
+        "VoxelWorldCubic",
+        "VoxelChunkCubic",
+
+        "VoxelMesherDefault",
+        "VoxelWorldDefault",
+
+        "VoxelJob",
+        "VoxelTerrarinJob",
+        "VoxelLightJob",
+        "VoxelPropJob",
+    ]
+
+
+def get_doc_path():
+    return "doc_classes"
