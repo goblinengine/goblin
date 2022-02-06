@@ -331,10 +331,10 @@ void VoxelWorldEditorPlugin::_notification(int p_what) {
 	if (p_what == EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED) {
 		switch ((int)EditorSettings::get_singleton()->get("editors/voxel/editor_side")) {
 			case 0: { // Left.
-				//SpatialEditor::get_singleton()->get_palette_split()->move_child(voxel_world_editor, 0);
+				SpatialEditor::get_singleton()->move_control_to_left_panel(voxel_world_editor);
 			} break;
 			case 1: { // Right.
-				//SpatialEditor::get_singleton()->get_palette_split()->move_child(voxel_world_editor, 1);
+				SpatialEditor::get_singleton()->move_control_to_right_panel(voxel_world_editor);
 			} break;
 		}
 	}

@@ -424,6 +424,15 @@ Comment: SQLite
 Copyright: Hipp, Wyrick & Company, Inc., or "Hwaci"
 License: Public Domain
 
+Files: ./modules/voxel/
+Comment: Voxelman
+Copyright: 2019-2020 Péter Magyar
+License: Expat
+
+Files: ./modules/thread_pool/
+Comment: Thread pool
+Copyright: 2020-2022 Péter Magyar
+License: Expat
 
 
 License: Apache-2.0

@@ -5,6 +5,7 @@
 
 ### Added
 
+- Added [Voxelman](https://github.com/Relintai/voxelman) and [Thread pool](https://github.com/Relintai/thread_pool) modules by [Relintai](https://github.com/Relintai). The docs still require a bit of cleanup.
 - Added `tightness` to `AudioStreamPlayer3D` which controls how tight the sound playig encloses the player. Based on an unmerged 4.0 pr found [here](https://github.com/godotengine/godot/pull/42358).
 - Implemented `Array` variant `for_each(obj, "function")` function which calls a function for each element of the array. The function can be any name but must have only 1 parameter to pass each element to. This is slighty faster than a for loop with 1 function and much faster than using `call()` in a for loop. Every function inside a for loop will slow down the loop by a factor of 6x where as using `call()` slows down by a factor of 14x and the effect is **cummulative!**. The idea is to use only 1 function per element to make looping faster.
 - New `Rand` singleton that allows generating completely random values from anywhere. `Rand` auto randomizes every time the engine starts and since it extends `RandomNumberGenerator` you can also call `randomize()` or `set_seed()` manually.
