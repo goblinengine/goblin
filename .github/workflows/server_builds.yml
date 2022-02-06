@@ -22,7 +22,7 @@ jobs:
             cache-name: server-editor
             target: release_debug
             tools: true
-            sconsflags: use_llvm=yes use_lld=yes use_thinlto=yes
+            sconsflags: use_llvm=yes use_thinlto=yes
 
           - name: Linux Server (target=release, tools=no, module_sqlite_enabled=yes)
             cache-name: server-template
