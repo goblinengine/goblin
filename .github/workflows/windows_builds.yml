@@ -5,7 +5,7 @@ on: [push, pull_request]
 # SCONS_CACHE for windows must be set in the build environment
 env:
   GODOT_BASE_BRANCH: main
-  SCONSFLAGS: verbose=yes warnings=all werror=yes debug_symbols=no use_thinlto=yes use_llvm=yes deprecated=no
+  SCONSFLAGS: verbose=yes warnings=all debug_symbols=no deprecated=no
   SCONS_CACHE_MSVC_CONFIG: true
 
 concurrency:
@@ -26,12 +26,13 @@ jobs:
             target: release_debug
             tools: true
             bin: "./bin/goblin.windows.opt.tools.64.exe"
-            sconsflags: module_sqlite_enabled=yes
+            sconsflags: module_sqlite_enabled=yes use_thinlto=yes
 
           - name: Template (target=release, tools=no)
             cache-name: windows-template
             target: release
             tools: false
+            sconsflags: use_lto=yes
 
     steps:
       - uses: actions/checkout@v2
