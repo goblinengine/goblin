@@ -28,7 +28,7 @@ sources = [
     "library/voxel_library.cpp",
     "library/voxel_library_simple.cpp",
     
-    "nodes/voxel_light.cpp",
+    "nodes/prop_voxel_light.cpp",
 
     "library/voxel_surface.cpp",
     "library/voxel_surface_simple.cpp",

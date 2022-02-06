@@ -70,7 +70,7 @@ SOFTWARE.
 #include "world/marching_cubes/voxel_chunk_marching_cubes.h"
 #include "world/marching_cubes/voxel_world_marching_cubes.h"
 
-#include "nodes/voxel_light.h"
+#include "nodes/prop_voxel_light.h"
 
 #include "world/jobs/voxel_job.h"
 #include "world/jobs/voxel_light_job.h"
@@ -96,7 +96,7 @@ void register_voxel_types() {
 #endif
 
 	ClassDB::register_class<VoxelLight>();
-	ClassDB::register_class<VoxelLight>();
+	ClassDB::register_class<PropVoxelLight>();
 
 	ClassDB::register_class<VoxelWorld>();
 	ClassDB::register_class<VoxelChunk>();

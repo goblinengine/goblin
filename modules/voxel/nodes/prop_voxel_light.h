@@ -20,8 +20,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-#ifndef VOXEL_LIGHT_H
-#define VOXEL_LIGHT_H
+#ifndef PROP_VOXEL_LIGHT_H
+#define PROP_VOXEL_LIGHT_H
 
 #include "core/version.h"
 
@@ -35,15 +35,15 @@ SOFTWARE.
 
 #include "core/math/vector3.h"
 
-class VoxelLight : public Spatial {
-	GDCLASS(VoxelLight, Spatial);
+class PropVoxelLight : public Spatial {
+	GDCLASS(PropVoxelLight, Spatial);
 	OBJ_CATEGORY("Props");
 
 public:
 	//make it turn into a normal light if voxel isn't present?
 
-	VoxelLight();
-	~VoxelLight();
+	PropVoxelLight();
+	~PropVoxelLight();
 
 protected:
 	static void _bind_methods();
