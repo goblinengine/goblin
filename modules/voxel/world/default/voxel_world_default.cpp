@@ -29,7 +29,7 @@ SOFTWARE.
 #include "../../meshers/default/voxel_mesher_default.h"
 #include "../jobs/voxel_light_job.h"
 #include "../jobs/voxel_prop_job.h"
-#include "../jobs/voxel_terrarin_job.h"
+#include "../jobs/voxel_terrain_job.h"
 
 _FORCE_INLINE_ int VoxelWorldDefault::get_build_flags() const {
 	return _build_flags;
@@ -178,7 +178,7 @@ Ref<VoxelChunk> VoxelWorldDefault::_create_chunk(int x, int y, int z, Ref<VoxelC
 	}
 
 	if (chunk->job_get_count() == 0) {
-		Ref<VoxelTerrarinJob> tj;
+		Ref<VoxelTerrainJob> tj;
 		tj.instance();
 
 		Ref<VoxelLightJob> lj;

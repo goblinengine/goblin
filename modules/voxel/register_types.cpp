@@ -75,7 +75,7 @@ SOFTWARE.
 #include "world/jobs/voxel_job.h"
 #include "world/jobs/voxel_light_job.h"
 #include "world/jobs/voxel_prop_job.h"
-#include "world/jobs/voxel_terrarin_job.h"
+#include "world/jobs/voxel_terrain_job.h"
 
 void register_voxel_types() {
 	ClassDB::register_class<VoxelMesher>();
@@ -127,7 +127,7 @@ void register_voxel_types() {
 	ClassDB::register_class<WorldArea>();
 
 	ClassDB::register_class<VoxelJob>();
-	ClassDB::register_class<VoxelTerrarinJob>();
+	ClassDB::register_class<VoxelTerrainJob>();
 	ClassDB::register_class<VoxelLightJob>();
 	ClassDB::register_class<VoxelPropJob>();
 

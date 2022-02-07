@@ -303,12 +303,12 @@ void VoxelPropJob::phase_prop() {
 						temp_mesh_arr = fqms->get_arrays();
 
 						VisualServer::get_singleton()->mesh_add_surface_from_arrays(
-								chunk->mesh_rid_get_index(VoxelChunkDefault::MESH_INDEX_TERRARIN, VoxelChunkDefault::MESH_TYPE_INDEX_MESH, i),
+								chunk->mesh_rid_get_index(VoxelChunkDefault::MESH_INDEX_TERRAIN, VoxelChunkDefault::MESH_TYPE_INDEX_MESH, i),
 								VisualServer::PRIMITIVE_TRIANGLES, temp_mesh_arr);
 
 						if (chunk->get_library()->prop_material_get(i).is_valid())
 							VisualServer::get_singleton()->mesh_surface_set_material(
-									chunk->mesh_rid_get_index(VoxelChunkDefault::MESH_INDEX_TERRARIN, VoxelChunkDefault::MESH_TYPE_INDEX_MESH, i), 0,
+									chunk->mesh_rid_get_index(VoxelChunkDefault::MESH_INDEX_TERRAIN, VoxelChunkDefault::MESH_TYPE_INDEX_MESH, i), 0,
 									chunk->get_library()->prop_material_get(i)->get_rid());
 					}
 				}

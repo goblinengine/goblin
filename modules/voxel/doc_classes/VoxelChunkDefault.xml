@@ -357,11 +357,11 @@
 		</constant>
 		<constant name="BUILD_PHASE_SETUP" value="1">
 		</constant>
-		<constant name="BUILD_PHASE_TERRARIN_MESH_SETUP" value="2">
+		<constant name="BUILD_PHASE_TERRAIN_MESH_SETUP" value="2">
 		</constant>
-		<constant name="BUILD_PHASE_TERRARIN_MESH_COLLIDER" value="3">
+		<constant name="BUILD_PHASE_TERRAIN_MESH_COLLIDER" value="3">
 		</constant>
-		<constant name="BUILD_PHASE_TERRARIN_MESH" value="5">
+		<constant name="BUILD_PHASE_TERRAIN_MESH" value="5">
 		</constant>
 		<constant name="BUILD_PHASE_LIGHTS" value="4">
 		</constant>
@@ -403,7 +403,7 @@
 		</constant>
 		<constant name="BUILD_PHASE_TYPE_PHYSICS_PROCESS" value="2" enum="ActiveBuildPhaseType">
 		</constant>
-		<constant name="MESH_INDEX_TERRARIN" value="0">
+		<constant name="MESH_INDEX_TERRAIN" value="0">
 		</constant>
 		<constant name="MESH_INDEX_PROP" value="1">
 		</constant>

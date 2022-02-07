@@ -57,7 +57,7 @@ def get_doc_classes():
         "VoxelWorldDefault",
 
         "VoxelJob",
-        "VoxelTerrarinJob",
+        "VoxelTerrainJob",
         "VoxelLightJob",
         "VoxelPropJob",
     ]

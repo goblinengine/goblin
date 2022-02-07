@@ -37,7 +37,7 @@ SOFTWARE.
 
 #include "../jobs/voxel_light_job.h"
 #include "../jobs/voxel_prop_job.h"
-#include "../jobs/voxel_terrarin_job.h"
+#include "../jobs/voxel_terrain_job.h"
 
 const String VoxelChunkDefault::BINDING_STRING_BUILD_FLAGS = "Use Isolevel,Use Lighting,Use AO,Use RAO,Generate AO,Generate RAO,Bake Lights,Create Collider,Create Lods";
 
@@ -83,7 +83,7 @@ void VoxelChunkDefault::set_current_lod_level(const int value) {
 		if (i == _current_lod_level)
 			vis = true;
 
-		RID rid = mesh_rid_get_index(MESH_INDEX_TERRARIN, MESH_TYPE_INDEX_MESH_INSTANCE, i);
+		RID rid = mesh_rid_get_index(MESH_INDEX_TERRAIN, MESH_TYPE_INDEX_MESH_INSTANCE, i);
 
 		if (rid != RID())
 			VisualServer::get_singleton()->instance_set_visible(rid, vis);
@@ -712,7 +712,7 @@ void VoxelChunkDefault::_visibility_changed(bool visible) {
 	}
 
 	for (int i = 0; i < _lod_num + 1; ++i) {
-		RID rid = mesh_rid_get_index(MESH_INDEX_TERRARIN, MESH_TYPE_INDEX_MESH_INSTANCE, i);
+		RID rid = mesh_rid_get_index(MESH_INDEX_TERRAIN, MESH_TYPE_INDEX_MESH_INSTANCE, i);
 
 		if (rid != RID())
 			VisualServer::get_singleton()->instance_set_visible(rid, false);
@@ -975,7 +975,7 @@ void VoxelChunkDefault::_bind_methods() {
 	BIND_ENUM_CONSTANT(DEFAULT_CHANNEL_LIQUID_FLOW);
 	BIND_ENUM_CONSTANT(MAX_DEFAULT_CHANNELS);
 
-	BIND_CONSTANT(MESH_INDEX_TERRARIN);
+	BIND_CONSTANT(MESH_INDEX_TERRAIN);
 	BIND_CONSTANT(MESH_INDEX_PROP);
 	BIND_CONSTANT(MESH_INDEX_LIQUID);
 	BIND_CONSTANT(MESH_INDEX_CLUTTER);
