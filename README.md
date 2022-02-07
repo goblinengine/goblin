@@ -16,13 +16,13 @@ The goal of this project is multifold:
 - Minor quality of life changes to core without breaing compatibility
 - New features are added to the `goblin` module which can be disabled at any time by passing   `module_goblin_enabled=no`
 
-There are are some Goblin features that stand out the most:
+Here are are some Goblin features that stand out the most:
 - `eval()` built in global method that evaluates string expressions
-- `Rand` singleton that can be used from anywhere and which provides additional functionality such as ability to roll dice, select a random element from an iterable, generate guids, generate random colors and more
+- `Rand` singleton that can be used from anywhere and which provides additional functionality such as ability to roll dice, select a random element from an iterable data structure, generate GUIDs, generate random colors and much more
 - Includes `SQLite` module in all editor and server builds
 - `MidiPlayer` that allows playing `.midi` files using SoundFont2 `.sf2` sample files
-- `IndexedImage` that provides pseudo indeed pallete graphics
-- Shader `import` functionality that allows creating shader libraries
+- `IndexedImage` that provides pseudo indexed palette graphics
+- Shader `import` functionality
 - `Voxel` module for building Minecraft type blocky worlds
 - `Thread pool` module that makes working with threads much easier
 
