@@ -28,10 +28,11 @@ sources = [
     "library/voxel_library.cpp",
     "library/voxel_library_simple.cpp",
     
-    "nodes/prop_voxel_light.cpp",
+    "nodes/voxel_light_node.cpp",
 
     "library/voxel_surface.cpp",
     "library/voxel_surface_simple.cpp",
+    "library/voxel_material_cache.cpp",
 
     "data/voxel_light.cpp",
 
@@ -77,6 +78,7 @@ sources = [
 
     "world/jobs/voxel_job.cpp",
     "world/jobs/voxel_terrain_job.cpp",
+    "world/jobs/voxel_mesher_job_step.cpp",
     "world/jobs/voxel_light_job.cpp",
     "world/jobs/voxel_prop_job.cpp",
 ]
@@ -84,6 +86,8 @@ sources = [
 if has_texture_packer:
     sources.append("library/voxel_library_merger.cpp")
     sources.append("library/voxel_surface_merger.cpp")
+    sources.append("library/voxel_library_merger_pcm.cpp")
+    sources.append("library/voxel_material_cache_pcm.cpp")
 
 if ARGUMENTS.get('custom_modules_shared', 'no') == 'yes':
     # Shared lib compilation

@@ -37,13 +37,13 @@ Ref<VoxelChunk> VoxelWorldCubic::_create_chunk(int x, int y, int z, Ref<VoxelChu
 
 	if (chunk->job_get_count() == 0) {
 		Ref<VoxelTerrainJob> tj;
-		tj.instance();
+		tj.INSTANCE();
 
 		Ref<VoxelLightJob> lj;
-		lj.instance();
+		lj.INSTANCE();
 
 		Ref<VoxelPropJob> pj;
-		pj.instance();
+		pj.INSTANCE();
 		pj->set_prop_mesher(Ref<VoxelMesher>(memnew(VoxelMesherCubic)));
 
 		Ref<VoxelMesher> m = Ref<VoxelMesher>(memnew(VoxelMesherCubic()));

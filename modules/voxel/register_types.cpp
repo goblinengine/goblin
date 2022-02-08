@@ -27,10 +27,13 @@ SOFTWARE.
 
 #include "library/voxel_library.h"
 #include "library/voxel_library_simple.h"
+#include "library/voxel_material_cache.h"
 
 #ifdef TEXTURE_PACKER_PRESENT
-#include "library/voxel_surface_merger.h"
 #include "library/voxel_library_merger.h"
+#include "library/voxel_library_merger_pcm.h"
+#include "library/voxel_material_cache_pcm.h"
+#include "library/voxel_surface_merger.h"
 #endif
 
 #include "data/voxel_light.h"
@@ -70,12 +73,13 @@ SOFTWARE.
 #include "world/marching_cubes/voxel_chunk_marching_cubes.h"
 #include "world/marching_cubes/voxel_world_marching_cubes.h"
 
-#include "nodes/prop_voxel_light.h"
+#include "nodes/voxel_light_node.h"
 
 #include "world/jobs/voxel_job.h"
 #include "world/jobs/voxel_light_job.h"
 #include "world/jobs/voxel_prop_job.h"
 #include "world/jobs/voxel_terrain_job.h"
+#include "world/jobs/voxel_mesher_job_step.h"
 
 void register_voxel_types() {
 	ClassDB::register_class<VoxelMesher>();
@@ -90,13 +94,17 @@ void register_voxel_types() {
 	ClassDB::register_class<VoxelLibrary>();
 	ClassDB::register_class<VoxelLibrarySimple>();
 
+	ClassDB::register_class<VoxelMaterialCache>();
+
 #ifdef TEXTURE_PACKER_PRESENT
 	ClassDB::register_class<VoxelSurfaceMerger>();
 	ClassDB::register_class<VoxelLibraryMerger>();
+	ClassDB::register_class<VoxelLibraryMergerPCM>();
+	ClassDB::register_class<VoxelMaterialCachePCM>();
 #endif
 
 	ClassDB::register_class<VoxelLight>();
-	ClassDB::register_class<PropVoxelLight>();
+	ClassDB::register_class<VoxelLightNode>();
 
 	ClassDB::register_class<VoxelWorld>();
 	ClassDB::register_class<VoxelChunk>();
@@ -128,6 +136,7 @@ void register_voxel_types() {
 
 	ClassDB::register_class<VoxelJob>();
 	ClassDB::register_class<VoxelTerrainJob>();
+	ClassDB::register_class<VoxelMesherJobStep>();
 	ClassDB::register_class<VoxelLightJob>();
 	ClassDB::register_class<VoxelPropJob>();
 

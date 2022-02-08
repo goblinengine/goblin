@@ -27,6 +27,8 @@ SOFTWARE.
 
 #if VERSION_MAJOR > 3
 #include "core/io/resource.h"
+#include "core/object/gdvirtual.gen.inc"
+#include "core/object/script_language.h"
 #else
 #include "core/resource.h"
 #endif
@@ -38,6 +40,10 @@ class VoxelLevelGenerator : public Resource {
 
 public:
 	void generate_chunk(Ref<VoxelChunk> chunk);
+
+#if VERSION_MAJOR >= 4
+	GDVIRTUAL1(_generate_chunk, Ref<VoxelChunk>);
+#endif
 
 	VoxelLevelGenerator();
 	~VoxelLevelGenerator();

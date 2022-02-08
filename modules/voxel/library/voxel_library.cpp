@@ -57,7 +57,11 @@ void VoxelLibrary::material_set(const int index, const Ref<Material> &value) {
 }
 
 void VoxelLibrary::material_remove(const int index) {
+#if VERSION_MAJOR <= 3
 	_materials.remove(index);
+#else
+	_materials.remove_at(index);
+#endif
 }
 
 int VoxelLibrary::material_get_num() const {
@@ -102,7 +106,11 @@ void VoxelLibrary::liquid_material_set(const int index, const Ref<Material> &val
 }
 
 void VoxelLibrary::liquid_material_remove(const int index) {
+#if VERSION_MAJOR <= 3
 	_liquid_materials.remove(index);
+#else
+	_liquid_materials.remove_at(index);
+#endif
 }
 
 int VoxelLibrary::liquid_material_get_num() const {
@@ -147,7 +155,11 @@ void VoxelLibrary::prop_material_set(const int index, const Ref<Material> &value
 }
 
 void VoxelLibrary::prop_material_remove(const int index) {
+#if VERSION_MAJOR <= 3
 	_prop_materials.remove(index);
+#else
+	_prop_materials.remove_at(index);
+#endif
 }
 
 int VoxelLibrary::prop_material_get_num() const {
@@ -227,8 +239,13 @@ void VoxelLibrary::refresh_rects() {
 }
 
 void VoxelLibrary::setup_material_albedo(int material_index, Ref<Texture> texture) {
-	if (has_method("_setup_material_albedo"))
+#if VERSION_MAJOR < 4
+	if (has_method("_setup_material_albedo")) {
 		call("_setup_material_albedo", material_index, texture);
+	}
+#else
+	GDVIRTUAL_CALL(_setup_material_albedo, material_index, texture);
+#endif
 }
 
 VoxelLibrary::VoxelLibrary() {
@@ -246,7 +263,11 @@ void VoxelLibrary::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_initialized", "value"), &VoxelLibrary::set_initialized);
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "initialized", PROPERTY_HINT_NONE, "", 0), "set_initialized", "get_initialized");
 
+#if VERSION_MAJOR < 4
 	BIND_VMETHOD(MethodInfo("_setup_material_albedo", PropertyInfo(Variant::INT, "material_index"), PropertyInfo(Variant::OBJECT, "texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture")));
+#else
+	GDVIRTUAL_BIND(_setup_material_albedo, "material_index", "texture");
+#endif
 
 	ClassDB::bind_method(D_METHOD("material_get", "index"), &VoxelLibrary::material_get);
 	ClassDB::bind_method(D_METHOD("material_add", "value"), &VoxelLibrary::material_add);

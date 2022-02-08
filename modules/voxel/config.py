@@ -13,7 +13,7 @@ def get_doc_classes():
         "WorldArea",
 
         "VoxelLight",
-        "VoxelLight",
+        "VoxelLightNode",
 
         "VoxelLevelGenerator",
         "VoxelLevelGeneratorFlat",
@@ -24,6 +24,10 @@ def get_doc_classes():
         "VoxelLibraryMerger",
         "VoxelLibrarySimple",
         "VoxelLibrary",
+        "VoxelLibraryMergerPCM",
+
+        "VoxelMaterialCache",
+        "VoxelMaterialCachePCM",
 
         "VoxelCubePoints",
         "VoxelMesherCubic",
@@ -60,6 +64,7 @@ def get_doc_classes():
         "VoxelTerrainJob",
         "VoxelLightJob",
         "VoxelPropJob",
+        "VoxelMesherJobStep",
     ]
 
 

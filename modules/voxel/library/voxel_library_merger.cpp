@@ -112,7 +112,7 @@ void VoxelLibraryMerger::voxel_surface_set(const int index, Ref<VoxelSurface> va
 }
 
 void VoxelLibraryMerger::voxel_surface_remove(const int index) {
-	_voxel_surfaces.remove(index);
+	_voxel_surfaces.VREMOVE(index);
 }
 
 int VoxelLibraryMerger::voxel_surface_get_num() const {
@@ -171,7 +171,7 @@ void VoxelLibraryMerger::set_prop(const int index, const Ref<PropData> &value) {
 void VoxelLibraryMerger::remove_prop(const int index) {
 	ERR_FAIL_INDEX(index, _props.size());
 
-	_props.remove(index);
+	_props.VREMOVE(index);
 }
 int VoxelLibraryMerger::get_num_props() const {
 	return _props.size();
@@ -207,7 +207,11 @@ Rect2 VoxelLibraryMerger::get_prop_uv_rect(const Ref<Texture> &texture) {
 		return Rect2(0, 0, 1, 1);
 	}
 
+#if VERSION_MAJOR < 4
 	Ref<Image> image = tex->get_data();
+#else
+	Ref<Image> image = tex->get_image();
+#endif
 
 	if (!image.is_valid()) {
 		return Rect2(0, 0, 1, 1);
@@ -313,7 +317,6 @@ void VoxelLibraryMerger::_setup_material_albedo(const int material_index, const 
 	}
 
 	for (int i = 0; i < count; ++i) {
-
 		switch (material_index) {
 			case MATERIAL_INDEX_VOXELS:
 				mat = material_get(i);
@@ -354,7 +357,7 @@ void VoxelLibraryMerger::_setup_material_albedo(const int material_index, const 
 }
 
 VoxelLibraryMerger::VoxelLibraryMerger() {
-	_packer.instance();
+	_packer.INSTANCE();
 
 #if GODOT4
 #warning implement
@@ -366,7 +369,7 @@ VoxelLibraryMerger::VoxelLibraryMerger() {
 	_packer->set_keep_original_atlases(false);
 	_packer->set_margin(0);
 
-	_prop_packer.instance();
+	_prop_packer.INSTANCE();
 
 #if GODOT4
 #warning implement

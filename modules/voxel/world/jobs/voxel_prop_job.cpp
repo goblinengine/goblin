@@ -69,7 +69,12 @@ void VoxelPropJob::phase_physics_process() {
 				continue;
 			}
 
+#if VERSION_MAJOR < 4
 			RID body = PhysicsServer::get_singleton()->body_create(PhysicsServer::BODY_MODE_STATIC);
+#else
+			RID body = PhysicsServer::get_singleton()->body_create();
+			PhysicsServer::get_singleton()->body_set_mode(body, PhysicsServer::BODY_MODE_STATIC);
+#endif
 
 			Transform transform = chunk->mesh_data_resource_get_transform(i);
 			transform *= offset;
@@ -223,7 +228,6 @@ void VoxelPropJob::phase_prop() {
 		}
 
 		if (should_do()) {
-
 			VS::get_singleton()->mesh_add_surface_from_arrays(mesh_rid, VisualServer::PRIMITIVE_TRIANGLES, temp_mesh_arr);
 
 			if (chunk->get_library()->prop_material_get(0).is_valid())
@@ -236,7 +240,6 @@ void VoxelPropJob::phase_prop() {
 
 		if ((chunk->get_build_flags() & VoxelChunkDefault::BUILD_FLAG_CREATE_LODS) != 0) {
 			if (should_do()) {
-
 				if (chunk->get_lod_num() >= 1) {
 					//for lod 1 just remove uv2
 					temp_mesh_arr[VisualServer::ARRAY_TEX_UV2] = Variant();
@@ -294,7 +297,7 @@ void VoxelPropJob::phase_prop() {
 			if (should_do()) {
 				if (chunk->get_lod_num() > 4) {
 					Ref<FastQuadraticMeshSimplifier> fqms;
-					fqms.instance();
+					fqms.INSTANCE();
 					fqms->set_preserve_border_edges(true);
 					fqms->initialize(temp_mesh_arr);
 

@@ -26,7 +26,10 @@ SOFTWARE.
 #include "core/version.h"
 
 #if VERSION_MAJOR > 3
-#include "core/io/resource.h"
+#include "core/object/ref_counted.h"
+#ifndef Reference
+#define Reference RefCounted
+#endif
 #else
 #include "core/resource.h"
 #endif
@@ -69,7 +72,6 @@ public:
 protected:
 	static void _bind_methods();
 
-private:
 	Vector<Ref<VoxelSurfaceSimple> > _voxel_surfaces;
 
 	//atlas

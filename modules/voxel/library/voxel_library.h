@@ -124,13 +124,17 @@ public:
 
 	void setup_material_albedo(int material_index, Ref<Texture> texture);
 
+
+#if VERSION_MAJOR >= 4
+	GDVIRTUAL2(_setup_material_albedo, int, Ref<Texture>);
+#endif
+
 	VoxelLibrary();
 	~VoxelLibrary();
 
 protected:
 	static void _bind_methods();
 
-private:
 	bool _initialized;
 	Vector<Ref<Material> > _materials;
 	Vector<Ref<Material> > _liquid_materials;

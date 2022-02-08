@@ -32,7 +32,10 @@ SOFTWARE.
 #include "core/version.h"
 
 #if VERSION_MAJOR > 3
-#include "core/object/reference.h"
+#include "core/object/ref_counted.h"
+#ifndef Reference
+#define Reference RefCounted
+#endif
 #else
 #include "core/reference.h"
 #endif
@@ -97,6 +100,14 @@ public:
 
 	void chunk_exit_tree();
 
+#if VERSION_MAJOR >= 4
+	GDVIRTUAL1(_process, float);
+	GDVIRTUAL1(_physics_process, float);
+
+	GDVIRTUAL0(_reset);
+	GDVIRTUAL0(_execute_phase);
+#endif
+
 	VoxelJob();
 	~VoxelJob();
 
@@ -137,6 +148,10 @@ public:
 	bool should_return();
 
 	void execute();
+
+#if VERSION_MAJOR >= 4
+	GDVIRTUAL0(_execute);
+#endif
 
 private:
 	bool _complete;

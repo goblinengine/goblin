@@ -47,7 +47,7 @@ void VoxelTerrainJob::set_mesher(int index, const Ref<VoxelMesher> &mesher) {
 void VoxelTerrainJob::remove_mesher(const int index) {
 	ERR_FAIL_INDEX(index, _meshers.size());
 
-	_meshers.remove(index);
+	_meshers.VREMOVE(index);
 }
 void VoxelTerrainJob::add_mesher(const Ref<VoxelMesher> &mesher) {
 	_meshers.push_back(mesher);
@@ -69,7 +69,7 @@ void VoxelTerrainJob::set_liquid_mesher(int index, const Ref<VoxelMesher> &meshe
 void VoxelTerrainJob::remove_liquid_mesher(const int index) {
 	ERR_FAIL_INDEX(index, _liquid_meshers.size());
 
-	_liquid_meshers.remove(index);
+	_liquid_meshers.VREMOVE(index);
 }
 void VoxelTerrainJob::add_liquid_mesher(const Ref<VoxelMesher> &mesher) {
 	_liquid_meshers.push_back(mesher);
@@ -481,7 +481,7 @@ void VoxelTerrainJob::phase_terrain_mesh() {
 			if (should_do()) {
 				if (chunk->get_lod_num() > 4) {
 					Ref<FastQuadraticMeshSimplifier> fqms;
-					fqms.instance();
+					fqms.INSTANCE();
 					fqms->set_preserve_border_edges(true);
 					fqms->initialize(temp_mesh_arr);
 
