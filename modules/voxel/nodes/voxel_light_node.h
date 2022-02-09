@@ -40,7 +40,7 @@ class VoxelLightNode : public Spatial {
 	OBJ_CATEGORY("Props");
 
 public:
-	//make it turn into a normal light if voxel isn't present?
+	//make it turn into a normal light if voxelman isn't present?
 
 	VoxelLightNode();
 	~VoxelLightNode();

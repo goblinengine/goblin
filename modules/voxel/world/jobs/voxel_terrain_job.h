@@ -27,6 +27,8 @@ SOFTWARE.
 
 #include "../../defines.h"
 
+#include "voxel_mesher_job_step.h"
+
 #include pool_vector_h
 
 include_pool_vector
@@ -51,17 +53,32 @@ public:
 	void add_liquid_mesher(const Ref<VoxelMesher> &mesher);
 	int get_liquid_mesher_count() const;
 
+	Ref<VoxelMesherJobStep> get_jobs_step(const int index) const;
+	void set_jobs_step(const int index, const Ref<VoxelMesherJobStep> &step);
+	void remove_jobs_step(const int index);
+	void add_jobs_step(const Ref<VoxelMesherJobStep> &step);
+	int get_jobs_step_count() const;
+
 	void phase_setup();
+	void phase_library_setup();
 	void phase_terrain_mesh_setup();
 	void phase_collider();
 	void phase_physics_proces();
 	void phase_terrain_mesh();
+	void new_phase_terrain_mesh();
 	void phase_finalize();
 	void phase_physics_process();
 
 	void _execute_phase();
 	void _reset();
 	void _physics_process(float delta);
+
+	void step_type_normal();
+	void step_type_normal_lod();
+	void step_type_drop_uv2();
+	void step_type_merge_verts();
+	void step_type_bake_texture();
+	void step_type_simplify_mesh();
 
 	VoxelTerrainJob();
 	~VoxelTerrainJob();
@@ -71,6 +88,10 @@ protected:
 
 	Vector<Ref<VoxelMesher>> _meshers;
 	Vector<Ref<VoxelMesher>> _liquid_meshers;
+
+	Vector<Ref<VoxelMesherJobStep>> _job_steps;
+	int _current_job_step;
+	int _current_mesh;
 
 	PoolVector<Vector3> temp_arr_collider;
 	PoolVector<Vector3> temp_arr_collider_liquid;
