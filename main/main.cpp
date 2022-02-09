@@ -2152,7 +2152,7 @@ bool Main::start() {
 uint64_t Main::last_ticks = 0;
 uint32_t Main::frames = 0;
 uint32_t Main::frame = 0;
-bool Main::force_redraw_requested = false;
+uint32_t Main::force_redraw_frames = 0; // GOBLIN ENGINE low processor flicker
 int Main::iterating = 0;
 bool Main::agile_input_event_flushing = false;
 
@@ -2213,6 +2213,8 @@ bool Main::iteration() {
 	uint64_t physics_process_ticks = 0;
 	uint64_t idle_process_ticks = 0;
 	uint64_t visual_process_ticks = 0;  // GOBLIN ENGINE visual time in profiler 
+
+	bool draw = false;  // GOBLIN ENGINE low processor flicker
 
 	frame += ticks_elapsed;
 
@@ -2279,15 +2281,26 @@ bool Main::iteration() {
 	VisualServer::get_singleton()->sync(); //sync if still drawing from previous frames.
 
 	if (OS::get_singleton()->can_draw() && VisualServer::get_singleton()->is_render_loop_enabled()) {
-		if ((!force_redraw_requested) && OS::get_singleton()->is_in_low_processor_usage_mode()) {
+		 // GOBLIN ENGINE low processor flicker
+		draw = true;
+		if (OS::get_singleton()->is_in_low_processor_usage_mode()) {
 			if (VisualServer::get_singleton()->has_changed()) {
-				VisualServer::get_singleton()->draw(true, scaled_step); // flush visual commands
-				Engine::get_singleton()->frames_drawn++;
+				draw = true;
+#ifdef ANDROID_ENABLED
+				// On Android in low_processor_usage_mode there can be horrible flickering when it stops drawing
+				// Fix by force drawing 2 more frames after last changed frame.
+				force_redraw_frames = 3; // needs to be 3 to draw 2 more after this frame
+#endif
+			} else {
+				draw = false;
 			}
-		} else {
+		}
+
+		if (draw || force_redraw_frames > 0) {
 			VisualServer::get_singleton()->draw(true, scaled_step); // flush visual commands
 			Engine::get_singleton()->frames_drawn++;
-			force_redraw_requested = false;
+			if (force_redraw_frames > 0)
+				force_redraw_frames--;
 		}
 	}
 
@@ -2375,8 +2388,10 @@ bool Main::iteration() {
 	return exit || auto_quit;
 }
 
-void Main::force_redraw() {
-	force_redraw_requested = true;
+ // GOBLIN ENGINE low processor flicker
+ // https://github.com/godotengine/godot/pull/55604
+void Main::force_redraw(uint32_t frames) {
+	force_redraw_frames = frames;
 }
 
 /* Engine deinitialization

@@ -386,6 +386,7 @@ void OS_Android::init_video_mode(int p_video_width, int p_video_height) {
 void OS_Android::set_display_size(Size2 p_size) {
 	default_videomode.width = p_size.x;
 	default_videomode.height = p_size.y;
+	Main::force_redraw(3); // GOBLIN ENGINE low processor flicker
 }
 
 Error OS_Android::shell_open(String p_uri) {

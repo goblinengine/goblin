@@ -3,7 +3,7 @@
 
 ## 1.0
 
-### Added
+### Additions
 
 - Added [Voxelman](https://github.com/Relintai/voxelman) and [Thread pool](https://github.com/Relintai/thread_pool) modules by [Relintai](https://github.com/Relintai). The docs still require a bit of cleanup.
 - Added `tightness` to `AudioStreamPlayer3D` which controls how tight the sound playing encloses the player. Based on an unmerged 4.0 pr found [here](https://github.com/godotengine/godot/pull/42358).
@@ -32,8 +32,9 @@
 - New `ImageIndexed` class. Added as a custom module under modules/goblin just to keep it separated from the rest of Godot. Makes it easier to merge new 3.x changes back into Goblin. ImageIndexed allows working with pseudo-random indexed images and palettes. This was ported from [Goost Engine](https://github.com/goostengine) and implemented by Xrayez. There is internal documentation as well more documentation on over on [Goost Documentation](https://goost.readthedocs.io/en/latest/classes/class_imageindexed.html?highlight=imageindex) page in the official project.
 - Tabs can now be moved to the bottom and have their own styles. Adapted from Godot 4.0 unmerged PR [#44420](https://github.com/godotengine/godot/pull/44420)
 
-### Modified
+### Changes
 
+- Implemented the hacky low processor flicker fix from (this pr)[https://github.com/godotengine/godot/pull/55604]. A better fix may end up being implement but for now this works okay.
 - Implemented custom Godot types in JSON adapting [this](https://github.com/godotengine/godot/pull/33241) rejected pr. All unsupported types will turn into their string equivalent for example Vector2(1,1) will be saved as "Vector2( 1, 1 )" which is parsed back into a Vector2. However, since JSON only has a number type, ints will still be converted to floats. 
 - Imported 3D scenes are disabled from saving to a scene to avoid errors. From [this pr](https://github.com/godotengine/godot/pull/42367).
 - Displays "use onready var" error message when using `get_child()` and `get_parent()` without `onready`. Adapted to 3.x from [this pr](https://github.com/godotengine/godot/pull/36889)
@@ -71,7 +72,7 @@
 - GLES2/3, Batching and Async notifications have been moved to verbose
 - Almost all logos have been changed to Goblin specific branding
 
-### Removed
+### Deletions
 
 - Removed rendundant thread sync `draw_pending` function. See [this pr](https://github.com/godotengine/godot/pull/35758)
 - Parameters `[deps]` and `[params]` from `.import` files are no longer saved in the exported game. They are never used by exported game and use unecessary processing, memory and space in the `.pck`. 
