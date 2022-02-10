@@ -319,6 +319,12 @@ void VoxelTerrainJob::phase_physics_process() {
 void VoxelTerrainJob::phase_terrain_mesh() {
 	Ref<VoxelChunkDefault> chunk = _chunk;
 
+	ERR_FAIL_COND(_meshers.size() == 0);
+
+	if (should_return()) {
+		return;
+	}
+
 	if ((chunk->get_build_flags() & VoxelChunkDefault::BUILD_FLAG_USE_LIGHTING) != 0) {
 		int starti = 0;
 
@@ -411,7 +417,7 @@ void VoxelTerrainJob::phase_terrain_mesh() {
 		liquid_mesher->add_mesher(m);
 	}
 
-	if (mesher->get_vertex_count() == 0 && liquid_mesher.is_valid() && liquid_mesher->get_vertex_count() == 0) {
+	if (mesher->get_vertex_count() == 0 && (!liquid_mesher.is_valid() || liquid_mesher->get_vertex_count() == 0)) {
 		if (has_meta("bptm_ulm")) {
 			remove_meta("bptm_ulm");
 		}
@@ -428,261 +434,6 @@ void VoxelTerrainJob::phase_terrain_mesh() {
 			remove_meta("bptm_lmm");
 		}
 
-		reset_stages();
-		next_phase();
-
-		return;
-	}
-
-	if (mesher->get_vertex_count() != 0) {
-		if (should_do()) {
-			temp_mesh_arr = mesher->build_mesh();
-
-			if (should_return()) {
-				return;
-			}
-		}
-
-		RID mesh_rid = chunk->mesh_rid_get_index(VoxelChunkDefault::MESH_INDEX_TERRAIN, VoxelChunkDefault::MESH_TYPE_INDEX_MESH, 0);
-
-		if (should_do()) {
-			if (mesh_rid == RID()) {
-				if ((chunk->get_build_flags() & VoxelChunkDefault::BUILD_FLAG_CREATE_LODS) != 0)
-					chunk->meshes_create(VoxelChunkDefault::MESH_INDEX_TERRAIN, chunk->get_lod_num() + 1);
-				else
-					chunk->meshes_create(VoxelChunkDefault::MESH_INDEX_TERRAIN, 1);
-
-				mesh_rid = chunk->mesh_rid_get_index(VoxelChunkDefault::MESH_INDEX_TERRAIN, VoxelChunkDefault::MESH_TYPE_INDEX_MESH, 0);
-			}
-
-			if (VS::get_singleton()->mesh_get_surface_count(mesh_rid) > 0)
-#if !GODOT4
-				VS::get_singleton()->mesh_remove_surface(mesh_rid, 0);
-#else
-				VS::get_singleton()->mesh_clear(mesh_rid);
-#endif
-
-			if (should_return()) {
-				return;
-			}
-		}
-
-		if (should_do()) {
-			VS::get_singleton()->mesh_add_surface_from_arrays(mesh_rid, VisualServer::PRIMITIVE_TRIANGLES, temp_mesh_arr);
-
-			if (chunk->get_library()->material_get(0).is_valid())
-				VS::get_singleton()->mesh_surface_set_material(mesh_rid, 0, chunk->get_library()->material_get(0)->get_rid());
-
-			if (should_return()) {
-				return;
-			}
-		}
-
-		if ((chunk->get_build_flags() & VoxelChunkDefault::BUILD_FLAG_CREATE_LODS) != 0) {
-			if (should_do()) {
-				if (chunk->get_lod_num() >= 1) {
-					//for lod 1 just remove uv2
-					temp_mesh_arr[VisualServer::ARRAY_TEX_UV2] = Variant();
-
-					VisualServer::get_singleton()->mesh_add_surface_from_arrays(chunk->mesh_rid_get_index(VoxelChunkDefault::MESH_INDEX_TERRAIN, VoxelChunkDefault::MESH_TYPE_INDEX_MESH, 1), VisualServer::PRIMITIVE_TRIANGLES, temp_mesh_arr);
-
-					if (chunk->get_library()->material_get(1).is_valid())
-						VisualServer::get_singleton()->mesh_surface_set_material(chunk->mesh_rid_get_index(VoxelChunkDefault::MESH_INDEX_TERRAIN, VoxelChunkDefault::MESH_TYPE_INDEX_MESH, 1), 0, chunk->get_library()->material_get(1)->get_rid());
-				}
-				if (should_return()) {
-					return;
-				}
-			}
-
-			if (should_do()) {
-				if (chunk->get_lod_num() >= 2) {
-					Array temp_mesh_arr2 = merge_mesh_array(temp_mesh_arr);
-					temp_mesh_arr = temp_mesh_arr2;
-
-					VisualServer::get_singleton()->mesh_add_surface_from_arrays(chunk->mesh_rid_get_index(VoxelChunkDefault::MESH_INDEX_TERRAIN, VoxelChunkDefault::MESH_TYPE_INDEX_MESH, 2), VisualServer::PRIMITIVE_TRIANGLES, temp_mesh_arr2);
-
-					if (chunk->get_library()->material_get(2).is_valid())
-						VisualServer::get_singleton()->mesh_surface_set_material(chunk->mesh_rid_get_index(VoxelChunkDefault::MESH_INDEX_TERRAIN, VoxelChunkDefault::MESH_TYPE_INDEX_MESH, 2), 0, chunk->get_library()->material_get(2)->get_rid());
-				}
-
-				if (should_return()) {
-					return;
-				}
-			}
-
-			if (should_do()) {
-				if (chunk->get_lod_num() >= 3) {
-					Ref<ShaderMaterial> mat = chunk->get_library()->material_get(0);
-					Ref<SpatialMaterial> spmat = chunk->get_library()->material_get(0);
-					Ref<Texture> tex;
-
-					if (mat.is_valid()) {
-						tex = mat->get_shader_param("texture_albedo");
-					} else if (spmat.is_valid()) {
-						tex = spmat->get_texture(SpatialMaterial::TEXTURE_ALBEDO);
-					}
-
-					if (tex.is_valid()) {
-						temp_mesh_arr = bake_mesh_array_uv(temp_mesh_arr, tex);
-						temp_mesh_arr[VisualServer::ARRAY_TEX_UV] = Variant();
-
-						VisualServer::get_singleton()->mesh_add_surface_from_arrays(
-								chunk->mesh_rid_get_index(VoxelChunkDefault::MESH_INDEX_TERRAIN, VoxelChunkDefault::MESH_TYPE_INDEX_MESH, 3),
-								VisualServer::PRIMITIVE_TRIANGLES, temp_mesh_arr);
-
-						if (chunk->get_library()->material_get(3).is_valid())
-							VisualServer::get_singleton()->mesh_surface_set_material(
-									chunk->mesh_rid_get_index(VoxelChunkDefault::MESH_INDEX_TERRAIN, VoxelChunkDefault::MESH_TYPE_INDEX_MESH, 3), 0,
-									chunk->get_library()->material_get(3)->get_rid());
-					}
-				}
-
-				if (should_return()) {
-					return;
-				}
-			}
-
-#ifdef MESH_UTILS_PRESENT
-			if (should_do()) {
-				if (chunk->get_lod_num() > 4) {
-					Ref<FastQuadraticMeshSimplifier> fqms;
-					fqms.INSTANCE();
-					fqms->set_preserve_border_edges(true);
-					fqms->initialize(temp_mesh_arr);
-
-					for (int i = 4; i < chunk->get_lod_num(); ++i) {
-						fqms->simplify_mesh(temp_mesh_arr.size() * 0.8, 7);
-						temp_mesh_arr = fqms->get_arrays();
-
-						VisualServer::get_singleton()->mesh_add_surface_from_arrays(
-								chunk->mesh_rid_get_index(VoxelChunkDefault::MESH_INDEX_TERRAIN, VoxelChunkDefault::MESH_TYPE_INDEX_MESH, i),
-								VisualServer::PRIMITIVE_TRIANGLES, temp_mesh_arr);
-
-						if (chunk->get_library()->material_get(i).is_valid())
-							VisualServer::get_singleton()->mesh_surface_set_material(
-									chunk->mesh_rid_get_index(VoxelChunkDefault::MESH_INDEX_TERRAIN, VoxelChunkDefault::MESH_TYPE_INDEX_MESH, i), 0,
-									chunk->get_library()->material_get(i)->get_rid());
-					}
-				}
-
-				if (should_return()) {
-					return;
-				}
-			}
-#endif
-		}
-	}
-
-	if (liquid_mesher.is_valid() && liquid_mesher->get_vertex_count() != 0) {
-		if (should_do()) {
-			temp_mesh_arr = liquid_mesher->build_mesh();
-
-			if (should_return()) {
-				return;
-			}
-		}
-
-		RID mesh_rid = chunk->mesh_rid_get_index(VoxelChunkDefault::MESH_INDEX_LIQUID, VoxelChunkDefault::MESH_TYPE_INDEX_MESH, 0);
-
-		if (should_do()) {
-			if (mesh_rid == RID()) {
-				chunk->meshes_create(VoxelChunkDefault::MESH_INDEX_LIQUID, 1);
-
-				mesh_rid = chunk->mesh_rid_get_index(VoxelChunkDefault::MESH_INDEX_LIQUID, VoxelChunkDefault::MESH_TYPE_INDEX_MESH, 0);
-			}
-
-			if (VS::get_singleton()->mesh_get_surface_count(mesh_rid) > 0)
-#if !GODOT4
-				VS::get_singleton()->mesh_remove_surface(mesh_rid, 0);
-#else
-				VS::get_singleton()->mesh_clear(mesh_rid);
-#endif
-
-			if (should_return()) {
-				return;
-			}
-		}
-
-		//	if (should_do()) {
-		VS::get_singleton()->mesh_add_surface_from_arrays(mesh_rid, VisualServer::PRIMITIVE_TRIANGLES, temp_mesh_arr);
-
-		if (chunk->get_library()->liquid_material_get(0).is_valid())
-			VS::get_singleton()->mesh_surface_set_material(mesh_rid, 0, chunk->get_library()->liquid_material_get(0)->get_rid());
-
-		//	if (should_return()) {
-		//		return;
-		//	}
-		//}
-	}
-
-	if (has_meta("bptm_ulm")) {
-		remove_meta("bptm_ulm");
-	}
-
-	if (has_meta("bptm_ullm")) {
-		remove_meta("bptm_ullm");
-	}
-
-	if (has_meta("bptm_mm")) {
-		remove_meta("bptm_mm");
-	}
-
-	if (has_meta("bptm_lmm")) {
-		remove_meta("bptm_lmm");
-	}
-
-	reset_stages();
-	next_phase();
-}
-
-void VoxelTerrainJob::new_phase_terrain_mesh() {
-	Ref<VoxelChunkDefault> chunk = _chunk;
-
-	ERR_FAIL_COND(_meshers.size() == 0);
-
-	if (should_return()) {
-		return;
-	}
-
-	Ref<VoxelMesher> mesher;
-	for (int i = 0; i < _meshers.size(); ++i) {
-		mesher = _meshers.get(i);
-
-		if (mesher.is_valid()) {
-			break;
-		}
-	}
-
-	Ref<VoxelMesher> liquid_mesher;
-	for (int i = 0; i < _liquid_meshers.size(); ++i) {
-		liquid_mesher = _liquid_meshers.get(i);
-
-		if (liquid_mesher.is_valid()) {
-			break;
-		}
-	}
-
-	if ((chunk->get_build_flags() & VoxelChunkDefault::BUILD_FLAG_USE_LIGHTING) != 0) {
-		//if (should_do()) {
-		//	_mesher->bake_colors(_chunk);
-
-		//	if (should_return()) {
-		//		return;
-		//	}
-		//}
-
-		if (should_do()) {
-			if (liquid_mesher.is_valid()) {
-				liquid_mesher->bake_colors(_chunk);
-
-				if (should_return()) {
-					return;
-				}
-			}
-		}
-	}
-
-	if (mesher->get_vertex_count() == 0 && (!liquid_mesher.is_valid() || liquid_mesher->get_vertex_count() == 0)) {
 		reset_stages();
 		next_phase();
 
@@ -826,6 +577,22 @@ void VoxelTerrainJob::new_phase_terrain_mesh() {
 		//		return;
 		//	}
 		//}
+	}
+
+	if (has_meta("bptm_ulm")) {
+		remove_meta("bptm_ulm");
+	}
+
+	if (has_meta("bptm_ullm")) {
+		remove_meta("bptm_ullm");
+	}
+
+	if (has_meta("bptm_mm")) {
+		remove_meta("bptm_mm");
+	}
+
+	if (has_meta("bptm_lmm")) {
+		remove_meta("bptm_lmm");
 	}
 
 	reset_stages();
@@ -1111,7 +878,6 @@ void VoxelTerrainJob::step_type_simplify_mesh() {
 
 		++_current_mesh;
 	}
-
 #endif
 }
 

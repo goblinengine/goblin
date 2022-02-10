@@ -29,21 +29,50 @@ SOFTWARE.
 #include "../jobs/voxel_prop_job.h"
 #include "../jobs/voxel_terrain_job.h"
 
+#ifdef MESH_UTILS_PRESENT
+#include "../../../mesh_utils/fast_quadratic_mesh_simplifier.h"
+#endif
+
 Ref<VoxelChunk> VoxelWorldMarchingCubes::_create_chunk(int x, int y, int z, Ref<VoxelChunk> chunk) {
 	if (!chunk.is_valid()) {
 		chunk = Ref<VoxelChunk>(memnew(VoxelChunkMarchingCubes));
 	}
 
 	if (chunk->job_get_count() == 0) {
-		Ref<VoxelTerrainJob> tj;
-		tj.INSTANCE();
-
 		Ref<VoxelLightJob> lj;
 		lj.INSTANCE();
 
-		Ref<VoxelPropJob> pj;
-		pj.INSTANCE();
-		pj->set_prop_mesher(Ref<VoxelMesher>(memnew(VoxelMesherMarchingCubes)));
+		Ref<VoxelTerrainJob> tj;
+		tj.INSTANCE();
+
+		Ref<VoxelMesherJobStep> s;
+		s.instance();
+		s->set_job_type(VoxelMesherJobStep::TYPE_NORMAL);
+		tj->add_jobs_step(s);
+
+		s.instance();
+		s->set_job_type(VoxelMesherJobStep::TYPE_DROP_UV2);
+		tj->add_jobs_step(s);
+
+		s.instance();
+		s->set_job_type(VoxelMesherJobStep::TYPE_MERGE_VERTS);
+		tj->add_jobs_step(s);
+
+		s.instance();
+		s->set_job_type(VoxelMesherJobStep::TYPE_BAKE_TEXTURE);
+		tj->add_jobs_step(s);
+
+#ifdef MESH_UTILS_PRESENT
+		s.instance();
+		Ref<FastQuadraticMeshSimplifier> fqms;
+		fqms.instance();
+		s->set_fqms(fqms);
+		s->set_job_type(VoxelMesherJobStep::TYPE_SIMPLIFY_MESH);
+		s->set_simplification_step_ratio(0.8);
+		s->set_simplification_agressiveness(7);
+		s->set_simplification_steps(1);
+		tj->add_jobs_step(s);
+#endif
 
 		Ref<VoxelMesher> m = Ref<VoxelMesher>(memnew(VoxelMesherMarchingCubes()));
 		m->set_channel_index_type(VoxelChunkDefault::DEFAULT_CHANNEL_TYPE);
@@ -52,9 +81,37 @@ Ref<VoxelChunk> VoxelWorldMarchingCubes::_create_chunk(int x, int y, int z, Ref<
 		tj->add_mesher(m);
 		//add_liquid_mesher(Ref<VoxelMesher>(memnew(VoxelMesherLiquidMarchingCubes())));
 
+		Ref<VoxelPropJob> pj;
+		pj.INSTANCE();
+		pj->set_prop_mesher(Ref<VoxelMesher>(memnew(VoxelMesherMarchingCubes)));
+
+		s.instance();
+		s->set_job_type(VoxelMesherJobStep::TYPE_NORMAL);
+		pj->add_jobs_step(s);
+
+		s.instance();
+		s->set_job_type(VoxelMesherJobStep::TYPE_MERGE_VERTS);
+		pj->add_jobs_step(s);
+
+		s.instance();
+		s->set_job_type(VoxelMesherJobStep::TYPE_BAKE_TEXTURE);
+		pj->add_jobs_step(s);
+
+		s.instance();
+		s->set_job_type(VoxelMesherJobStep::TYPE_SIMPLIFY_MESH);
+#ifdef MESH_UTILS_PRESENT
+		fqms.instance();
+		s->set_fqms(fqms);
+		s->set_simplification_steps(2);
+#endif
+		pj->add_jobs_step(s);
+
 		chunk->job_add(lj);
 		chunk->job_add(tj);
 		chunk->job_add(pj);
+
+		// TODO this should be removed
+		set_num_lods(5);
 	}
 
 	return VoxelWorld::_create_chunk(x, y, z, chunk);

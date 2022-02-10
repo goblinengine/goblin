@@ -31,6 +31,10 @@ SOFTWARE.
 #include "../jobs/voxel_prop_job.h"
 #include "../jobs/voxel_terrain_job.h"
 
+#ifdef MESH_UTILS_PRESENT
+#include "../../../mesh_utils/fast_quadratic_mesh_simplifier.h"
+#endif
+
 _FORCE_INLINE_ int VoxelWorldDefault::get_build_flags() const {
 	return _build_flags;
 }
@@ -45,6 +49,15 @@ _FORCE_INLINE_ void VoxelWorldDefault::set_build_flags(const int flags) {
 
 		c->set_build_flags(_build_flags);
 	}
+}
+
+bool VoxelWorldDefault::get_use_default_lod_update() const {
+	return _use_default_lod_update;
+}
+void VoxelWorldDefault::set_use_default_lod_update(const bool value) {
+	_use_default_lod_update = value;
+
+	set_process_internal(_use_default_lod_update);
 }
 
 float VoxelWorldDefault::get_lod_update_interval() const {
@@ -167,9 +180,7 @@ void VoxelWorldDefault::_update_lods() {
 		int mr = MAX(MAX(dx, dy), dz);
 
 		mr -= _chunk_lod_falloff;
-
-		//Todo 3 should be _num_lod, but it's NYI, because chunk can only handle 3 lod levels for now -> FQMS needs to be fixed
-		mr = CLAMP(mr, 0, _num_lods - 1);
+		mr = CLAMP(mr, 0, _num_lods);
 
 		if (c->get_current_lod_level() != mr)
 			c->set_current_lod_level(mr);
@@ -182,15 +193,11 @@ Ref<VoxelChunk> VoxelWorldDefault::_create_chunk(int x, int y, int z, Ref<VoxelC
 	}
 
 	if (chunk->job_get_count() == 0) {
-		Ref<VoxelTerrainJob> tj;
-		tj.instance();
-
 		Ref<VoxelLightJob> lj;
 		lj.instance();
 
-		Ref<VoxelPropJob> pj;
-		pj.instance();
-		pj->set_prop_mesher(Ref<VoxelMesher>(memnew(VoxelMesherDefault)));
+		Ref<VoxelTerrainJob> tj;
+		tj.instance();
 
 		Ref<VoxelMesherJobStep> s;
 		s.instance();
@@ -198,13 +205,7 @@ Ref<VoxelChunk> VoxelWorldDefault::_create_chunk(int x, int y, int z, Ref<VoxelC
 		tj->add_jobs_step(s);
 
 		s.instance();
-		s->set_job_type(VoxelMesherJobStep::TYPE_NORMAL_LOD);
-		s->set_lod_index(1);
-		tj->add_jobs_step(s);
-
-		s.instance();
-		s->set_job_type(VoxelMesherJobStep::TYPE_NORMAL_LOD);
-		s->set_lod_index(2);
+		s->set_job_type(VoxelMesherJobStep::TYPE_DROP_UV2);
 		tj->add_jobs_step(s);
 
 		s.instance();
@@ -215,9 +216,53 @@ Ref<VoxelChunk> VoxelWorldDefault::_create_chunk(int x, int y, int z, Ref<VoxelC
 		s->set_job_type(VoxelMesherJobStep::TYPE_BAKE_TEXTURE);
 		tj->add_jobs_step(s);
 
+#ifdef MESH_UTILS_PRESENT
+		s.instance();
+		Ref<FastQuadraticMeshSimplifier> fqms;
+		fqms.instance();
+		s->set_fqms(fqms);
+		s->set_job_type(VoxelMesherJobStep::TYPE_SIMPLIFY_MESH);
+		s->set_simplification_step_ratio(0.8);
+		s->set_simplification_agressiveness(7);
+		s->set_simplification_steps(1);
+		tj->add_jobs_step(s);
+#endif
+
+		tj->add_mesher(Ref<VoxelMesher>(memnew(VoxelMesherDefault())));
+		//tj->add_liquid_mesher(Ref<VoxelMesher>(memnew(VoxelMesherDefault())));
+
+		Ref<VoxelPropJob> pj;
+		pj.instance();
+		pj->set_prop_mesher(Ref<VoxelMesher>(memnew(VoxelMesherDefault)));
+
+		s.instance();
+		s->set_job_type(VoxelMesherJobStep::TYPE_NORMAL);
+		pj->add_jobs_step(s);
+
+		s.instance();
+		s->set_job_type(VoxelMesherJobStep::TYPE_MERGE_VERTS);
+		pj->add_jobs_step(s);
+
+		s.instance();
+		s->set_job_type(VoxelMesherJobStep::TYPE_BAKE_TEXTURE);
+		pj->add_jobs_step(s);
+
+		s.instance();
+		s->set_job_type(VoxelMesherJobStep::TYPE_SIMPLIFY_MESH);
+#ifdef MESH_UTILS_PRESENT
+		fqms.instance();
+		s->set_fqms(fqms);
+		s->set_simplification_steps(2);
+#endif
+		pj->add_jobs_step(s);
+
+		// Order matters!
 		chunk->job_add(lj);
 		chunk->job_add(tj);
 		chunk->job_add(pj);
+
+		// TODO this should be removed
+		set_num_lods(5);
 	}
 
 	Ref<VoxelChunkDefault> vcd = chunk;
@@ -252,11 +297,12 @@ int VoxelWorldDefault::_get_channel_index_info(const VoxelWorld::ChannelTypeInfo
 }
 
 VoxelWorldDefault::VoxelWorldDefault() {
-	_chunk_lod_falloff = 2;
+	_chunk_lod_falloff = 4;
 	_lod_update_timer = 0;
 	_lod_update_interval = 0.5;
 	_build_flags = VoxelChunkDefault::BUILD_FLAG_CREATE_COLLIDER | VoxelChunkDefault::BUILD_FLAG_CREATE_LODS;
-	_num_lods = 4;
+	_num_lods = 0;
+	set_use_default_lod_update(true);
 
 	set_data_margin_start(1);
 	set_data_margin_end(1);
@@ -265,13 +311,12 @@ VoxelWorldDefault::VoxelWorldDefault() {
 VoxelWorldDefault ::~VoxelWorldDefault() {
 }
 
-/*
 void VoxelWorldDefault::_notification(int p_what) {
 	VoxelWorld::_notification(p_what);
 
 	switch (p_what) {
 		case NOTIFICATION_INTERNAL_PROCESS: {
-			if ((get_build_flags() & VoxelChunkDefault::BUILD_FLAG_CREATE_LODS) == 0)
+			if (!_use_default_lod_update)
 				return;
 
 			if (!get_player()) {
@@ -292,7 +337,7 @@ void VoxelWorldDefault::_notification(int p_what) {
 			}
 		} break;
 	}
-}*/
+}
 
 void VoxelWorldDefault::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_chunk_added", "chunk"), &VoxelWorldDefault::_chunk_added);
@@ -300,6 +345,10 @@ void VoxelWorldDefault::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_build_flags"), &VoxelWorldDefault::get_build_flags);
 	ClassDB::bind_method(D_METHOD("set_build_flags", "value"), &VoxelWorldDefault::set_build_flags);
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "build_flags", PROPERTY_HINT_FLAGS, VoxelChunkDefault::BINDING_STRING_BUILD_FLAGS), "set_build_flags", "get_build_flags");
+
+	ClassDB::bind_method(D_METHOD("get_use_default_lod_update"), &VoxelWorldDefault::get_use_default_lod_update);
+	ClassDB::bind_method(D_METHOD("set_use_default_lod_update", "value"), &VoxelWorldDefault::set_use_default_lod_update);
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_default_lod_update"), "set_use_default_lod_update", "get_use_default_lod_update");
 
 	ClassDB::bind_method(D_METHOD("get_lod_update_interval"), &VoxelWorldDefault::get_lod_update_interval);
 	ClassDB::bind_method(D_METHOD("set_lod_update_interval", "value"), &VoxelWorldDefault::set_lod_update_interval);
