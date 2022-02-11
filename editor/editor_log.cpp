@@ -36,6 +36,7 @@
 #include "editor_scale.h"
 #include "scene/gui/center_container.h"
 #include "scene/resources/dynamic_font.h"
+#include "editor/filesystem_dock.h" // GOBLIN ENGINE bbcode log
 
 void EditorLog::_error_handler(void *p_self, const char *p_func, const char *p_file, int p_line, const char *p_error, const char *p_errorexp, ErrorHandlerType p_type) {
 	EditorLog *self = (EditorLog *)p_self;
@@ -47,7 +48,7 @@ void EditorLog::_error_handler(void *p_self, const char *p_func, const char *p_f
 	if (p_errorexp && p_errorexp[0]) {
 		err_str = p_errorexp;
 	} else {
-		err_str = String(p_file) + ":" + itos(p_line) + " - " + String(p_error);
+		err_str = "[url]" + String(p_file) + ":" + itos(p_line) + "[/url] - " + String(p_error);
 	}
 
 	if (p_type == ERR_HANDLER_WARNING) {
@@ -123,7 +124,7 @@ void EditorLog::add_message(const String &p_msg, MessageType p_type) {
 		} break;
 	}
 
-	log->add_text(p_msg);
+	log->append_bbcode(p_msg); // GOBLIN ENGINE bbcode log
 	log->add_newline();
 
 	if (restore) {
@@ -143,6 +144,7 @@ void EditorLog::_undo_redo_cbk(void *p_self, const String &p_name) {
 void EditorLog::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_clear_request"), &EditorLog::_clear_request);
 	ClassDB::bind_method(D_METHOD("_copy_request"), &EditorLog::_copy_request);
+	ClassDB::bind_method(D_METHOD("_meta_clicked"), &EditorLog::_meta_clicked); // GOBLIN ENGINE bbcode log
 	ADD_SIGNAL(MethodInfo("clear_request"));
 	ADD_SIGNAL(MethodInfo("copy_request"));
 }
@@ -177,7 +179,10 @@ EditorLog::EditorLog() {
 	log->set_v_size_flags(SIZE_EXPAND_FILL);
 	log->set_h_size_flags(SIZE_EXPAND_FILL);
 	vb->add_child(log);
-	// add_message(VERSION_FULL_NAME " (c) 2007-2021 Juan Linietsky, Ariel Manzur & Godot Contributors.");  // GOBLIN ENGINE
+	// GOBLIN ENGINE remove credit
+	// GOBLIN ENGINE bbcode log
+	log->set_use_bbcode(true);
+	log->connect("meta_clicked", this, "_meta_clicked");
 
 	eh.errfunc = _error_handler;
 	eh.userdata = this;
@@ -188,6 +193,32 @@ EditorLog::EditorLog() {
 	add_constant_override("separation", get_constant("separation", "VBoxContainer"));
 
 	EditorNode::get_undo_redo()->set_commit_notify_callback(_undo_redo_cbk, this);
+}
+
+// GOBLIN ENGINE bbcode log
+void EditorLog::_meta_clicked(const String &p_select) {
+	if (p_select.begins_with("https://") || p_select.begins_with("http://")) { // URL
+		OS::get_singleton()->shell_open(p_select);
+	} else if (p_select.begins_with("res://")) { // RESOURCE
+		Vector<String> split = p_select.split(":", 3);
+		String file_type = EditorFileSystem::get_singleton()->get_file_type("res:"+split[1]);
+
+		if (file_type == "PackedScene") { // Packed Scene
+			// If file is a scene, open.
+			EditorNode::get_singleton()->open_request(p_select);
+		} else if (file_type.count("Script") > 0 ) { // Internal Script file
+			EditorNode::get_singleton()->load_resource("res:"+split[1]);
+			if (split.size() > 2) { // Check if index 2 (Line Number) exists
+				// Go to line
+				ScriptEditor::get_singleton()->call("goto_line", split[2].to_int() - 1);
+			}
+		} else { // If the file is not a Script or Scene, select in File System.
+			EditorNode::get_singleton()->get_filesystem_dock()->select_file(p_select);
+		}
+	} else if(p_select.count(".cpp:") > 0) { // C++ file
+		Vector<String> split = p_select.split(":", 2);
+		OS::get_singleton()->shell_open("https://github.com/goblinengine/goblin/tree/main/" + split[0].replace("\\","/") + "#L" + split[1]);
+	}
 }
 
 void EditorLog::deinit() {

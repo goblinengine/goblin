@@ -770,7 +770,8 @@ void GDScriptFunctions::call(Function p_func, const Variant **p_args, int p_arg_
 
 			ScriptLanguage *script = GDScriptLanguage::get_singleton();
 			if (script->debug_get_stack_level_count() > 0) {
-				str += "\n   At: " + script->debug_get_stack_level_source(0) + ":" + itos(script->debug_get_stack_level_line(0)) + ":" + script->debug_get_stack_level_function(0) + "()";
+				// GOBLIN ENGINE bbcode log
+				str += "\n   At: [url]" + script->debug_get_stack_level_source(0) + ":" + itos(script->debug_get_stack_level_line(0)) + ":" + script->debug_get_stack_level_function(0) + "()[/url]";
 			}
 
 			print_line(str);

@@ -34,6 +34,7 @@
 
 ### Changes
 
+- Goblin Output console now supports BBCode straight from `print()` functions. This allows for colorized text output, url, images and much more. Note that image tags do read from drive so be weary. Additionally urls such as `https://` or `res://` or c++ source code now are clickable which will either open the file if internal resource or will ask the OS to open them if external. This was inspired by two not yet approved prs found [here](https://github.com/godotengine/godot/pull/57896) and [here](https://github.com/godotengine/godot/pull/33541).
 - Implemented the hacky low processor flicker fix from (this pr)[https://github.com/godotengine/godot/pull/55604]. A better fix may end up being implement but for now this works okay.
 - Implemented custom Godot types in JSON adapting [this](https://github.com/godotengine/godot/pull/33241) rejected pr. All unsupported types will turn into their string equivalent for example Vector2(1,1) will be saved as "Vector2( 1, 1 )" which is parsed back into a Vector2. However, since JSON only has a number type, ints will still be converted to floats. 
 - Imported 3D scenes are disabled from saving to a scene to avoid errors. From [this pr](https://github.com/godotengine/godot/pull/42367).
