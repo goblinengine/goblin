@@ -28,7 +28,6 @@ def get_opts():
         ("ANDROID_SDK_ROOT", "Path to the Android SDK", get_android_sdk_root()),
         ("ndk_platform", 'Target platform (android-<api>, e.g. "android-19")', "android-19"),
         EnumVariable("android_arch", "Target architecture", "armv7", ("armv7", "arm64v8", "x86", "x86_64")),
-        BoolVariable("use_thinlto", "Use ThinLTO", False),
         BoolVariable("android_neon", "Enable NEON support (armv7 only)", True),
     ]
 
@@ -208,11 +207,6 @@ def configure(env):
         env.Append(CCFLAGS=["-O0", "-g", "-fno-limit-debug-info"])
         env.Append(CPPDEFINES=["_DEBUG"])
         env.Append(CPPFLAGS=["-UNDEBUG"])
-
-    # LTO
-    if env["use_thinlto"]:
-        env.Append(CCFLAGS=["-flto=thin"])
-        env.Append(LINKFLAGS=["-flto=thin"])
 
     # Compiler configuration
 

@@ -25,7 +25,6 @@ def get_opts():
         ("osxcross_sdk", "OSXCross SDK version", "darwin14"),
         ("MACOS_SDK_PATH", "Path to the macOS SDK", ""),
         EnumVariable("macports_clang", "Build using Clang from MacPorts", "no", ("no", "5.0", "devel")),
-        BoolVariable("use_thinlto", "Use ThinLTO", False),
         BoolVariable("debug_symbols", "Add debugging symbols to release/release_debug builds", True),
         BoolVariable("separate_debug_symbols", "Create a separate file containing debugging symbols", False),
         BoolVariable("use_ubsan", "Use LLVM/GCC compiler undefined behavior sanitizer (UBSAN)", False),
@@ -65,11 +64,6 @@ def configure(env):
     elif env["target"] == "debug":
         env.Prepend(CCFLAGS=["-g3"])
         env.Prepend(LINKFLAGS=["-Xlinker", "-no_deduplicate"])
-
-    # LTO
-    if env["use_thinlto"]:
-        env.Append(CCFLAGS=["-flto=thin"])
-        env.Append(LINKFLAGS=["-flto=thin"])
 
     ## Architecture
 
