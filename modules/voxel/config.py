@@ -29,8 +29,6 @@ def get_doc_classes():
         "VoxelMaterialCache",
         "VoxelMaterialCachePCM",
 
-        "VoxelCubePoints",
-        "VoxelMesherCubic",
         "VoxelMeshData",
 
         "MarchingCubesCellData",
@@ -52,10 +50,6 @@ def get_doc_classes():
 
         "VoxelWorldMarchingCubes",
         "VoxelChunkMarchingCubes",
-
-        "VoxelMesherCubic",
-        "VoxelWorldCubic",
-        "VoxelChunkCubic",
 
         "VoxelMesherDefault",
         "VoxelWorldDefault",
