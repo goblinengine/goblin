@@ -717,14 +717,14 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	tc_sb_bottom->set_default_margin(MARGIN_BOTTOM, 8 * scale);
 
 	theme->set_stylebox("tab_fg", "TabContainer", sb_expand(make_stylebox(tab_current_png, 4, 4, 4, 1, 16, 4, 16, 4), 2, 2, 2, 2));
-	theme->set_stylebox("tab_bg", "TabContainer", sb_expand(make_stylebox(tab_behind_png, 5, 5, 5, 1, 16, 6, 16, 4), 3, 0, 3, 3));
-	theme->set_stylebox("tab_disabled", "TabContainer", sb_expand(make_stylebox(tab_disabled_png, 5, 5, 5, 1, 16, 6, 16, 4), 3, 0, 3, 3));
-	
+	theme->set_stylebox("tab_bg", "TabContainer", sb_expand(make_stylebox(tab_behind_png, 5, 5, 5, 1, 16, 6, 16, 4), 3, 0, 3, 0));
+	theme->set_stylebox("tab_disabled", "TabContainer", sb_expand(make_stylebox(tab_disabled_png, 5, 5, 5, 1, 16, 6, 16, 4), 3, 0, 3, 0));
+
 	// GOBLIN ENGINE tabs at bottom
 	theme->set_stylebox("tab_fg_bottom", "TabContainer", sb_expand(make_stylebox(tab_current_bottom_png, 4, 1, 4, 4, 16, 4, 16, 4), 2, 2, 2, 2));
 	theme->set_stylebox("tab_bg_bottom", "TabContainer", sb_expand(make_stylebox(tab_behind_bottom_png, 5, 1, 5, 5, 16, 4, 16, 6), 3, 3, 3, 0));
 	theme->set_stylebox("tab_disabled_bottom", "TabContainer", sb_expand(make_stylebox(tab_disabled_bottom_png, 5, 1, 5, 5, 16, 4, 16, 6), 3, 3, 3, 0));
-	
+
 	theme->set_stylebox("panel", "TabContainer", tc_sb);
 	theme->set_stylebox("panel_bottom", "TabContainer", tc_sb_bottom); // GOBLIN ENGINE tabs at bottom
 
@@ -902,6 +902,10 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_constant("separation", "VSplitContainer", 12 * scale);
 	theme->set_constant("autohide", "HSplitContainer", 1 * scale);
 	theme->set_constant("autohide", "VSplitContainer", 1 * scale);
+	theme->set_constant("hseparation", "HFlowContainer", 4 * scale);
+	theme->set_constant("vseparation", "HFlowContainer", 4 * scale);
+	theme->set_constant("hseparation", "VFlowContainer", 4 * scale);
+	theme->set_constant("vseparation", "VFlowContainer", 4 * scale);
 
 	Ref<StyleBoxTexture> sb_pc = make_stylebox(tab_container_bg_png, 4, 4, 4, 4, 7, 7, 7, 7);
 	theme->set_stylebox("panel", "PanelContainer", sb_pc);

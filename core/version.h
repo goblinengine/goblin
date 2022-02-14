@@ -33,7 +33,7 @@
 
 #include "core/version_generated.gen.h"
 
-// Goblin versions are of the form <major>.<minor> for the initial release,
+// Godot versions are of the form <major>.<minor> for the initial release,
 // and then <major>.<minor>.<patch> for subsequent bugfix releases where <patch> != 0
 // That's arbitrary, but we find it pretty and it's the current policy.
 
@@ -67,6 +67,9 @@
 // Same as above, but prepended with Godot's name and a cosmetic "v" for "version".
 // Example: "Godot v3.1.4.stable.official.mono"
 #define VERSION_FULL_NAME "" VERSION_NAME " v" VERSION_FULL_BUILD
+
+// Git commit hash, generated at build time in `core/version_hash.gen.cpp`.
+extern const char *const VERSION_HASH;
 
 // GOBLIN ENGINE
 

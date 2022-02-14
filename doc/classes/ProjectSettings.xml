@@ -1153,11 +1153,6 @@
 			- During pause, picking only considers collision objects immune to pause, sending input events and enter/exit callbacks to them as expected.
 			If disabled, the legacy behavior is used, which consists in queuing the picking input events during pause (so nodes won't get them) and flushing that queue on resume, against the state of the 2D/3D world at that point.
 		</member>
-		<!-- GLOBAL ENGINE unify button focus hover -->
-		<member name="gui/theme/unify_button_focus_hover" type="bool" setter="" getter="" default="false">
-		    Only affects buttons that can grab keyboard focus. Hovering will use focus font color and focus style and force grab keyboard focus.
-			[b]Note:[/b] This property is only read when the project starts.
-		</member>
 		<member name="physics/common/physics_fps" type="int" setter="" getter="" default="60">
 			The number of fixed iterations per second. This controls how often physics simulation and [method Node._physics_process] methods are run. See also [member debug/settings/fps/force_fps].
 			[b]Note:[/b] This property is only read when the project starts. To change the physics FPS at runtime, set [member Engine.iterations_per_second] instead.
@@ -1350,6 +1345,11 @@
 		</member>
 		<member name="rendering/misc/mesh_storage/split_stream" type="bool" setter="" getter="" default="false">
 			On import, mesh vertex data will be split into two streams within a single vertex buffer, one for position data and the other for interleaved attributes data. Recommended to be enabled if targeting mobile devices. Requires manual reimport of meshes after toggling.
+		</member>
+		<member name="rendering/misc/occlusion_culling/max_active_polygons" type="int" setter="" getter="" default="8">
+			Determines the maximum number of polygon occluders that will be used at any one time.
+			Although you can have many occluders in a scene, each frame the system will choose from these the most relevant based on a screen space metric, in order to give the best overall performance.
+			A greater number of polygons can potentially cull more objects, however the cost of culling calculations scales with the number of occluders.
 		</member>
 		<member name="rendering/misc/occlusion_culling/max_active_spheres" type="int" setter="" getter="" default="8">
 			Determines the maximum number of sphere occluders that will be used at any one time.
@@ -1585,6 +1585,13 @@
 			Cell size used for the 2D hash grid that [VisibilityNotifier2D] uses (in pixels).
 		</member>
 	</members>
+	<signals>
+		<signal name="project_settings_changed">
+			<description>
+				Objects can use this signal to restrict reading of settings only to situations where a change has been made.
+			</description>
+		</signal>
+	</signals>
 	<constants>
 	</constants>
 </class>

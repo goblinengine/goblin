@@ -508,9 +508,11 @@ public:
 	FUNCRID(occluder)
 	FUNC3(occluder_set_scenario, RID, RID, OccluderType)
 	FUNC2(occluder_spheres_update, RID, const Vector<Plane> &)
+	FUNC2(occluder_mesh_update, RID, const Geometry::OccluderMeshData &)
 	FUNC2(occluder_set_transform, RID, const Transform &)
 	FUNC2(occluder_set_active, RID, bool)
 	FUNC1(set_use_occlusion_culling, bool)
+	FUNC1RC(Geometry::MeshData, occlusion_debug_get_current_polys, RID)
 
 	// Rooms
 	FUNCRID(room)
@@ -655,7 +657,7 @@ public:
 	virtual void finish();
 	virtual void draw(bool p_swap_buffers, double frame_step);
 	virtual void sync();
-	FUNC0RC(bool, has_changed)
+	FUNC1RC(bool, has_changed, ChangedPriority)
 
 	/* RENDER INFO */
 

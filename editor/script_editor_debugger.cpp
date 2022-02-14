@@ -34,7 +34,6 @@
 #include "core/project_settings.h"
 #include "core/ustring.h"
 #include "core/version.h"
-#include "core/version_hash.gen.h"
 #include "editor/editor_log.h"
 #include "editor/plugins/canvas_item_editor_plugin.h"
 #include "editor/plugins/spatial_editor_plugin.h"

@@ -47,6 +47,7 @@
 #include "scene/gui/panel.h"
 #include "scene/gui/panel_container.h"
 #include "scene/gui/popup_menu.h"
+#include "scene/gui/viewport_container.h"
 #include "scene/main/canvas_layer.h"
 #include "scene/main/timer.h"
 #include "scene/resources/mesh.h"
@@ -713,6 +714,11 @@ void Viewport::set_size(const Size2 &p_size) {
 	}
 	size = p_size.floor();
 	VS::get_singleton()->viewport_set_size(viewport, size.width, size.height);
+
+	ViewportContainer *c = Object::cast_to<ViewportContainer>(get_parent());
+	if (c) {
+		c->minimum_size_changed();
+	}
 
 	_update_stretch_transform();
 	update_configuration_warning();
@@ -2424,7 +2430,7 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 		//if (from && p_event->is_pressed() && !p_event->get_alt() && !p_event->get_metakey() && !p_event->key->get_command()) {
 
 		Ref<InputEventKey> k = p_event;
-		//need to check for mods, otherwise any combination of alt/ctrl/shift+<up/down/left/righ/etc> is handled here when it shouldn't be.
+		//need to check for mods, otherwise any combination of alt/ctrl/shift+<up/down/left/right/etc> is handled here when it shouldn't be.
 		bool mods = k.is_valid() && (k->get_control() || k->get_alt() || k->get_shift() || k->get_metakey());
 
 		if (from && p_event->is_pressed()) {
@@ -2458,11 +2464,11 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 					next = from->_get_focus_neighbour(MARGIN_BOTTOM);
 				}
 			} else {
-				if (p_event->is_action_pressed("ui_focus_next", true)) {
+				if (p_event->is_action_pressed("ui_focus_next", true, true)) {
 					next = from->find_next_valid_focus();
 				}
 
-				if (p_event->is_action_pressed("ui_focus_prev", true)) {
+				if (p_event->is_action_pressed("ui_focus_prev", true, true)) {
 					next = from->find_prev_valid_focus();
 				}
 

@@ -40,7 +40,6 @@
 #include "core/os/os.h"
 #include "core/translation.h"
 #include "core/version.h"
-#include "core/version_hash.gen.h"
 #include "editor_scale.h"
 #include "editor_settings.h"
 #include "editor_themes.h"
@@ -2623,7 +2622,7 @@ ProjectManager::ProjectManager() {
 	if (hash.length() != 0) {
 		hash = " " + vformat("[%s]", hash.left(9));
 	}
-	version_btn->set_text("v" VERSION_GOBLIN_FULL_BUILD + hash);
+	version_btn->set_text("v" VERSION_GOBLIN_FULL_BUILD + hash); //GOBLIN ENGINE
 	// Fade the version label to be less prominent, but still readable.
 	version_btn->set_self_modulate(Color(1, 1, 1, 0.6));
 	version_btn->set_underline_mode(LinkButton::UNDERLINE_MODE_ON_HOVER);

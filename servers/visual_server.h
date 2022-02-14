@@ -901,15 +901,18 @@ public:
 	enum OccluderType {
 		OCCLUDER_TYPE_UNDEFINED,
 		OCCLUDER_TYPE_SPHERE,
+		OCCLUDER_TYPE_MESH,
 		OCCLUDER_TYPE_NUM_TYPES,
 	};
 
 	virtual RID occluder_create() = 0;
 	virtual void occluder_set_scenario(RID p_occluder, RID p_scenario, VisualServer::OccluderType p_type) = 0;
 	virtual void occluder_spheres_update(RID p_occluder, const Vector<Plane> &p_spheres) = 0;
+	virtual void occluder_mesh_update(RID p_occluder, const Geometry::OccluderMeshData &p_mesh_data) = 0;
 	virtual void occluder_set_transform(RID p_occluder, const Transform &p_xform) = 0;
 	virtual void occluder_set_active(RID p_occluder, bool p_active) = 0;
 	virtual void set_use_occlusion_culling(bool p_enable) = 0;
+	virtual Geometry::MeshData occlusion_debug_get_current_polys(RID p_scenario) const = 0;
 
 	// Rooms
 	enum RoomsDebugFeature {
@@ -1100,9 +1103,15 @@ public:
 
 	/* EVENT QUEUING */
 
+	enum ChangedPriority {
+		CHANGED_PRIORITY_ANY = 0,
+		CHANGED_PRIORITY_LOW,
+		CHANGED_PRIORITY_HIGH,
+	};
+
 	virtual void draw(bool p_swap_buffers = true, double frame_step = 0.0) = 0;
 	virtual void sync() = 0;
-	virtual bool has_changed() const = 0;
+	virtual bool has_changed(ChangedPriority p_priority = CHANGED_PRIORITY_ANY) const = 0;
 	virtual void init() = 0;
 	virtual void finish() = 0;
 
@@ -1217,6 +1226,7 @@ VARIANT_ENUM_CAST(VisualServer::EnvironmentSSAOBlur);
 VARIANT_ENUM_CAST(VisualServer::InstanceFlags);
 VARIANT_ENUM_CAST(VisualServer::ShadowCastingSetting);
 VARIANT_ENUM_CAST(VisualServer::TextureType);
+VARIANT_ENUM_CAST(VisualServer::ChangedPriority);
 
 //typedef VisualServer VS; // makes it easier to use
 #define VS VisualServer
