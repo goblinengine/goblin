@@ -18,12 +18,13 @@ public:
 	real_t f(real_t from, real_t to);
 
 	Variant choice(const Variant &p_from);
+	Variant choices(const Variant &p_from, int count, const Array &p_weights);
 	void shuffle(Array p_array);
 	bool decision(float probability);
 	Variant roll(uint32_t count, uint32_t sides);
 	Variant roll_notation(const String notation);
 	Color color();
-	String uuid_v4();
+	String uuid();
 	
 	Rand();
 	~Rand() {};

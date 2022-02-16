@@ -53,6 +53,49 @@ Variant Rand::choice(const Variant &p_from) {
 	return Variant();
 }
 
+Variant Rand::choices(const Variant &p_from, int count, const Array &p_weights) {
+	switch (p_from.get_type()) {
+		case Variant::POOL_BYTE_ARRAY:
+		case Variant::POOL_INT_ARRAY:
+		case Variant::POOL_REAL_ARRAY:
+		case Variant::POOL_STRING_ARRAY:
+		case Variant::POOL_VECTOR2_ARRAY:
+		case Variant::POOL_VECTOR3_ARRAY:
+		case Variant::POOL_COLOR_ARRAY:
+		case Variant::ARRAY: {
+			Array arr = p_from;
+			ERR_FAIL_COND_V_MSG(arr.empty(), Array(), "Array is empty.");
+			ERR_FAIL_COND_V_MSG(arr.size() != p_weights.size(), Array(), "Array and weights unequal size.");
+
+			int weights_sum = 0;
+			for (int i = 0; i < p_weights.size(); i++) {
+				if (p_weights.get(i).get_type() == Variant::INT) {
+					weights_sum += (int)p_weights.get(i);	
+				} else {
+					ERR_FAIL_V_MSG(Array(), "Weights are not integers.");
+				}
+			}
+
+			Array choices = Array();
+			while(choices.size() < count) {
+				float remaining_distance = randf() * weights_sum;
+				for (int i = 0; i < p_weights.size(); i++) {
+					remaining_distance -= (int)p_weights.get(i);
+					if (remaining_distance < 0) {
+						choices.append(p_from.get(i));
+						break;
+					}
+				}
+			}
+
+			return choices;
+		} break;
+		default: {
+			ERR_FAIL_V_MSG(Variant(), "Unsupported: the type must be Array.");
+		}
+	}
+}
+
 void Rand::shuffle(Array p_array) {
 	if (p_array.size() < 2) {
 		return;
@@ -239,7 +282,7 @@ Color Rand::color() {
 	return color;
 }
 
-String Rand::uuid_v4() {
+String Rand::uuid() {
 	Ref<Crypto> crypto = Ref<Crypto>(Crypto::create());
 	PoolByteArray data = crypto->generate_random_bytes(16);
 
@@ -259,12 +302,13 @@ void Rand::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("f", "from", "to"), &Rand::f);
 
     ClassDB::bind_method(D_METHOD("choice", "from"), &Rand::choice);
+    ClassDB::bind_method(D_METHOD("choices", "from", "count", "weights"), &Rand::choices);
 	ClassDB::bind_method(D_METHOD("shuffle", "array"), &Rand::shuffle);
 	ClassDB::bind_method(D_METHOD("decision", "probability"), &Rand::decision);
 	ClassDB::bind_method(D_METHOD("roll", "count", "faces"), &Rand::roll);
 	ClassDB::bind_method(D_METHOD("roll_notation", "dice_notation"), &Rand::roll_notation);
 	ClassDB::bind_method(D_METHOD("color"), &Rand::color);
-	ClassDB::bind_method(D_METHOD("uuid_v4"), &Rand::uuid_v4);
+	ClassDB::bind_method(D_METHOD("uuid"), &Rand::uuid);
 
 	ADD_PROPERTY_DEFAULT("seed", 0);
 	ADD_PROPERTY_DEFAULT("state", 0);
