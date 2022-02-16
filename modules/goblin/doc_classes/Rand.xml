@@ -42,6 +42,21 @@
 				Returns a random element from a container or indexable sequence, such as [Array], [Dictionary], [String]. If container is empty, prints an error and returns [code]null[/code].
 			</description>
 		</method>
+			<method name="choices">
+			<return type="Variant" />
+			<argument index="0" name="from" type="Variant" />
+			<argument index="1" name="count" type="int" default="1" />
+			<argument index="2" name="weights" type="Array" default="null" />
+			<description>
+				Returns random elements from an [Array] based on count and weights. This is somewhat similar to [method choice] but it allows you to specify weights for each element. Weights must be an [Array] of positive integers and of the same size as the original [Array]. If no weights are specified, all elements are equally likely.
+			</description>
+		</method>
+		<method name="color">
+			<return type="Color" />
+			<description>
+				Returns a random [Color].
+			</description>
+		</method>
 		<method name="shuffle">
 			<return type="void" />
 			<argument index="0" name="array" type="Array" />

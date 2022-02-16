@@ -63,31 +63,43 @@ Variant Rand::choices(const Variant &p_from, int count, const Array &p_weights) 
 		case Variant::POOL_VECTOR3_ARRAY:
 		case Variant::POOL_COLOR_ARRAY:
 		case Variant::ARRAY: {
+			ERR_FAIL_COND_V_MSG(count < 1, Array(), "Count must be positive");
+			
 			Array arr = p_from;
 			ERR_FAIL_COND_V_MSG(arr.empty(), Array(), "Array is empty.");
-			ERR_FAIL_COND_V_MSG(arr.size() != p_weights.size(), Array(), "Array and weights unequal size.");
 
-			int weights_sum = 0;
-			for (int i = 0; i < p_weights.size(); i++) {
-				if (p_weights.get(i).get_type() == Variant::INT) {
-					weights_sum += (int)p_weights.get(i);	
-				} else {
-					ERR_FAIL_V_MSG(Array(), "Weights are not integers.");
-				}
+			if (p_weights.size() > 0) {
+				ERR_FAIL_COND_V_MSG(arr.size() != p_weights.size(), Array(), "Array and weights unequal size.");
 			}
 
 			Array choices = Array();
-			while(choices.size() < count) {
-				float remaining_distance = randf() * weights_sum;
+			if (p_weights.empty())  { //no weights array then everything is weighted randomly
+				for (int j = 0; j < count; j++) {
+					choices.append(choice(p_from));
+				}
+			} else { //with weights
+				//calculate weights sum
+				int weights_sum = 0;
 				for (int i = 0; i < p_weights.size(); i++) {
-					remaining_distance -= (int)p_weights.get(i);
-					if (remaining_distance < 0) {
-						choices.append(p_from.get(i));
-						break;
+					if (p_weights.get(i).get_type() == Variant::INT && (int)p_weights.get(i) >= 0) {
+						weights_sum += (int)p_weights.get(i);	
+					} else {
+						ERR_FAIL_V_MSG(Array(), "Weights must be positive integers.");
 					}
 				}
-			}
 
+				//loop through based on weights and add until you reach count
+				while(choices.size() < count) {
+					float remaining_distance = randf() * weights_sum;
+					for (int i = 0; i < p_weights.size(); i++) {
+						remaining_distance -= (int)p_weights.get(i);
+						if (remaining_distance < 0) {
+							choices.append(arr.get(i));
+							break;
+						}
+					}
+				}
+			} 
 			return choices;
 		} break;
 		default: {
@@ -302,7 +314,7 @@ void Rand::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("f", "from", "to"), &Rand::f);
 
     ClassDB::bind_method(D_METHOD("choice", "from"), &Rand::choice);
-    ClassDB::bind_method(D_METHOD("choices", "from", "count", "weights"), &Rand::choices);
+    ClassDB::bind_method(D_METHOD("choices", "from", "count", "weights"), &Rand::choices, DEFVAL(1), DEFVAL(Variant()));
 	ClassDB::bind_method(D_METHOD("shuffle", "array"), &Rand::shuffle);
 	ClassDB::bind_method(D_METHOD("decision", "probability"), &Rand::decision);
 	ClassDB::bind_method(D_METHOD("roll", "count", "faces"), &Rand::roll);

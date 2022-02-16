@@ -40,9 +40,11 @@ Goblin will not provide any Mono builds since the goal is to keep the engine lea
 ## Community and contributing
 
 There is no community as of yet but PRs welcome. There are a number of features that I am still looking to add: 
-- Make the engine leander and faster optimizing where necessary
-- Add custom GDScript functionality
+- Optimize engine size and speed
+- More efficient implementations of custom code
+- Custom GDScript functionality
 - Porting to more platforms
+- Implementing features that are beyond my understanding
 
 ## Documentation and demos
 
