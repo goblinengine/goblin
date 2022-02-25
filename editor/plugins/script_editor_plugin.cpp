@@ -36,6 +36,7 @@
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
 #include "core/project_settings.h"
+#include "core/version.h"
 #include "editor/editor_node.h"
 #include "editor/editor_run_script.h"
 #include "editor/editor_scale.h"
@@ -1067,7 +1068,7 @@ void ScriptEditor::_menu_option(int p_option) {
 			help_search_dialog->popup_dialog();
 		} break;
 		case SEARCH_WEBSITE: {
-			OS::get_singleton()->shell_open("https://docs.godotengine.org/");
+			OS::get_singleton()->shell_open(VERSION_DOCS_URL "/");
 		} break;
 		case WINDOW_NEXT: {
 			_history_forward();
@@ -2106,7 +2107,7 @@ bool ScriptEditor::edit(const RES &p_resource, int p_line, int p_col, bool p_gra
 			args.push_front("\"/C\"");
 			path = "CMD.exe";
 		}
-	
+
 		Error err = OS::get_singleton()->execute(path, args, false);
 		if (err == OK) {
 			return false;
@@ -2426,6 +2427,7 @@ void ScriptEditor::_editor_settings_changed() {
 	_update_script_names();
 
 	ScriptServer::set_reload_scripts_on_save(EDITOR_DEF("text_editor/files/auto_reload_and_parse_scripts_on_save", true));
+
 
 	_update_external_editor_preset();
 }
