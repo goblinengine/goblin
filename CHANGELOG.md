@@ -10,15 +10,16 @@
 - Implemented `Array` variant `for_each(obj, "function")` function which calls a function for each element of the array. The function can be any name but must have only 1 parameter to pass each element to. This is slighty faster than a for loop with 1 function and much faster than using `call()` in a for loop. Every function inside a for loop will slow down the loop by x6 where as using `call()` slows down by x14 and the effect is **cummulative!**. The idea is to use only 1 function per element to make looping faster.
 - New `Rand` singleton that allows generating completely random values from anywhere. `Rand` auto randomizes every time the engine starts and since it extends `RandomNumberGenerator` you can also call `randomize()` or `set_seed()` manually.
     * `shuffle(Array)` shuffles an Array
+    * `pop(Array)` removes and returns a random element from a sequence
     * `choice(Variant)` picks a random value from an Array or Dictionary or random character from a string
-    * `choices(Array, count, weights)` picks count number of random values from Array based on weights
+    * `choices(Array, count, weight, cummulative)` picks count number of random values from sequence based on weights
     * `color()` generates a completely random color
     * `decision(double)` helps generates a random decisions based on a probability from `0.0` to `1.0` (0% to 100%)
-    * `roll(count,side)` simulates a random dice roll using count and side and returns an Dictionary with sum and rolls. 
-    * `roll_notation(dice_notation`) similar to a roll ecept it uses dice notation such as `2d6`, `2x(3d6!U)`. Als returns a Dictionary but contains additional information.
-    * `i(from, to)` same as `rand_range` but shorter and slightly faster.
-    * `f(from, to)` same as `randf_range` but shorter.
-    * `uuid_v4()` generated a random UUID hex bytes 8-4-4-4-12 using version 4 of the spec(also known a GUID).
+    * `roll(count, side)` simulates a random dice roll using count and side and returns an Dictionary with sum and rolls. 
+    * `roll_notation(dice_notation`) similar to a roll except it uses dice notation such as `2d6`, `2x(3d6!U)`. Als returns a Dictionary but contains additional information.
+    * `i(from, to)` same as `rand_range` but shorter and slightly faster (defaults `0 -> 99`)
+    * `f(from, to)` same as `randf_range` but shorter (default `0.0 -> 1.0`)
+    * `uuid()` generated a random UUID v4 string 8-4-4-4-12 (also known a GUID).
 - Added autotile auto-transforms pr found [here](https://github.com/godotengine/godot/pull/39046) to Goblin. The proposal is [here](https://github.com/godotengine/godot-proposals/issues/893). The idea here is to allow specific transforms on autotiles so that when looking up a specific bitmask the autotile is esentially transformed dynamically, based on allowed transformations. Allows for less manual tile work in some situations and smaller texture file. The drawback is the tiles resulting from transforms are repetitive. 
 - Added `eval("expression")` function in `@GDScript` which parses a string expression and outputs the result or null if couldn't parse. It does not take inputs like Expression but can be added since it actually uses Expression class in the backend. This is a common function in many interpeted languages. 
 - Added [SQLite Module](https://github.com/godot-extended-libraries/godot-sqlite/tree/3.2) by K. S. Ernest (iFire) Lee (fire). By default it is disabled. Use `module_sqlite_enabled=yes` to build. In test builds is enabled everywhere except for template builds.
