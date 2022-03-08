@@ -14,12 +14,13 @@ protected:
 public:
 	static Rand *get_singleton() { return singleton; }
 
-	int i(int from, int to);
-	real_t f(real_t from, real_t to);
+	int i(int from = 0, int to = 99);
+	real_t f(real_t from = 0.0f, real_t to = 1.0f);
 
-	Variant choice(const Variant &p_from);
-	Variant choices(const Variant &p_from, int count, const Array &p_weights);
-	void shuffle(Array p_array);
+	Variant pop(const Variant &sequence);
+	Variant choice(const Variant &sequence);
+	Array choices(const Variant &sequence, int count = 1, const PoolIntArray &p_weights = Variant(), bool p_is_cumulative =  false);
+	void shuffle(Array array);
 	bool decision(float probability);
 	Variant roll(uint32_t count, uint32_t sides);
 	Variant roll_notation(const String notation);

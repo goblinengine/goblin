@@ -35,20 +35,30 @@
 				Returns a random integer value between from and to using a specific algorithm.
 			</description>
 		</method>
+		<method name="pop">
+			<return type="Variant" />
+			<argument index="0" name="sequence" type="Variant" />
+			<description>
+				Returns a random element from an [Array] or [Dictionary], and then removes the value from it. If container is empty, prints an error and returns [code]null[/code].
+				For performance reasons, this will modify the original order in the [Array]: the last value is swapped with the popped element, and then [method Array.pop_back] is called. See [method Array.remove] for explanations.
+				Unlike [method choice], the [String] and [b]Pool*Array[/b] types are not supported, since they are passed by value when calling this function.
+			</description>
+		</method>
 		<method name="choice">
 			<return type="Variant" />
-			<argument index="0" name="from" type="Variant" />
+			<argument index="0" name="sequence" type="Variant" />
 			<description>
 				Returns a random element from a container or indexable sequence, such as [Array], [Dictionary], [String]. If container is empty, prints an error and returns [code]null[/code].
 			</description>
 		</method>
 			<method name="choices">
-			<return type="Variant" />
-			<argument index="0" name="from" type="Variant" />
+			<return type="Array" />
+			<argument index="0" name="sequence" type="Variant" />
 			<argument index="1" name="count" type="int" default="1" />
-			<argument index="2" name="weights" type="Array" default="null" />
+			<argument index="2" name="weights" type="PoolIntArray" default="null" />
+			<argument index="3" name="cummulative" type="bool" default="false" />
 			<description>
-				Returns random elements from an [Array] based on count and weights. This is somewhat similar to [method choice] but it allows you to specify weights for each element. Weights must be an [Array] of positive integers and of the same size as the original [Array]. If no weights are specified, all elements are equally likely.
+				Returns an [Array] of random elements from a squence based on count and weights. This is somewhat similar to [method choice] but it allows you to specify weights for each element. Weights must be an a [PoolIntArray] of positive integers and of the same size as the sequence. If no weights are specified, all elements are equally likely.
 			</description>
 		</method>
 		<method name="color">
@@ -124,6 +134,12 @@
 			<argument index="0" name="probability" type="float" />
 			<description>
 				Returns a boolean based on a given [code]probability[/code] value in the range of [code]0.0..1.0[/code]. The higher the probability value the higher the chance of this returning [code]true[/code].
+			</description>
+		</method>
+		<method name="uuid">
+			<return type="String" />
+			<description>
+				Returns a random uuid v4 [String].
 			</description>
 		</method>
 	</methods>
