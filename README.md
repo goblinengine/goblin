@@ -13,7 +13,7 @@
 The goal of this project is multifold:
 - Implement useful features from scratch or from PRs, Godot forks, modules or adapt addons into C++ modules so they can be shipped with Goblin
 - Full compatibility with latest Godot 3.x branch
-- Minor quality of life changes to core without breaing compatibility
+- Minor quality of life changes to core without breaking compatibility
 - New features are added to the `goblin` module which can be disabled at any time by passing   `module_goblin_enabled=no`
 
 Here are are some Goblin features that stand out the most:

@@ -531,11 +531,7 @@ Error ProjectSettings::setup(const String &p_path, const String &p_main_pack, bo
 bool ProjectSettings::has_setting(String p_var) const {
 	_THREAD_SAFE_METHOD_
 
-	StringName name = p_var;
-	if (!disable_feature_overrides && feature_overrides.has(name)) {
-		name = feature_overrides[name];
-	}
-	return props.has(name);
+	return props.has(p_var);
 }
 
 void ProjectSettings::set_registering_order(bool p_enable) {
@@ -1257,6 +1253,10 @@ ProjectSettings::ProjectSettings() {
 	custom_prop_info["rendering/threads/thread_model"] = PropertyInfo(Variant::INT, "rendering/threads/thread_model", PROPERTY_HINT_ENUM, "Single-Unsafe,Single-Safe,Multi-Threaded");
 	custom_prop_info["physics/2d/thread_model"] = PropertyInfo(Variant::INT, "physics/2d/thread_model", PROPERTY_HINT_ENUM, "Single-Unsafe,Single-Safe,Multi-Threaded");
 	custom_prop_info["rendering/quality/intended_usage/framebuffer_allocation"] = PropertyInfo(Variant::INT, "rendering/quality/intended_usage/framebuffer_allocation", PROPERTY_HINT_ENUM, "2D,2D Without Sampling,3D,3D Without Effects");
+
+	// Required to make the project setting appear even if the physics engine is GodotPhysics,
+	// while also making it appear in the ProjectSettings class documentation.
+	GLOBAL_DEF("physics/3d/smooth_trimesh_collision", false);
 
 	GLOBAL_DEF("rendering/quality/filters/sharpen_intensity", 0.0);
 	custom_prop_info["rendering/quality/filters/sharpen_intensity"] = PropertyInfo(Variant::REAL, "rendering/quality/filters/sharpen_intensity", PROPERTY_HINT_RANGE, "0,1");

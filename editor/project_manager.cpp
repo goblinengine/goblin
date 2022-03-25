@@ -470,6 +470,7 @@ private:
 					initial_settings["application/config/icon"] = "res://icon.png";
 					initial_settings["rendering/environment/default_environment"] = "res://default_env.tres";
 					initial_settings["physics/common/enable_pause_aware_picking"] = true;
+					initial_settings["gui/common/drop_mouse_on_gui_input_disabled"] = true;
 
 					if (ProjectSettings::get_singleton()->save_custom(dir.plus_file("project.godot"), initial_settings, Vector<String>(), false) != OK) {
 						set_message(TTR("Couldn't create project.godot in project path."), MESSAGE_ERROR);
@@ -480,11 +481,11 @@ private:
 						if (!f) {
 							set_message(TTR("Couldn't create project.godot in project path."), MESSAGE_ERROR);
 						} else {
-							// GOBLIN ENGINE disable procedural sky
-							// disable Procedural Sky as the default (falls back to Background: Clear Color)
-							f->store_line("[gd_resource type=\"Environment\" format=2]");
-							f->store_line("");
+							f->store_line("[gd_resource type=\"Environment\" load_steps=2 format=2]");
+							f->store_line("[sub_resource type=\"ProceduralSky\" id=1]");
 							f->store_line("[resource]");
+							f->store_line("background_mode = 2");
+							f->store_line("background_sky = SubResource( 1 )");
 							memdelete(f);
 						}
 					}
@@ -862,7 +863,7 @@ public:
 		rshb->add_child(rvb);
 		Button *rs_button = memnew(CheckBox);
 		rs_button->set_button_group(rasterizer_button_group);
-		rs_button->set_text(TTR("OpenGL ES 3.0 / WebGL 2.0"));  // GOBLIN ENGINE project manager extra renderer info
+		rs_button->set_text(TTR("OpenGL ES 3.0"));
 		rs_button->set_meta("driver_name", "GLES3");
 		rvb->add_child(rs_button);
 		if (gles3_viable) {
@@ -875,13 +876,7 @@ public:
 			rvb->add_child(l);
 		}
 		l = memnew(Label);
-		// GOBLIN ENGINE project manager extra renderer info
-		l->set_text(
-				String::utf8("•  ") + TTR("Higher visual quality.") +
-				String::utf8("\n•  ") + TTR("All features available.") +
-				String::utf8("\n•  ") + TTR("Incompatible with older hardware.") +
-				String::utf8("\n•  ") + TTR("Not recommended for web games."));
-		l->set_modulate(Color(1, 1, 1, 0.7));
+		l->set_text(TTR("Higher visual quality\nAll features available\nIncompatible with older hardware\nNot recommended for web games"));
 		rvb->add_child(l);
 
 		rshb->add_child(memnew(VSeparator));
@@ -891,18 +886,12 @@ public:
 		rshb->add_child(rvb);
 		rs_button = memnew(CheckBox);
 		rs_button->set_button_group(rasterizer_button_group);
-		rs_button->set_text(TTR("OpenGL ES 2.0 / WebGL 1.0")); // GOBLIN ENGINE project manager extra renderer info
+		rs_button->set_text(TTR("OpenGL ES 2.0"));
 		rs_button->set_meta("driver_name", "GLES2");
 		rs_button->set_pressed(!gles3_viable);
 		rvb->add_child(rs_button);
 		l = memnew(Label);
-		// GOBLIN ENGINE project manager extra renderer info
-		l->set_text(
-				String::utf8("•  ") + TTR("Lower visual quality.") +
-				String::utf8("\n•  ") + TTR("Some features not available.") +
-				String::utf8("\n•  ") + TTR("Works on most hardware.") +
-				String::utf8("\n•  ") + TTR("Recommended for web games."));
-		l->set_modulate(Color(1, 1, 1, 0.7));
+		l->set_text(TTR("Lower visual quality\nSome features not available\nWorks on most hardware\nRecommended for web games"));
 		rvb->add_child(l);
 
 		l = memnew(Label);
@@ -2453,7 +2442,7 @@ ProjectManager::ProjectManager() {
 	String cp;
 	cp += 0xA9;
 	// TRANSLATORS: This refers to the application where users manage their Godot projects.
-	OS::get_singleton()->set_window_title(VERSION_NAME + String(" - ") + TTR("Project Manager"));
+	OS::get_singleton()->set_window_title(VERSION_NAME + String(" - ") + TTR("Project Manager", "Application"));
 
 	Control *center_box = memnew(Control);
 	center_box->set_v_size_flags(SIZE_EXPAND_FILL);
@@ -2622,7 +2611,7 @@ ProjectManager::ProjectManager() {
 	if (hash.length() != 0) {
 		hash = " " + vformat("[%s]", hash.left(9));
 	}
-	version_btn->set_text("v" VERSION_GOBLIN_FULL_BUILD + hash); //GOBLIN ENGINE
+	version_btn->set_text("v" VERSION_FULL_BUILD + hash);
 	// Fade the version label to be less prominent, but still readable.
 	version_btn->set_self_modulate(Color(1, 1, 1, 0.6));
 	version_btn->set_underline_mode(LinkButton::UNDERLINE_MODE_ON_HOVER);

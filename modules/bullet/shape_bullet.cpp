@@ -422,7 +422,6 @@ void ConcavePolygonShapeBullet::setup(PoolVector<Vector3> p_faces) {
 
 		meshShape = bulletnew(btBvhTriangleMeshShape(shapeInterface, useQuantizedAabbCompression));
 
-		// GOBLIN ENGINE smooth trimesh collision
 		if (GLOBAL_GET("physics/3d/smooth_trimesh_collision")) {
 			btTriangleInfoMap *triangleInfoMap = new btTriangleInfoMap();
 			btGenerateInternalEdgeInfo(meshShape, triangleInfoMap);

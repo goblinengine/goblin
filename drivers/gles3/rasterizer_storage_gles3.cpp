@@ -3179,7 +3179,7 @@ void RasterizerStorageGLES3::_update_material(Material *material) {
 
 		if (material->shader && material->shader->mode == VS::SHADER_SPATIAL) {
 			if (material->shader->spatial.blend_mode == Shader::Spatial::BLEND_MODE_MIX &&
-					(!material->shader->spatial.uses_alpha || material->shader->spatial.depth_draw_mode == Shader::Spatial::DEPTH_DRAW_ALPHA_PREPASS)) {
+					(!(material->shader->spatial.uses_alpha && !material->shader->spatial.uses_alpha_scissor) || material->shader->spatial.depth_draw_mode == Shader::Spatial::DEPTH_DRAW_ALPHA_PREPASS)) {
 				can_cast_shadow = true;
 			}
 
@@ -8141,33 +8141,34 @@ void RasterizerStorageGLES3::initialize() {
 	shaders.cache = nullptr;
 	shaders.cache_write_queue = nullptr;
 	bool effectively_on = false;
+	// GOBLIN ENGINE hide async
 	if (config.async_compilation_enabled) {
 		if (config.parallel_shader_compile_supported) {
-			print_verbose("Async. shader compilation: ON (full native support)"); // GOBLIN ENGINE hide async
+			print_verbose("Async. shader compilation: ON (full native support)");
 			effectively_on = true;
 		} else if (config.program_binary_supported && OS::get_singleton()->is_offscreen_gl_available()) {
 			shaders.compile_queue = memnew(ThreadedCallableQueue<GLuint>());
 			shaders.compile_queue->enqueue(0, []() { OS::get_singleton()->set_offscreen_gl_current(true); });
-			print_verbose("Async. shader compilation: ON (via secondary context)"); // GOBLIN ENGINE hide async
+			print_verbose("Async. shader compilation: ON (via secondary context)");
 			effectively_on = true;
 		} else {
-			print_verbose("Async. shader compilation: OFF (enabled for " + String(Engine::get_singleton()->is_editor_hint() ? "editor" : "project") + ", but not supported)"); // GOBLIN ENGINE hide async
+			print_verbose("Async. shader compilation: OFF (enabled for " + String(Engine::get_singleton()->is_editor_hint() ? "editor" : "project") + ", but not supported)");
 		}
 		if (effectively_on) {
 			if (config.shader_cache_enabled) {
 				if (config.program_binary_supported) {
-					print_verbose("Shader cache: ON");  // GOBLIN ENGINE hide shader cache
+					print_verbose("Shader cache: ON");
 					shaders.cache = memnew(ShaderCacheGLES3);
 					shaders.cache_write_queue = memnew(ThreadedCallableQueue<GLuint>());
 				} else {
-					print_verbose("Shader cache: OFF (enabled, but not supported)"); // GOBLIN ENGINE hide shader cache
+					print_verbose("Shader cache: OFF (enabled, but not supported)");
 				}
 			} else {
-				print_verbose("Shader cache: OFF");  // GOBLIN ENGINE hide shader cache
+				print_verbose("Shader cache: OFF");
 			}
 		}
 	} else {
-		print_verbose("Async. shader compilation: OFF");  // GOBLIN ENGINE hide shader cache
+		print_verbose("Async. shader compilation: OFF");
 	}
 	ShaderGLES3::compile_queue = shaders.compile_queue;
 	ShaderGLES3::parallel_compile_supported = config.parallel_shader_compile_supported;

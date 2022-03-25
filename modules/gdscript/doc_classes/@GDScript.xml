@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="@GDScript" version="3.5">
+<class name="@GDScript" version="3.5" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
 	<brief_description>
 		Built-in GDScript functions.
 	</brief_description>
@@ -164,6 +164,17 @@
 				a = clamp(1000, 1, 20) # a is 20
 				a = clamp(-10, 1, 20)  # a is 1
 				a = clamp(15, 1, 20)   # a is 15
+				[/codeblock]
+			</description>
+		</method>
+		<!-- GOBLIN ENGINE eval -->
+		<method name="eval">
+			<return type="Variant" />
+			<argument index="0" name="s" type="String" />
+			<description>
+				Evaluates expression [code]s[/code] and returns the result as a Variant or [code]null[/code] if expression is invalid. Makes use of [Expression] class.
+				[codeblock]
+				var a = eval("2 + 2 - 1") # a is 3
 				[/codeblock]
 			</description>
 		</method>

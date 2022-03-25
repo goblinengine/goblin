@@ -161,14 +161,15 @@ EditorAbout::EditorAbout() {
 	// Authors
 
 	List<String> dev_sections;
-	dev_sections.push_back(TTR("Goblin Founder"));
-	dev_sections.push_back(TTR("Goblin Developers"));
+	dev_sections.push_back(TTR("Project Founders"));
+	dev_sections.push_back(TTR("Lead Developer"));
 	// TRANSLATORS: This refers to a job title.
-	// The trailing space is used to distinguish with the project list application,
-	// you do not have to keep it in your translation.
-	dev_sections.push_back(TTR("Godot Developers"));
+	// GOBLIN ENGINE remove manager and donor
+	dev_sections.push_back(TTR("Developers"));
 	const char *const *dev_src[] = { AUTHORS_FOUNDERS, AUTHORS_LEAD_DEVELOPERS, AUTHORS_DEVELOPERS }; // GOBLIN ENGINE remove project manager
 	tc->add_child(_populate_list(TTR("Authors"), dev_sections, dev_src, 1));
+
+	// GOBLIN ENGINE remove manager and donor
 
 	// License
 
