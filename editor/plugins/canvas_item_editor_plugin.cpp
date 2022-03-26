@@ -6443,6 +6443,16 @@ void CanvasItemEditorViewport::_create_nodes(Node *parent, Node *child, String &
 		case NAME_CASING_SNAKE_CASE:
 			name = name.capitalize().replace(" ", "_").to_lower();
 			break;
+		// GOBLIN ENGINE more cases
+		case NAME_CASING_UPPER_SNAKE_CASE:
+			name = name.capitalize().replace(" ", "_").to_upper();
+			break;
+		case NAME_CASING_KEBAB_CASE:
+			name = name.capitalize().replace(" ", "-").to_lower();
+			break;
+		case NAME_CASING_UPPER_KEBAB_CASE:
+			name = name.capitalize().replace(" ", "-").to_upper();
+			break;
 	}
 	child->set_name(name);
 

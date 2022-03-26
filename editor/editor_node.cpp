@@ -2458,6 +2458,16 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 					case SCENE_NAME_CASING_SNAKE_CASE:
 						root_name = root_name.capitalize().replace(" ", "").replace("-", "_").camelcase_to_underscore();
 						break;
+					// GOBLIN ENGINE more cases
+					case Node::NAME_CASING_UPPER_SNAKE_CASE:
+						root_name = root_name.capitalize().replace(" ", "").replace("-", "_").camelcase_to_underscore().to_upper();
+						break;
+					case Node::NAME_CASING_KEBAB_CASE:
+						root_name = root_name.capitalize().replace(" ", "").camelcase_to_underscore();
+						break;
+					case Node::NAME_CASING_UPPER_KEBAB_CASE:
+						root_name = root_name.capitalize().replace(" ", "").camelcase_to_underscore().to_upper();
+						break;
 				}
 				file->set_current_path(root_name + "." + extensions.front()->get().to_lower());
 			}

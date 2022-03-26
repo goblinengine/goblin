@@ -1098,6 +1098,16 @@ void Node::_generate_serial_child_name(const Node *p_child, StringName &name) co
 			case NAME_CASING_SNAKE_CASE:
 				name = String(name).camelcase_to_underscore(true);
 				break;
+			// GOBLIN ENGINE more cases
+			case Node::NAME_CASING_UPPER_SNAKE_CASE:
+				name = String(name).camelcase_to_underscore(false).to_upper();
+				break;
+			case Node::NAME_CASING_KEBAB_CASE:
+				name = String(name).camelcase_to_underscore(true).replace("_", "-");
+				break;
+			case Node::NAME_CASING_UPPER_KEBAB_CASE:
+				name = String(name).camelcase_to_underscore(false).replace("_", "-").to_upper();
+				break;
 		}
 	}
 
@@ -2797,7 +2807,8 @@ void Node::_bind_methods() {
 	GLOBAL_DEF("node/name_num_separator", 0);
 	ProjectSettings::get_singleton()->set_custom_property_info("node/name_num_separator", PropertyInfo(Variant::INT, "node/name_num_separator", PROPERTY_HINT_ENUM, "None,Space,Underscore,Dash"));
 	GLOBAL_DEF("node/name_casing", NAME_CASING_SNAKE_CASE); // GOBLIN ENGINE default to snake_case
-	ProjectSettings::get_singleton()->set_custom_property_info("node/name_casing", PropertyInfo(Variant::INT, "node/name_casing", PROPERTY_HINT_ENUM, "PascalCase,camelCase,snake_case"));
+	// GOBLIN ENGINE more cases
+	ProjectSettings::get_singleton()->set_custom_property_info("node/name_casing", PropertyInfo(Variant::INT, "node/name_casing", PROPERTY_HINT_ENUM, "PascalCase,camelCase,snake_case,SNAKE_CASE,kebab-case,KEBAB-CASE"));
 
 	ClassDB::bind_method(D_METHOD("add_child_below_node", "node", "child_node", "legible_unique_name"), &Node::add_child_below_node, DEFVAL(false));
 

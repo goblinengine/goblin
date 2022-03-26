@@ -213,6 +213,16 @@ Variant GDScript::_new_add(const Variant **p_args, int p_argcount, Variant::Call
 		case Node::NAME_CASING_SNAKE_CASE:
 			name = name.capitalize().replace(" ", "_").to_lower();
 			break;
+		// GOBLIN ENGINE more cases
+		case Node::NAME_CASING_UPPER_SNAKE_CASE:
+			name = name.capitalize().replace(" ", "_").to_upper();
+			break;
+		case Node::NAME_CASING_KEBAB_CASE:
+			name = name.capitalize().replace(" ", "-").to_lower();
+			break;
+		case Node::NAME_CASING_UPPER_KEBAB_CASE:
+			name = name.capitalize().replace(" ", "-").to_upper();
+			break;
 	}
 	s->set_name(name);
 
