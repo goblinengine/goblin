@@ -5,6 +5,7 @@
 
 ### Additions
 
+- Added `remove_children()` function to nodes which removes all children automatically
 - Added UPPER_SNAKE_CASE, kebab-case, UPPER-KEBAB-CASE to Node Name Casing in Project Settings.
 - Added [Voxelman](https://github.com/Relintai/voxelman) and [Thread pool](https://github.com/Relintai/thread_pool) modules by [Relintai](https://github.com/Relintai). The docs still require a bit of cleanup.
 - Added `tightness` to `AudioStreamPlayer3D` which controls how tight the sound playing encloses the player. Based on an unmerged 4.0 pr found [here](https://github.com/godotengine/godot/pull/42358).
@@ -37,6 +38,7 @@
 
 ### Changes
 
+- AssetLib is now cleared when changing repo
 - Goblin Output console now supports BBCode straight from `print()` functions. This allows for colorized text output, url, images and much more. Note that image tags do read from drive so be weary. Additionally urls such as `https://` or `res://` or c++ source code now are clickable which will either open the file if internal resource or will ask the OS to open them if external. This was inspired by two not yet approved prs found [here](https://github.com/godotengine/godot/pull/57896) and [here](https://github.com/godotengine/godot/pull/33541).
 - Implemented the hacky low processor flicker fix from (this pr)[https://github.com/godotengine/godot/pull/55604]. A better fix may end up being implement but for now this works okay.
 - Implemented custom Godot types in JSON adapting [this](https://github.com/godotengine/godot/pull/33241) rejected pr. All unsupported types will turn into their string equivalent for example Vector2(1,1) will be saved as "Vector2( 1, 1 )" which is parsed back into a Vector2. However, since JSON only has a number type, ints will still be converted to floats. 
