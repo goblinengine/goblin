@@ -74,6 +74,13 @@ void EditorLog::_notification(int p_what) {
 	}
 }
 
+// GOBLIN ENGINE verbose toggle
+void EditorLog::_toggle_verbose() {
+	EditorNode::get_log()->add_message(verbosebutton->is_pressed() == true ? "verbose on" : "verbose off", EditorLog::MSG_TYPE_EDITOR);
+	ProjectSettings::get_singleton()->set("debug/settings/stdout/verbose_stdout", verbosebutton->is_pressed());
+	ProjectSettings::get_singleton()->save();
+}
+
 void EditorLog::_clear_request() {
 	log->clear();
 	tool_button->set_icon(Ref<Texture>());
@@ -142,6 +149,7 @@ void EditorLog::_undo_redo_cbk(void *p_self, const String &p_name) {
 }
 
 void EditorLog::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("_toggle_verbose"), &EditorLog::_toggle_verbose);  // GOBLIN ENGINE verbose toggle
 	ClassDB::bind_method(D_METHOD("_clear_request"), &EditorLog::_clear_request);
 	ClassDB::bind_method(D_METHOD("_copy_request"), &EditorLog::_copy_request);
 	ClassDB::bind_method(D_METHOD("_meta_clicked"), &EditorLog::_meta_clicked); // GOBLIN ENGINE bbcode log
@@ -159,6 +167,14 @@ EditorLog::EditorLog() {
 	title->set_h_size_flags(SIZE_EXPAND_FILL);
 	hb->add_child(title);
 
+ 	// GOBLIN ENGINE verbose toggle
+	verbosebutton = memnew(CheckButton);
+	hb->add_child(verbosebutton);
+	verbosebutton->set_text(TTR("Verbose"));
+	verbosebutton->set_shortcut(ED_SHORTCUT("editor/toggle_verbose", TTR("Toggle Verbose"), KEY_MASK_CMD | KEY_M));
+	verbosebutton->connect("pressed", this, "_toggle_verbose");
+	verbosebutton->set_pressed(GLOBAL_GET("debug/settings/stdout/verbose_stdout"));
+	
 	copybutton = memnew(Button);
 	hb->add_child(copybutton);
 	copybutton->set_text(TTR("Copy"));
@@ -168,7 +184,7 @@ EditorLog::EditorLog() {
 	clearbutton = memnew(Button);
 	hb->add_child(clearbutton);
 	clearbutton->set_text(TTR("Clear"));
-	clearbutton->set_shortcut(ED_SHORTCUT("editor/clear_output", TTR("Clear Output"), KEY_MASK_CMD | KEY_MASK_SHIFT | KEY_K));
+	clearbutton->set_shortcut(ED_SHORTCUT("editor/clear_output", TTR("Clear Output"), KEY_MASK_CMD | KEY_K)); // GOBLIN ENGINE change clear shortcut
 	clearbutton->connect("pressed", this, "_clear_request");
 
 	log = memnew(RichTextLabel);

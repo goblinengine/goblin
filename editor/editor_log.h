@@ -42,10 +42,12 @@
 #include "scene/gui/panel_container.h"
 #include "scene/gui/texture_rect.h"
 #include "scene/gui/tool_button.h"
+#include "scene/gui/check_button.h"  // GOBLIN ENGINE verbose toggle
 
 class EditorLog : public VBoxContainer {
 	GDCLASS(EditorLog, VBoxContainer);
 
+	CheckButton *verbosebutton;  // GOBLIN ENGINE verbose toggle
 	Button *clearbutton;
 	Button *copybutton;
 	Label *title;
@@ -61,6 +63,7 @@ class EditorLog : public VBoxContainer {
 	Thread::ID current;
 
 	//void _dragged(const Point2& p_ofs);
+	void _toggle_verbose(); // GOBLIN ENGINE verbose toggle
 	void _clear_request();
 	void _copy_request();
 	static void _undo_redo_cbk(void *p_self, const String &p_name);
