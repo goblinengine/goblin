@@ -5,8 +5,8 @@
 
 ### Additions
 
-- Added `remove_children()` function to nodes which removes all children automatically
-- Added UPPER_SNAKE_CASE, kebab-case, UPPER-KEBAB-CASE to Node Name Casing in Project Settings.
+- Added `remove_children()` function to nodes which removes all children of a node
+- Added `UPPER_SNAKE_CASE, kebab-case, UPPER-KEBAB-CASE` to Node Name Casing in Project Settings.
 - Added [Voxelman](https://github.com/Relintai/voxelman) and [Thread pool](https://github.com/Relintai/thread_pool) modules by [Relintai](https://github.com/Relintai). The docs still require a bit of cleanup.
 - Added `tightness` to `AudioStreamPlayer3D` which controls how tight the sound playing encloses the player. Based on an unmerged 4.0 pr found [here](https://github.com/godotengine/godot/pull/42358).
 - Implemented `Array` variant `for_each(obj, "function")` function which calls a function for each element of the array. The function can be any name but must have only 1 parameter to pass each element to. This is slighty faster than a for loop with 1 function and much faster than using `call()` in a for loop. Every function inside a for loop will slow down the loop by x6 where as using `call()` slows down by x14 and the effect is **cummulative!**. The idea is to use only 1 function per element to make looping faster.
@@ -38,8 +38,9 @@
 
 ### Changes
 
+- ScriptEditor Run is now set to F4 by default and will now automatically open the Output panel and prints a message at the start of a run (so you can differentiate it from previous runs)
 - AssetLib is now cleared when changing repo
-- Goblin Output console now supports BBCode straight from `print()` functions. This allows for colorized text output, url, images and much more. Note that image tags do read from drive so be weary. Additionally urls such as `https://` or `res://` or c++ source code now are clickable which will either open the file if internal resource or will ask the OS to open them if external. This was inspired by two not yet approved prs found [here](https://github.com/godotengine/godot/pull/57896) and [here](https://github.com/godotengine/godot/pull/33541).
+- Goblin Output console now supports BBCode straight from `print()` functions. This allows for colorized text output, url, images and much more. Note that image tags do read from drive so be weary. Additionally urls such as `https://` or `res://` or c++ source code now are clickable which will either open the file if internal resource or will ask the OS to open them if external. This was inspired by two not yet approved prs found [here](https://github.com/godotengine/godot/pull/57896) and [here](https://github.com/godotengine/godot/pull/33541). BBCode is removed using RegEx from console output (it actually removes anything that matches `[a-z0-9=#./]` but only in the console). 
 - Implemented the hacky low processor flicker fix from (this pr)[https://github.com/godotengine/godot/pull/55604]. A better fix may end up being implement but for now this works okay.
 - Implemented custom Godot types in JSON adapting [this](https://github.com/godotengine/godot/pull/33241) rejected pr. All unsupported types will turn into their string equivalent for example Vector2(1,1) will be saved as "Vector2( 1, 1 )" which is parsed back into a Vector2. However, since JSON only has a number type, ints will still be converted to floats. 
 - Imported 3D scenes are disabled from saving to a scene to avoid errors. From [this pr](https://github.com/godotengine/godot/pull/42367).
@@ -50,18 +51,17 @@
 - TSCN Text Scenes (tscn) are now converted to binary scn upon export. Optionally via `"filesystem/on_save/compress_binary_resources"`. This did not work previously. Adapted from a pr found [here](https://github.com/godotengine/godot/pull/51096).
 - OS.execute() has been changed on Windows to use CMD.exe by default so that it behaves similar to other operating systems. This change was also added to Script Editor Plugin when opening external editors. OS.execute is poorly implemented on Windows and causes some internal commands to not work properly. I suspect the reason exported icons never change is because it fails running rcedit.
 - Fixed Signed Distance Field for Bitmap Fonts. This has been an open issue in Godot 3 since 2018 see [this post](https://github.com/godotengine/godot/issues/8022). It has been fixed in Godot 4 but not in 3. Had to completely re-implement it in GLES2 based on older Godot 2.1 code, fix it for GLES3 and manually add it to some of the controls. Before it only worked for Label and only in GLES3 and that's it. Now it works in GLES2 and GLES3 but only for the specific controls. The controls which have it enabled are Button, Label, RichTextLabel, OptionButton, ItemList, ProgressBar, LineEdit, Tabs and any control that extends or implements those controls.
-- ViewportTexture now calls updating deferred removing all the missing Viewport spam.
+- ViewportTexture now calls updating deferred removing all the missing Viewport spam
 - Layer buttons now have the option to remove the text label making them smaller. The option is found in Editor setting under `interface/inspector/layer_labels`
 - Clarified `AudioEffectCapture`and `hseparation``Tab` property docs
 - Editor boot splash background color is gray and default boot splash background color is black. Boot splash logo is now disabled by default (upstream 3.x Godot change). Can be enabled with `boot_splash_logo=yes`.
-- GDScript Plugins will now fallf back to X11 if no Server plugins found. This may fail if Server is not on Linux.
+- GDScript Plugins will now fallback to X11 if no Server plugins found. This may fail if Server is not on Linux.
 - When selecting an option from OptionButton it now selects the correct index (rather than showing -1)
 - Docs properties and methods are grouped alphabetically making it easier to find things
-- Inspector default small reload button is now a small star instead which is less intrusive than the original circular arrow button.
-- FileDialog now hides `.import` folder.
+- Inspector default small reload button is now a small star instead which is less intrusive than the original circular arrow button
+- FileDialog now hides the `.import` folder
 - Node names and File Dialogue file name will use `snake_case` by default rather than `camelCase` or `CamelCase` as it did previously. This lines up with the official intent for Godot to use snake_case everywhere by default (mentioned all over the documents).
 - The default environment will use Background Color instead of Procedural Sky which appears to cause crashes when starting the editor on systems that only support GLES2
-- EditorSpinSlider `hide_slide` exported for plugins
 - The workflows have been altered:
     * Editor + template are now created for Linux X11, Windows, MacOS
     * All Linux builds automatically strip the debug symbols now
@@ -69,7 +69,7 @@
     * All builds use llvm 
     * Mono test builds have been removed. Goblin will not provide mono builds. Mono should work is just too much trouble to focus both on regular and Mono. Goblin aims to stay lightweight and flexible focusing primarily on GDScript and GDNative. Other languages via GDNative should work fine.
     * All static checks have been removed as they were a nuissance
-    * SQLite builds automatically on Linux server and headless (and will eventualy be also included in the editor builds)
+    * SQLite builds automatically on Linux server and headless and Editor builds
 - Editor's auto scaling option now suggests scaling relative to 96 dpi (which is usually the recommended safe dpi).
 - Script debugger now points to Goblin Engine source in the debugger (as the commit hashes for Goblin are different and original source and no longer lines up)
 - Expose Bullet smooth trimesh collision settings based on a pr found [here](https://github.com/AndreaCatania/godot/commit/2b67feb49cbe32935b53f909f0a8b4f1ec980b17). May cause lag.
