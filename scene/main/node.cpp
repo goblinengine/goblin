@@ -1280,6 +1280,15 @@ void Node::remove_child(Node *p_child) {
 	p_child->_propagate_after_exit_branch(data.inside_tree);
 }
 
+// GOBLIN ENGINE remove children
+void Node::remove_children() {
+	int child_count = data.children.size();
+	Node **children = data.children.ptrw();	
+	for (int i = 0; i < data.children.size(); i++) {
+		children[i]->queue_delete();
+	}	
+}
+
 int Node::get_child_count() const {
 	return data.children.size();
 }
@@ -2816,6 +2825,7 @@ void Node::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_name"), &Node::get_name);
 	ClassDB::bind_method(D_METHOD("add_child", "node", "legible_unique_name"), &Node::add_child, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("remove_child", "node"), &Node::remove_child);
+	ClassDB::bind_method(D_METHOD("remove_children"), &Node::remove_children); // GOBLIN ENGINE remove children
 	ClassDB::bind_method(D_METHOD("get_child_count"), &Node::get_child_count);
 	ClassDB::bind_method(D_METHOD("get_children"), &Node::_get_children);
 	ClassDB::bind_method(D_METHOD("get_child", "idx"), &Node::get_child);
