@@ -50,6 +50,7 @@
 #include "scene/scene_string_names.h"
 #include "script_text_editor.h"
 #include "text_editor.h"
+#include "editor/editor_log.h"
 
 /*** SCRIPT EDITOR ****/
 
@@ -1183,6 +1184,12 @@ void ScriptEditor::_menu_option(int p_option) {
 				Ref<EditorScript> es = memnew(EditorScript);
 				es->set_script(scr.get_ref_ptr());
 				es->set_editor(EditorNode::get_singleton());
+				
+				// GOBLIN ENGINE run script show log
+				EditorLog *log = EditorNode::get_singleton()->get_log();
+				// log->clear();
+				log->add_message("--- Running Script ---", EditorLog::MSG_TYPE_EDITOR);
+				EditorNode::get_singleton()->make_bottom_panel_item_visible(log);
 
 				es->_run();
 
@@ -3472,7 +3479,7 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/close_docs", TTR("Close Docs")), CLOSE_DOCS);
 
 	file_menu->get_popup()->add_separator();
-	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/run_file", TTR("Run"), KEY_MASK_CMD | KEY_MASK_SHIFT | KEY_X), FILE_RUN);
+	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/run_file", TTR("Run"), KEY_F4), FILE_RUN); // GOBLIN ENGINE run script on F4
 
 	file_menu->get_popup()->add_separator();
 	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/toggle_scripts_panel", TTR("Toggle Scripts Panel"), KEY_MASK_CMD | KEY_BACKSLASH), TOGGLE_SCRIPTS_PANEL);
