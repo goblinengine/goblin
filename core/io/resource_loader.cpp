@@ -372,7 +372,7 @@ RES ResourceLoader::load(const String &p_path, const String &p_type_hint, bool p
 		ERR_FAIL_V_MSG(RES(), "Remapping '" + local_path + "' failed.");
 	}
 
-	print_verbose("Loading resource: " + path);
+	print_verbose("Loading resource: [url]" + path + "[/url]"); // GOBLIN ENGINE bbcode url
 	RES res = _load(path, local_path, p_type_hint, p_no_cache, r_error);
 
 	if (res.is_null()) {
@@ -476,7 +476,7 @@ Ref<ResourceInteractiveLoader> ResourceLoader::load_interactive(const String &p_
 		ERR_FAIL_V_MSG(RES(), "Remapping '" + local_path + "' failed.");
 	}
 
-	print_verbose("Loading resource: " + path);
+	print_verbose("Loading resource: [url]" + path + "[/url]"); // GOBLIN ENGINE bbcode url
 
 	bool found = false;
 	for (int i = 0; i < loader_count; i++) {
