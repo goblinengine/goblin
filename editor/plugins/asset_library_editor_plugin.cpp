@@ -891,6 +891,10 @@ void EditorAssetLibrary::_request_image(ObjectID p_for, String p_image_url, Imag
 }
 
 void EditorAssetLibrary::_repository_changed(int p_repository_id) {
+	// GOBLIN ENGINE clear asset lib when changing repo
+	asset_items->remove_children();
+	asset_top_page->remove_children();
+	asset_bottom_page->remove_children();
 	host = repository->get_item_metadata(p_repository_id);
 	if (templates_only) {
 		_api_request("configure", REQUESTING_CONFIG, "?type=project");
