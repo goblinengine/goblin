@@ -32,6 +32,12 @@
 
 #include "core/os/os.h"
 
+// GOBLIN remove bbcode tags from console
+#include "modules/modules_enabled.gen.h" // for regex
+#ifdef MODULE_REGEX_ENABLED
+#include "modules/regex/regex.h"
+#endif // MODULE_REGEX_ENABLED
+
 #include <stdio.h>
 
 static PrintHandlerList *print_handler_list = nullptr;
@@ -74,7 +80,14 @@ void print_line(String p_string) {
 		return;
 	}
 
-	OS::get_singleton()->print("%s\n", p_string.utf8().get_data());
+	// GOBLIN remove bbcode tags from console
+	String s = p_string;
+#ifdef MODULE_REGEX_ENABLED
+	RegEx re("(\\[[a-z0-9=#/.]*])");
+	s = re.sub(p_string, "", true);
+#endif // MODULE_REGEX_ENABLED
+
+	OS::get_singleton()->print("%s\n", s.utf8().get_data());
 
 	_global_lock();
 	PrintHandlerList *l = print_handler_list;
@@ -91,7 +104,14 @@ void print_error(String p_string) {
 		return;
 	}
 
-	OS::get_singleton()->printerr("%s\n", p_string.utf8().get_data());
+	// GOBLIN remove bbcode tags from console
+	String s = p_string;
+#ifdef MODULE_REGEX_ENABLED
+	RegEx re("(\\[[a-z0-9=#/.]*])");
+	s = re.sub(p_string, "", true);
+#endif // MODULE_REGEX_ENABLED
+
+	OS::get_singleton()->printerr("%s\n", s.utf8().get_data());
 
 	_global_lock();
 	PrintHandlerList *l = print_handler_list;
