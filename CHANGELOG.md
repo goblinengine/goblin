@@ -38,6 +38,7 @@
 
 ### Changes
 
+- Output panel now has a verbose toggle
 - ScriptEditor Run is now set to F4 by default and will now automatically open the Output panel and prints a message at the start of a run (so you can differentiate it from previous runs)
 - AssetLib is now cleared when changing repo
 - Goblin Output console now supports BBCode straight from `print()` functions. This allows for colorized text output, url, images and much more. Note that image tags do read from drive so be weary. Additionally urls such as `https://` or `res://` or c++ source code now are clickable which will either open the file if internal resource or will ask the OS to open them if external. This was inspired by two not yet approved prs found [here](https://github.com/godotengine/godot/pull/57896) and [here](https://github.com/godotengine/godot/pull/33541). BBCode is removed using RegEx from console output (it actually removes anything that matches `[a-z0-9=#./]` but only in the console). 

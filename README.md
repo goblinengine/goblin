@@ -36,8 +36,9 @@ All editor builds use [thin LTO](http://blog.llvm.org/2016/06/thinlto-scalable-a
 
 Goblin will not provide any Mono builds since the goal is to keep the engine lean and compact. The focus is primarily on GDScript and GDNative ecosystem. 
 
-
 ## Community and contributing
+
+Discord server: https://discord.gg/erpDN9yUxN
 
 There is no community as of yet but PRs welcome. There are a number of features that I am still looking to add: 
 - Optimize engine size and speed
