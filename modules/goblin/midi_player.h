@@ -46,18 +46,18 @@ protected:
 	static void _bind_methods();
 
 public:
-	enum Format { //this format stuff doesn't work yet (will come back to it later)
-		FORMAT_MIDI = 0,
+	enum Format {
+		FORMAT_MIDI,
 		FORMAT_SF2,
 	};
 
 	// set default format
-	int format = FORMAT_MIDI; 
+	Format format = FORMAT_MIDI; 
 
 	Error load(const String fileName);
 	
-	void set_format(int f) { format = f; }
-	int get_format() const { return format; }
+	void set_format(Format f) { format = f; }
+	Format get_format() const { return format; }
 
 	void set_data(const PoolVector<uint8_t> &p_data);
 	PoolVector<uint8_t> get_data() const;
@@ -66,7 +66,7 @@ public:
 	~MidiFile() {};
 };
 
-MAKE_ENUM_TYPE_INFO(MidiFile::Format);
+VARIANT_ENUM_CAST(MidiFile::Format);
 
 
 // MIDIFILE IMPORTER
