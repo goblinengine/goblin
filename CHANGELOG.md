@@ -38,6 +38,7 @@
 
 ### Changes
 
+- I updated the Windows .ico to fixed/uncompressed size in accordance to main repo PR [5e5154e](https://github.com/godotengine/godot/commit/5e5154e5b9756c6c9ac68efda6bcf65731ebe8d2). See (this project)[https://github.com/pkowal1982/godoticon] on scripts how to create and upadte the icon to avoid the rcedit and other issues. This may end up being integrated into the exporter. 
 - Output panel now has a verbose toggle
 - ScriptEditor Run is now set to F4 by default and will now automatically open the Output panel and prints a message at the start of a run (so you can differentiate it from previous runs)
 - AssetLib is now cleared when changing repo
