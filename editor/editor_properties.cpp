@@ -800,8 +800,8 @@ public:
 				if (!EDITOR_GET("interface/inspector/layer_labels")) {
 					scale = 3;
 				}
-				
-				const int bsize = (grid_size.height * 80 / 100) / scale;
+		
+				const int bsize = (grid_size.height * 80 / 100) / scale;				
 				const int h = bsize * 2 + 1;
 
 				Color color = get_color("highlight_color", "Editor");
@@ -840,19 +840,19 @@ public:
 
 							// GOBLIN ENGINE layer labels editor setting
 							if (EDITOR_GET("interface/inspector/layer_labels")) {
-							Ref<Font> font = get_font("font", "Label");
-							Vector2 offset;
-							if (layer_index + 1 > 9) {
-								// Offset for double digit numbers.
-								offset.x = rect2.size.x * 0.1;
-							} else {
-								offset.x = rect2.size.x * 0.3;
-							}
-							offset.y = rect2.size.y * 0.75;
+								Ref<Font> font = get_font("font", "Label");
+								Vector2 offset;
+								if (layer_index + 1 > 9) {
+									// Offset for double digit numbers.
+									offset.x = rect2.size.x * 0.1;
+								} else {
+									offset.x = rect2.size.x * 0.3;
+								}
+								offset.y = rect2.size.y * 0.75;
 
-							draw_string(font, rect2.position + offset, itos(layer_index + 1), on ? text_color_on : text_color);
-						}
-						
+								draw_string(font, rect2.position + offset, itos(layer_index + 1), on ? text_color_on : text_color);
+							}
+
 							ofs.x += bsize + 1;
 
 							++layer_index;
@@ -2615,7 +2615,7 @@ void EditorPropertyResource::update_property() {
 				sub_inspector->set_use_doc_hints(true);
 
 				sub_inspector->set_sub_inspector(true);
-				sub_inspector->set_enable_capitalize_paths(bool(EDITOR_GET("interface/inspector/capitalize_properties")));
+				sub_inspector->set_property_name_style(EditorNode::get_singleton()->get_inspector_dock()->get_property_name_style());
 
 				sub_inspector->connect("property_keyed", this, "_sub_inspector_property_keyed");
 				sub_inspector->connect("resource_selected", this, "_sub_inspector_resource_selected");

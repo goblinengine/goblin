@@ -2152,7 +2152,7 @@ bool Main::start() {
 uint64_t Main::last_ticks = 0;
 uint32_t Main::frames = 0;
 uint32_t Main::frame = 0;
-uint32_t Main::force_redraw_frames = 0; // GOBLIN ENGINE low processor flicker
+bool Main::force_redraw_requested = false;
 int Main::iterating = 0;
 bool Main::agile_input_event_flushing = false;
 
@@ -2213,8 +2213,6 @@ bool Main::iteration() {
 	uint64_t physics_process_ticks = 0;
 	uint64_t idle_process_ticks = 0;
 	uint64_t visual_process_ticks = 0;  // GOBLIN ENGINE visual time in profiler 
-
-	bool draw = false;  // GOBLIN ENGINE low processor flicker
 
 	frame += ticks_elapsed;
 
@@ -2282,26 +2280,24 @@ bool Main::iteration() {
 	VisualServer::get_singleton()->sync(); //sync if still drawing from previous frames.
 
 	if (OS::get_singleton()->can_draw() && VisualServer::get_singleton()->is_render_loop_enabled()) {
- 		// GOBLIN ENGINE low processor flicker
-		draw = true;
-		if (OS::get_singleton()->is_in_low_processor_usage_mode()) {
-			if (VisualServer::get_singleton()->has_changed()) {
-				draw = true;
-#ifdef ANDROID_ENABLED
-				// On Android in low_processor_usage_mode there can be horrible flickering when it stops drawing
-				// Fix by force drawing 2 more frames after last changed frame.
-				force_redraw_frames = 3; // needs to be 3 to draw 2 more after this frame
-#endif
-			} else {
-				draw = false;
-			}
-		}
+		if ((!force_redraw_requested) && OS::get_singleton()->is_in_low_processor_usage_mode()) {
+			// We can choose whether to redraw as a result of any redraw request, or redraw only for vital requests.
+			VisualServer::ChangedPriority priority = (OS::get_singleton()->is_update_pending() ? VisualServer::CHANGED_PRIORITY_ANY : VisualServer::CHANGED_PRIORITY_HIGH);
 
-		if (draw || force_redraw_frames > 0) {
+			// Determine whether the scene has changed, to know whether to draw.
+			// If it has changed, inform the update pending system so it can keep
+			// particle systems etc updating when running in vital updates only mode.
+			bool has_changed = VisualServer::get_singleton()->has_changed(priority);
+			OS::get_singleton()->set_update_pending(has_changed);
+
+			if (has_changed) {
+				VisualServer::get_singleton()->draw(true, scaled_step); // flush visual commands
+				Engine::get_singleton()->frames_drawn++;
+			}
+		} else {
 			VisualServer::get_singleton()->draw(true, scaled_step); // flush visual commands
 			Engine::get_singleton()->frames_drawn++;
-			if (force_redraw_frames > 0)
-				force_redraw_frames--;
+			force_redraw_requested = false;
 		}
 	}
 
@@ -2389,10 +2385,8 @@ bool Main::iteration() {
 	return exit || auto_quit;
 }
 
- // GOBLIN ENGINE low processor flicker
- // https://github.com/godotengine/godot/pull/55604
-void Main::force_redraw(uint32_t frames) {
-	force_redraw_frames = frames;
+void Main::force_redraw() {
+	force_redraw_requested = true;
 }
 
 /* Engine deinitialization

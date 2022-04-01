@@ -984,7 +984,7 @@ HBoxContainer *EditorAssetLibrary::_make_pages(int p_page, int p_page_count, int
 	hbc->add_constant_override("separation", 5 * EDSCALE);
 
 	Button *first = memnew(Button);
-	first->set_text(TTR("First"));
+	first->set_text(TTR("First", "Pagination"));
 	if (p_page != 0) {
 		first->connect("pressed", this, "_search", varray(0));
 	} else {
@@ -994,7 +994,7 @@ HBoxContainer *EditorAssetLibrary::_make_pages(int p_page, int p_page_count, int
 	hbc->add_child(first);
 
 	Button *prev = memnew(Button);
-	prev->set_text(TTR("Previous"));
+	prev->set_text(TTR("Previous", "Pagination"));
 	if (p_page > 0) {
 		prev->connect("pressed", this, "_search", varray(p_page - 1));
 	} else {
@@ -1024,7 +1024,7 @@ HBoxContainer *EditorAssetLibrary::_make_pages(int p_page, int p_page_count, int
 	}
 
 	Button *next = memnew(Button);
-	next->set_text(TTR("Next"));
+	next->set_text(TTR("Next", "Pagination"));
 	if (p_page < p_page_count - 1) {
 		next->connect("pressed", this, "_search", varray(p_page + 1));
 	} else {
@@ -1035,7 +1035,7 @@ HBoxContainer *EditorAssetLibrary::_make_pages(int p_page, int p_page_count, int
 	hbc->add_child(next);
 
 	Button *last = memnew(Button);
-	last->set_text(TTR("Last"));
+	last->set_text(TTR("Last", "Pagination"));
 	if (p_page != p_page_count - 1) {
 		last->connect("pressed", this, "_search", varray(p_page_count - 1));
 	} else {

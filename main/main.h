@@ -40,7 +40,7 @@ class Main {
 	static uint64_t last_ticks;
 	static uint32_t frames;
 	static uint32_t frame;
-	static uint32_t force_redraw_frames;  // GOBLIN ENGINE low processor flicker
+	static bool force_redraw_requested;
 	static int iterating;
 	static bool agile_input_event_flushing;
 
@@ -52,7 +52,7 @@ public:
 	static bool start();
 
 	static bool iteration();
-	static void force_redraw(uint32_t frames = 1);  // GOBLIN ENGINE low processor flicker
+	static void force_redraw();
 
 	static bool is_iterating();
 
