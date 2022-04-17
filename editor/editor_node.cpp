@@ -622,9 +622,9 @@ void EditorNode::_notification(int p_what) {
 			PopupMenu *p = help_menu->get_popup();
 			p->set_item_icon(p->get_item_index(HELP_SEARCH), gui_base->get_icon("HelpSearch", "EditorIcons"));
 			p->set_item_icon(p->get_item_index(HELP_DOCS), gui_base->get_icon("Instance", "EditorIcons"));
-			// GOBLIN EDITOR hide about
+			// GOBLIN ENGINE hide about
 			p->set_item_icon(p->get_item_index(HELP_ABOUT), gui_base->get_icon("Godot", "EditorIcons"));
-			// GOBLIN EDITOR hide about
+			// GOBLIN ENGINE hide about
 
 			_update_update_spinner();
 		} break;
@@ -6568,10 +6568,10 @@ EditorNode::EditorNode() {
 #endif
 	p->add_separator();
 	p->add_icon_shortcut(gui_base->get_icon("Instance", "EditorIcons"), ED_SHORTCUT("editor/online_docs", TTR("Online Documentation")), HELP_DOCS);
-	// GOBLIN EDITOR hide about
+	// GOBLIN ENGINE hide about
 	p->add_separator();
 	p->add_icon_shortcut(gui_base->get_icon("Godot", "EditorIcons"), ED_SHORTCUT("editor/about", TTR("About Godot")), HELP_ABOUT);
-	// GOBLIN EDITOR hide about
+	// GOBLIN ENGINE hide about
 
 	HBoxContainer *play_hb = memnew(HBoxContainer);
 	menu_hb->add_child(play_hb);

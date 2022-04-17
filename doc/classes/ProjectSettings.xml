@@ -496,7 +496,7 @@
 		</member>
 		<member name="display/window/size/resizable" type="bool" setter="" getter="" default="true">
 			Allows the window to be resizable by default.
-			[b]Note:[/b] This setting is ignored on iOS and Android.
+			[b]Note:[/b] This setting is ignored on iOS.
 		</member>
 		<member name="display/window/size/test_height" type="int" setter="" getter="" default="0">
 			If greater than zero, overrides the window height when running the game. Useful for testing stretch modes.
@@ -904,7 +904,7 @@
 			Optional name for the 3D render layer 13.
 		</member>
 		<member name="layer_names/3d_render/layer_14" type="String" setter="" getter="" default="&quot;&quot;">
-			Optional name for the 3D render layer 14
+			Optional name for the 3D render layer 14.
 		</member>
 		<member name="layer_names/3d_render/layer_15" type="String" setter="" getter="" default="&quot;&quot;">
 			Optional name for the 3D render layer 15.

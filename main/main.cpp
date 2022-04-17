@@ -240,7 +240,8 @@ void finalize_navigation_server() {
 void Main::print_help(const char *p_binary) {
 	print_line(String(VERSION_NAME) + " v" + get_full_version_string() + " - " + String(VERSION_WEBSITE));
 	OS::get_singleton()->print("Free and open source software under the terms of the MIT license.\n");
-	//GODOT ENGINE remove copyright
+	OS::get_singleton()->print("(c) 2007-2022 Juan Linietsky, Ariel Manzur.\n");
+	OS::get_singleton()->print("(c) 2014-2022 Godot Engine contributors.\n");
 	OS::get_singleton()->print("\n");
 	OS::get_singleton()->print("Usage: %s [options] [path to scene or 'project.godot' file]\n", p_binary);
 	OS::get_singleton()->print("\n");
@@ -1901,7 +1902,7 @@ bool Main::start() {
 						Ref<Script> script_res = res;
 						StringName ibt = script_res->get_instance_base_type();
 						bool valid_type = ClassDB::is_parent_class(ibt, "Node");
-						ERR_CONTINUE_MSG(!valid_type, "Script does not inherit a Node: " + path);
+						ERR_CONTINUE_MSG(!valid_type, "Script does not inherit from Node: " + path);
 
 						Object *obj = ClassDB::instance(ibt);
 
@@ -2328,7 +2329,7 @@ bool Main::iteration() {
 			values.push_back("visual_time");
 			values.push_back(USEC_TO_SEC(visual_process_ticks));
 			script_debugger->add_profiling_frame_data("visual", values);
-	
+
 			script_debugger->profiling_set_frame_times(USEC_TO_SEC(frame_time), USEC_TO_SEC(idle_process_ticks), USEC_TO_SEC(physics_process_ticks), frame_slice);
 		}
 		script_debugger->idle_poll();

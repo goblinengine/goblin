@@ -138,16 +138,16 @@ void Button::_notification(int p_what) {
 
 				} break;
 				case DRAW_HOVER: {
-						// GOBLIN ENGINE combine button focus and hover behavior
-						// unify button focus hover mouse/keyboard button behavior
-						if (GLOBAL_GET("gui/theme/unify_button_focus_hover") && get_focus_mode() != FOCUS_NONE) {
-							style = get_stylebox("normal");
-							if (!flat) {
-								style->draw(ci, Rect2(Point2(0, 0), size));
-							}
-							color = get_color("font_color_focus");
-							grab_focus();
-						} else {
+					// GOBLIN ENGINE combine button focus and hover behavior
+					// unify button focus hover mouse/keyboard button behavior
+					if (GLOBAL_GET("gui/theme/unify_button_focus_hover") && get_focus_mode() != FOCUS_NONE) {
+						style = get_stylebox("normal");
+						if (!flat) {
+							style->draw(ci, Rect2(Point2(0, 0), size));
+						}
+						color = get_color("font_color_focus");
+						grab_focus();
+					} else {
 						style = get_stylebox("hover");
 						if (!flat) {
 							style->draw(ci, Rect2(Point2(0, 0), size));
@@ -387,7 +387,7 @@ void Button::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_text_align"), &Button::get_text_align);
 	ClassDB::bind_method(D_METHOD("set_icon_align", "icon_align"), &Button::set_icon_align);
 	ClassDB::bind_method(D_METHOD("get_icon_align"), &Button::get_icon_align);
-	ClassDB::bind_method(D_METHOD("set_expand_icon"), &Button::set_expand_icon);
+	ClassDB::bind_method(D_METHOD("set_expand_icon", "enabled"), &Button::set_expand_icon);
 	ClassDB::bind_method(D_METHOD("is_expand_icon"), &Button::is_expand_icon);
 
 	BIND_ENUM_CONSTANT(ALIGN_LEFT);
