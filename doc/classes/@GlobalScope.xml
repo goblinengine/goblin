@@ -12,6 +12,14 @@
 	<methods>
 	</methods>
 	<members>
+		<!-- GOBLIN ENGINE singletons start -->
+		<member name="ThreadPool" type="ThreadPool" setter="" getter="">
+			The [ThreadPool] singleton.
+		</member>
+			<member name="Rand" type="Reference" setter="" getter="">
+			The [Rand] singleton.
+		</member>
+		<!-- GOBLIN ENGINE singletons end -->
 		<member name="ARVRServer" type="ARVRServer" setter="" getter="">
 			The [ARVRServer] singleton.
 		</member>
