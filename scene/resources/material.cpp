@@ -233,7 +233,7 @@ void ShaderMaterial::_bind_methods() {
 
 void ShaderMaterial::get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const {
 #ifdef TOOLS_ENABLED
-	const String quote_style = EDITOR_DEF("text_editor/completion/use_single_quotes", 0) ? "'" : "\"";
+	const String quote_style = EDITOR_GET("text_editor/completion/use_single_quotes") ? "'" : "\"";
 #else
 	const String quote_style = "\"";
 #endif
@@ -752,6 +752,20 @@ void SpatialMaterial::_update_shader() {
 
 	if ((features[FEATURE_DETAIL] && detail_uv == DETAIL_UV_2) || (features[FEATURE_AMBIENT_OCCLUSION] && flags[FLAG_AO_ON_UV2]) || (features[FEATURE_EMISSION] && flags[FLAG_EMISSION_ON_UV2])) {
 		code += "\tvec2 base_uv2 = UV2;\n";
+	}
+
+	if (features[FEATURE_DEPTH_MAPPING] && flags[FLAG_UV1_USE_TRIPLANAR]) {
+		// Display both resource name and albedo texture name.
+		// Materials are often built-in to scenes, so displaying the resource name alone may not be meaningful.
+		// On the other hand, albedo textures are almost always external to the scene.
+		if (textures[TEXTURE_ALBEDO].is_valid()) {
+			WARN_PRINT(vformat("%s (albedo %s): Depth mapping is not supported on triplanar materials. Ignoring depth mapping in favor of triplanar mapping.", get_path(), textures[TEXTURE_ALBEDO]->get_path()));
+		} else if (!get_path().empty()) {
+			WARN_PRINT(vformat("%s: Depth mapping is not supported on triplanar materials. Ignoring depth mapping in favor of triplanar mapping.", get_path()));
+		} else {
+			// Resource wasn't saved yet.
+			WARN_PRINT("Depth mapping is not supported on triplanar materials. Ignoring depth mapping in favor of triplanar mapping.");
+		}
 	}
 
 	if (!VisualServer::get_singleton()->is_low_end() && features[FEATURE_DEPTH_MAPPING] && !flags[FLAG_UV1_USE_TRIPLANAR]) { //depthmap not supported with triplanar

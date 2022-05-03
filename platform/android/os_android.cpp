@@ -30,6 +30,7 @@
 
 #include "os_android.h"
 
+#include "core/array.h"
 #include "core/project_settings.h"
 #include "drivers/gles2/rasterizer_gles2.h"
 #include "drivers/gles3/rasterizer_gles3.h"
@@ -302,6 +303,10 @@ Rect2 OS_Android::get_window_safe_area() const {
 	return Rect2(xywh[0], xywh[1], xywh[2], xywh[3]);
 }
 
+Array OS_Android::get_display_cutouts() const {
+	return godot_io_java->get_display_cutouts();
+}
+
 String OS_Android::get_name() const {
 	return "Android";
 }
@@ -322,10 +327,11 @@ void OS_Android::main_loop_begin() {
 bool OS_Android::main_loop_iterate(bool *r_should_swap_buffers) {
 	if (!main_loop)
 		return false;
+	uint64_t current_frames_drawn = Engine::get_singleton()->get_frames_drawn();
 	bool exit = Main::iteration();
 
 	if (r_should_swap_buffers) {
-		*r_should_swap_buffers = !is_in_low_processor_usage_mode() || _update_pending;
+		*r_should_swap_buffers = !is_in_low_processor_usage_mode() || _update_pending || current_frames_drawn != Engine::get_singleton()->get_frames_drawn();
 	}
 
 	return exit;

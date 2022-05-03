@@ -117,6 +117,7 @@
 #include "editor/plugins/asset_library_editor_plugin.h"
 #include "editor/plugins/audio_stream_editor_plugin.h"
 #include "editor/plugins/baked_lightmap_editor_plugin.h"
+#include "editor/plugins/bit_map_editor_plugin.h"
 #include "editor/plugins/camera_editor_plugin.h"
 #include "editor/plugins/canvas_item_editor_plugin.h"
 #include "editor/plugins/collision_polygon_2d_editor_plugin.h"
@@ -144,6 +145,7 @@
 #include "editor/plugins/path_editor_plugin.h"
 #include "editor/plugins/physical_bone_plugin.h"
 #include "editor/plugins/polygon_2d_editor_plugin.h"
+#include "editor/plugins/ray_cast_2d_editor_plugin.h"
 #include "editor/plugins/resource_preloader_editor_plugin.h"
 #include "editor/plugins/room_manager_editor_plugin.h"
 #include "editor/plugins/root_motion_editor_plugin.h"
@@ -363,7 +365,7 @@ void EditorNode::_version_control_menu_option(int p_idx) {
 
 void EditorNode::_update_title() {
 	const String appname = ProjectSettings::get_singleton()->get("application/config/name");
-	String title = (appname.empty() ? "Unnamed Project" : appname) + String(" - ") + VERSION_NAME;
+	String title = (appname.empty() ? TTR("Unnamed Project") : appname) + String(" - ") + VERSION_NAME;
 	const String edited = editor_data.get_edited_scene_root() ? editor_data.get_edited_scene_root()->get_filename() : String();
 	if (!edited.empty()) {
 		// Display the edited scene name before the program name so that it can be seen in the OS task bar.
@@ -621,7 +623,7 @@ void EditorNode::_notification(int p_what) {
 
 			PopupMenu *p = help_menu->get_popup();
 			p->set_item_icon(p->get_item_index(HELP_SEARCH), gui_base->get_icon("HelpSearch", "EditorIcons"));
-			p->set_item_icon(p->get_item_index(HELP_DOCS), gui_base->get_icon("Instance", "EditorIcons"));
+			p->set_item_icon(p->get_item_index(HELP_DOCS), gui_base->get_icon("ExternalLink", "EditorIcons"));
 			// GOBLIN ENGINE hide about
 			p->set_item_icon(p->get_item_index(HELP_ABOUT), gui_base->get_icon("Godot", "EditorIcons"));
 			// GOBLIN ENGINE hide about
@@ -4078,25 +4080,29 @@ Ref<Texture> EditorNode::get_class_icon(const String &p_class, const String &p_f
 	ERR_FAIL_COND_V_MSG(p_class.empty(), nullptr, "Class name cannot be empty.");
 
 	if (ScriptServer::is_global_class(p_class)) {
-		Ref<ImageTexture> icon;
-		Ref<Script> script = EditorNode::get_editor_data().script_class_load_script(p_class);
-		StringName name = p_class;
+		String class_name = p_class;
+		Ref<Script> script = EditorNode::get_editor_data().script_class_load_script(class_name);
 
-		while (script.is_valid()) {
-			name = EditorNode::get_editor_data().script_class_get_name(script->get_path());
-			String current_icon_path = EditorNode::get_editor_data().script_class_get_icon_path(name);
-			icon = _load_custom_class_icon(current_icon_path);
+		while (true) {
+			String icon_path = EditorNode::get_editor_data().script_class_get_icon_path(class_name);
+			Ref<Texture> icon = _load_custom_class_icon(icon_path);
 			if (icon.is_valid()) {
-				return icon;
+				return icon; // Current global class has icon.
 			}
-			script = script->get_base_script();
-		}
 
-		if (icon.is_null()) {
-			icon = gui_base->get_icon(ScriptServer::get_global_class_base(name), "EditorIcons");
+			// Find next global class along the inheritance chain.
+			do {
+				Ref<Script> base_script = script->get_base_script();
+				if (base_script.is_null()) {
+					// We've reached a native class, use its icon.
+					String base_type;
+					script->get_language()->get_global_class_name(script->get_path(), &base_type);
+					return gui_base->get_icon(base_type, "EditorIcons");
+				}
+				script = base_script;
+				class_name = EditorNode::get_editor_data().script_class_get_name(script->get_path());
+			} while (class_name.empty());
 		}
-
-		return icon;
 	}
 
 	const Map<String, Vector<EditorData::CustomType>> &p_map = EditorNode::get_editor_data().get_custom_types();
@@ -6014,7 +6020,6 @@ EditorNode::EditorNode() {
 	EDITOR_DEF("run/output/always_clear_output_on_play", true);
 	EDITOR_DEF("run/output/always_open_output_on_play", true);
 	EDITOR_DEF("run/output/always_close_output_on_stop", true);
-	EDITOR_DEF("run/auto_save/save_before_running", true);
 	EDITOR_DEF("interface/editor/save_on_focus_loss", false);
 	EDITOR_DEF_RST("interface/editor/save_each_scene_on_quit", true);
 	EDITOR_DEF("interface/editor/quit_confirmation", true);
@@ -6037,7 +6042,6 @@ EditorNode::EditorNode() {
 	EDITOR_DEF("interface/inspector/resources_to_open_in_new_inspector", "Script,MeshLibrary,TileSet");
 	EDITOR_DEF("interface/inspector/default_color_picker_mode", 0);
 	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::INT, "interface/inspector/default_color_picker_mode", PROPERTY_HINT_ENUM, "RGB,HSV,RAW", PROPERTY_USAGE_DEFAULT));
-	EDITOR_DEF("run/auto_save/save_before_running", true);
 	EDITOR_DEF("version_control/username", "");
 	EDITOR_DEF("version_control/ssh_public_key_path", "");
 	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::STRING, "version_control/ssh_public_key_path", PROPERTY_HINT_GLOBAL_FILE));
@@ -6567,7 +6571,7 @@ EditorNode::EditorNode() {
 	p->add_icon_shortcut(gui_base->get_icon("HelpSearch", "EditorIcons"), ED_SHORTCUT("editor/editor_help", TTR("Search Help"), KEY_F1), HELP_SEARCH);
 #endif
 	p->add_separator();
-	p->add_icon_shortcut(gui_base->get_icon("Instance", "EditorIcons"), ED_SHORTCUT("editor/online_docs", TTR("Online Documentation")), HELP_DOCS);
+	p->add_icon_shortcut(gui_base->get_icon("ExternalLink", "EditorIcons"), ED_SHORTCUT("editor/online_docs", TTR("Online Documentation")), HELP_DOCS);
 	// GOBLIN ENGINE hide about
 	p->add_separator();
 	p->add_icon_shortcut(gui_base->get_icon("Godot", "EditorIcons"), ED_SHORTCUT("editor/about", TTR("About Godot")), HELP_ABOUT);
@@ -7019,6 +7023,8 @@ EditorNode::EditorNode() {
 	add_editor_plugin(memnew(MaterialEditorPlugin(this)));
 	add_editor_plugin(memnew(ViewportPreviewEditorPlugin(this)));
 	add_editor_plugin(memnew(GradientTexture2DEditorPlugin(this)));
+	add_editor_plugin(memnew(RayCast2DEditorPlugin(this)));
+	add_editor_plugin(memnew(BitMapEditorPlugin(this)));
 
 	for (int i = 0; i < EditorPlugins::get_plugin_count(); i++) {
 		add_editor_plugin(EditorPlugins::create(i, this));

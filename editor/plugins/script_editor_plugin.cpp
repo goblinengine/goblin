@@ -826,7 +826,7 @@ bool ScriptEditor::_test_script_times_on_disk(RES p_for_script) {
 
 	bool need_ask = false;
 	bool need_reload = false;
-	bool use_autoreload = bool(EDITOR_DEF("text_editor/files/auto_reload_scripts_on_external_change", false));
+	bool use_autoreload = EDITOR_GET("text_editor/files/auto_reload_scripts_on_external_change");
 
 	for (int i = 0; i < tab_container->get_child_count(); i++) {
 		ScriptEditorBase *se = Object::cast_to<ScriptEditorBase>(tab_container->get_child(i));
@@ -1184,7 +1184,7 @@ void ScriptEditor::_menu_option(int p_option) {
 				Ref<EditorScript> es = memnew(EditorScript);
 				es->set_script(scr.get_ref_ptr());
 				es->set_editor(EditorNode::get_singleton());
-				
+
 				// GOBLIN ENGINE run script show log
 				EditorLog *log = EditorNode::get_singleton()->get_log();
 				// log->clear();
@@ -1436,7 +1436,7 @@ void ScriptEditor::_notification(int p_what) {
 		}
 		case NOTIFICATION_THEME_CHANGED: {
 			help_search->set_icon(get_icon("HelpSearch", "EditorIcons"));
-			site_search->set_icon(get_icon("Instance", "EditorIcons"));
+			site_search->set_icon(get_icon("ExternalLink", "EditorIcons"));
 
 			script_forward->set_icon(get_icon("Forward", "EditorIcons"));
 			script_back->set_icon(get_icon("Back", "EditorIcons"));
@@ -2433,10 +2433,9 @@ void ScriptEditor::_editor_settings_changed() {
 	_update_script_colors();
 	_update_script_names();
 
-	ScriptServer::set_reload_scripts_on_save(EDITOR_DEF("text_editor/files/auto_reload_and_parse_scripts_on_save", true));
-
-
-	_update_external_editor_preset();
+	ScriptServer::set_reload_scripts_on_save(EDITOR_GET("text_editor/files/auto_reload_and_parse_scripts_on_save"));
+	
+	_update_external_editor_preset(); // GOBLIN ENGINE external editor presets updates when changed
 }
 
 // GOBLIN ENGINE external editor presets updates when changed
@@ -2471,6 +2470,7 @@ void ScriptEditor::_update_external_editor_preset() {
 	last_external_editor_preset = new_external_editor_preset;
 }
 
+// GOBLIN ENGINE external editor presets updates when changed
 void ScriptEditor::_get_external_editor_preset(const int p_preset, String &r_path, String &r_flags) {
 	switch (p_preset) {
 		case 1: {
@@ -3738,8 +3738,7 @@ ScriptEditorPlugin::ScriptEditorPlugin(EditorNode *p_node) {
 
 	script_editor->hide();
 
-	EDITOR_DEF("text_editor/files/auto_reload_scripts_on_external_change", true);
-	ScriptServer::set_reload_scripts_on_save(EDITOR_DEF("text_editor/files/auto_reload_and_parse_scripts_on_save", true));
+	ScriptServer::set_reload_scripts_on_save(EDITOR_GET("text_editor/files/auto_reload_and_parse_scripts_on_save"));
 	EDITOR_DEF("text_editor/files/open_dominant_script_on_scene_change", true);
 	EDITOR_DEF("text_editor/external/use_external_editor", false);
 	// GOBLIN ENGINE external editor presets

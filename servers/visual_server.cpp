@@ -848,6 +848,7 @@ Error VisualServer::_surface_set_data(Array p_arrays, uint32_t p_format, uint32_
 }
 
 uint32_t VisualServer::mesh_surface_get_format_offset(uint32_t p_format, int p_vertex_len, int p_index_len, int p_array_index) const {
+	ERR_FAIL_INDEX_V(p_array_index, ARRAY_MAX, 0);
 	uint32_t offsets[ARRAY_MAX];
 	uint32_t strides[ARRAY_MAX];
 	mesh_surface_make_offsets_from_format(p_format, p_vertex_len, p_index_len, offsets, strides);
@@ -855,6 +856,7 @@ uint32_t VisualServer::mesh_surface_get_format_offset(uint32_t p_format, int p_v
 }
 
 uint32_t VisualServer::mesh_surface_get_format_stride(uint32_t p_format, int p_vertex_len, int p_index_len, int p_array_index) const {
+	ERR_FAIL_INDEX_V(p_array_index, ARRAY_MAX, 0);
 	uint32_t offsets[ARRAY_MAX];
 	uint32_t strides[ARRAY_MAX];
 	mesh_surface_make_offsets_from_format(p_format, p_vertex_len, p_index_len, offsets, strides);
@@ -1859,6 +1861,7 @@ void VisualServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("texture_set_path", "texture", "path"), &VisualServer::texture_set_path);
 	ClassDB::bind_method(D_METHOD("texture_get_path", "texture"), &VisualServer::texture_get_path);
 	ClassDB::bind_method(D_METHOD("texture_set_shrink_all_x2_on_set_data", "shrink"), &VisualServer::texture_set_shrink_all_x2_on_set_data);
+	ClassDB::bind_method(D_METHOD("texture_set_proxy", "proxy", "base"), &VisualServer::texture_set_proxy);
 	ClassDB::bind_method(D_METHOD("texture_bind", "texture", "number"), &VisualServer::texture_bind);
 
 	ClassDB::bind_method(D_METHOD("texture_debug_usage"), &VisualServer::_texture_debug_usage_bind);
