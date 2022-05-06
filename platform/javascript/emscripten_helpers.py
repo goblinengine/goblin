@@ -18,7 +18,7 @@ def run_closure_compiler(target, source, env, for_signature):
 def get_build_version():
     import version
 
-    name = "custom_build"
+    name = "build" # GOBLIN ENGINE
     if os.getenv("BUILD_NAME") != None:
         name = os.getenv("BUILD_NAME")
     v = "%d.%d" % (version.major, version.minor)
