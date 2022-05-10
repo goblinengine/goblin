@@ -176,9 +176,9 @@ static String unescape_cmdline(const String &p_str) {
 static String get_full_version_string() {
 	String hash = String(VERSION_HASH);
 	if (!hash.empty()) {
-		hash = "." + hash.left(9);
+		hash = hash.left(9); // GOBLIN ENGINE version
 	}
-	return String(VERSION_GOBLIN_FULL_BUILD) + hash; // GOBLIN ENGINE version
+	return String(VERSION_GOBLIN_FULL_BUILD) + " [url=https://github.com/goblinengine/goblin/commit/" + hash + "]" + hash + "[/url]"; // GOBLIN ENGINE version
 }
 
 // FIXME: Could maybe be moved to PhysicsServerManager and Physics2DServerManager directly

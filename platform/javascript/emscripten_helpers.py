@@ -18,16 +18,14 @@ def run_closure_compiler(target, source, env, for_signature):
 def get_build_version():
     import version
 
-    name = "build" # GOBLIN ENGINE
-    if os.getenv("BUILD_NAME") != None:
-        name = os.getenv("BUILD_NAME")
+    # GOBLIN ENGINE remove version build
     v = "%d.%d" % (version.major, version.minor)
     if version.patch > 0:
         v += ".%d" % version.patch
     status = version.status
     if os.getenv("GODOT_VERSION_STATUS") != None:
         status = str(os.getenv("GODOT_VERSION_STATUS"))
-    v += ".%s.%s" % (status, name)
+    v += ".%s.%s" % (status)
     return v
 
 

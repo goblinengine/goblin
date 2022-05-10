@@ -62,7 +62,7 @@
 // Similar to VERSION_FULL_CONFIG, but also includes the (potentially custom) VERSION_BUILD
 // description (e.g. official, custom_build, etc.).
 // Example: "3.1.4.stable.mono.official"
-#define VERSION_FULL_BUILD "" VERSION_FULL_CONFIG "." VERSION_BUILD
+#define VERSION_FULL_BUILD "" VERSION_FULL_CONFIG // GOBLIN ENGINE remove version build
 
 // Same as above, but prepended with Godot's name and a cosmetic "v" for "version".
 // Example: "Godot v3.1.4.stable.official.mono"

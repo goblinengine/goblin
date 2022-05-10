@@ -94,7 +94,7 @@ Dictionary Engine::get_version_info() const {
 	dict["patch"] = VERSION_PATCH;
 	dict["hex"] = VERSION_HEX;
 	dict["status"] = VERSION_STATUS;
-	dict["build"] = VERSION_BUILD;
+	// GOBLIN ENGINE remove version build
 	dict["year"] = VERSION_YEAR;
 
 	String hash = String(VERSION_HASH);

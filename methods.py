@@ -63,10 +63,7 @@ def add_module_version_string(self, s):
 
 
 def update_version(module_version_string=""):
-    build_name = "build" # GOBLIN ENGINE
-    if os.getenv("BUILD_NAME") != None:
-        build_name = str(os.getenv("BUILD_NAME"))
-        print("Using custom build name: " + build_name)
+    # GOBLIN ENGINE remove version build
 
     import version
 
@@ -85,7 +82,7 @@ def update_version(module_version_string=""):
         godot_status = str(os.getenv("GODOT_VERSION_STATUS"))
         print("Using version status '{}', overriding the original '{}'.".format(godot_status, str(version.status)))
     f.write('#define VERSION_STATUS "' + godot_status + '"\n')
-    f.write('#define VERSION_BUILD "' + str(build_name) + '"\n')
+    # GOBLIN ENGINE remove version build
     f.write('#define VERSION_MODULE_CONFIG "' + str(version.module_config) + module_version_string + '"\n')
     f.write("#define VERSION_YEAR " + str(version.year) + "\n")
     f.write('#define VERSION_WEBSITE "' + str(version.website) + '"\n')
