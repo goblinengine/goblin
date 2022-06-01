@@ -38,6 +38,7 @@
 #include "scene/3d/collision_shape.h"
 #include "scene/3d/cpu_particles.h"
 #include "scene/3d/gi_probe.h"
+#include "scene/3d/label_3d.h"
 #include "scene/3d/light.h"
 #include "scene/3d/listener.h"
 #include "scene/3d/mesh_instance.h"
@@ -1556,6 +1557,38 @@ void Sprite3DSpatialGizmoPlugin::redraw(EditorSpatialGizmo *p_gizmo) {
 	p_gizmo->clear();
 
 	Ref<TriangleMesh> tm = sprite->generate_triangle_mesh();
+	if (tm.is_valid()) {
+		p_gizmo->add_collision_triangles(tm);
+	}
+}
+
+///
+
+Label3DSpatialGizmoPlugin::Label3DSpatialGizmoPlugin() {
+}
+
+bool Label3DSpatialGizmoPlugin::has_gizmo(Spatial *p_spatial) {
+	return Object::cast_to<Label3D>(p_spatial) != nullptr;
+}
+
+String Label3DSpatialGizmoPlugin::get_name() const {
+	return "Label3D";
+}
+
+int Label3DSpatialGizmoPlugin::get_priority() const {
+	return -1;
+}
+
+bool Label3DSpatialGizmoPlugin::can_be_hidden() const {
+	return false;
+}
+
+void Label3DSpatialGizmoPlugin::redraw(EditorSpatialGizmo *p_gizmo) {
+	Label3D *label = Object::cast_to<Label3D>(p_gizmo->get_spatial_node());
+
+	p_gizmo->clear();
+
+	Ref<TriangleMesh> tm = label->generate_triangle_mesh();
 	if (tm.is_valid()) {
 		p_gizmo->add_collision_triangles(tm);
 	}
@@ -5365,10 +5398,14 @@ void OccluderSpatialGizmo::redraw() {
 	const OccluderShapePolygon *occ_poly = get_occluder_shape_poly();
 	if (occ_poly) {
 		// main poly
-		_redraw_poly(false, occ_poly->_poly_pts_local, occ_poly->_poly_pts_local_raw);
+		if (occ_poly->_poly_pts_local_raw.size()) {
+			_redraw_poly(false, occ_poly->_poly_pts_local, occ_poly->_poly_pts_local_raw);
+		}
 
 		// hole
-		_redraw_poly(true, occ_poly->_hole_pts_local, occ_poly->_hole_pts_local_raw);
+		if (occ_poly->_hole_pts_local_raw.size()) {
+			_redraw_poly(true, occ_poly->_hole_pts_local, occ_poly->_hole_pts_local_raw);
+		}
 	}
 }
 

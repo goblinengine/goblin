@@ -652,6 +652,7 @@ void Control::_notification(int p_notification) {
 				//remove modalness
 			} else {
 				data.minimum_size_valid = false;
+				_update_minimum_size();
 				_size_changed();
 			}
 
@@ -2048,6 +2049,11 @@ void Control::show_modal(bool p_exclusive) {
 	data.modal_exclusive = p_exclusive;
 	data.MI = get_viewport()->_gui_show_modal(this);
 	data.modal_frame = Engine::get_singleton()->get_frames_drawn();
+}
+
+void Control::set_modal_exclusive(bool p_exclusive) {
+	ERR_FAIL_NULL_MSG(data.MI, "Modal exclusive can be set only if the Control is already shown as modal.");
+	data.modal_exclusive = p_exclusive;
 }
 
 void Control::_modal_set_prev_focus_owner(ObjectID p_prev) {

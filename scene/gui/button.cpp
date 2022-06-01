@@ -210,7 +210,8 @@ void Button::_notification(int p_what) {
 
 				if (expand_icon) {
 					Size2 _size = get_size() - style->get_offset() * 2;
-					_size.width -= get_constant("hseparation") + icon_ofs_region;
+					int icon_text_separation = text.empty() ? 0 : get_constant("h_separation");
+					_size.width -= icon_text_separation + icon_ofs_region;
 					if (!clip_text && icon_align != ALIGN_CENTER) {
 						_size.width -= get_font("font")->get_string_size(xl_text).width;
 					}
@@ -289,10 +290,8 @@ void Button::_notification(int p_what) {
 
 			text_ofs.y += font->get_ascent();
 			font->draw(ci, text_ofs.floor(), xl_text, color, clip_text ? text_clip : -1);
-
-			// GOBLIN ENGINE distance field
-			VisualServer::get_singleton()->canvas_item_set_distance_field_mode(get_canvas_item(), font.is_valid() && font->is_distance_field_hint());
-
+			
+			VisualServer::get_singleton()->canvas_item_set_distance_field_mode(get_canvas_item(), font.is_valid() && font->is_distance_field_hint()); // GOBLIN ENGINE distance field
 		} break;
 	}
 }
@@ -401,7 +400,6 @@ void Button::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "align", PROPERTY_HINT_ENUM, "Left,Center,Right"), "set_text_align", "get_text_align");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "icon_align", PROPERTY_HINT_ENUM, "Left,Center,Right"), "set_icon_align", "get_icon_align");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "expand_icon"), "set_expand_icon", "is_expand_icon");
-	GLOBAL_DEF("gui/theme/unify_button_focus_hover", false); // GOBLIN ENGINE unify button focus hover
 }
 
 Button::Button(const String &p_text) {

@@ -742,7 +742,7 @@ bool LineEdit::_is_over_clear_button(const Point2 &p_pos) const {
 		return false;
 	}
 	Ref<Texture> icon = Control::get_icon("clear");
-	int x_ofs = get_stylebox("normal")->get_offset().x;
+	int x_ofs = get_stylebox("normal")->get_margin(MARGIN_RIGHT);
 	return p_pos.x > get_size().width - icon->get_width() - x_ofs;
 }
 
@@ -807,10 +807,9 @@ void LineEdit::_notification(int p_what) {
 			}
 
 			Ref<Font> font = get_font("font");
-
-			// GOBLIN ENGINE distance field
-			VisualServer::get_singleton()->canvas_item_set_distance_field_mode(get_canvas_item(), font.is_valid() && font->is_distance_field_hint());
-
+	
+			VisualServer::get_singleton()->canvas_item_set_distance_field_mode(get_canvas_item(), font.is_valid() && font->is_distance_field_hint()); // GOBLIN ENGINE distance field
+			
 			style->draw(ci, Rect2(Point2(), size));
 
 			if (has_focus()) {

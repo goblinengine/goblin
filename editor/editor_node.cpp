@@ -482,8 +482,7 @@ void EditorNode::_notification(int p_what) {
 			get_tree()->connect("files_dropped", this, "_dropped_files");
 			get_tree()->connect("global_menu_action", this, "_global_menu_action");
 
-			// GOBLIN ENGINE create context
-			editor_data.script_class_update_cache();
+			editor_data.script_class_update_cache(); // GOBLIN ENGINE create context
 
 			/* DO NOT LOAD SCENES HERE, WAIT FOR FILE SCANNING AND REIMPORT TO COMPLETE */
 		} break;
@@ -2722,7 +2721,7 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 			if (!p_confirmed) {
 				bool save_each = EDITOR_GET("interface/editor/save_each_scene_on_quit");
 				if (_next_unsaved_scene(!save_each) == -1) {
-					bool confirm = EDITOR_GET("interface/editor/quit_confirmation");
+					bool confirm = (p_option != RELOAD_CURRENT_PROJECT) && EDITOR_GET("interface/editor/quit_confirmation");
 					if (confirm) {
 						confirmation->get_ok()->set_text(p_option == FILE_QUIT ? TTR("Quit") : TTR("Yes"));
 						confirmation->set_text(p_option == FILE_QUIT ? TTR("Exit the editor?") : TTR("Open Project Manager?"));
@@ -3381,6 +3380,9 @@ void EditorNode::_remove_edited_scene(bool p_change_tab) {
 }
 
 void EditorNode::_remove_scene(int index, bool p_change_tab) {
+	// Clear icon cache in case some scripts are no longer needed.
+	script_icon_cache.clear();
+
 	if (editor_data.get_edited_scene() == index) {
 		//Scene to remove is current scene
 		_remove_edited_scene(p_change_tab);
@@ -4028,7 +4030,7 @@ void EditorNode::_pick_main_scene_custom_action(const String &p_custom_action_na
 	}
 }
 
-Ref<Texture> EditorNode::get_object_icon(const Object *p_object, const String &p_fallback) const {
+Ref<Texture> EditorNode::get_object_icon(const Object *p_object, const String &p_fallback) {
 	ERR_FAIL_COND_V(!p_object || !gui_base, nullptr);
 
 	Ref<Script> script = p_object->get_script();
@@ -4036,13 +4038,14 @@ Ref<Texture> EditorNode::get_object_icon(const Object *p_object, const String &p
 		script = p_object;
 	}
 
-	if (script.is_valid()) {
+	if (script.is_valid() && !script_icon_cache.has(script)) {
 		Ref<Script> base_script = script;
 		while (base_script.is_valid()) {
 			StringName name = EditorNode::get_editor_data().script_class_get_name(base_script->get_path());
 			String icon_path = EditorNode::get_editor_data().script_class_get_icon_path(name);
 			Ref<ImageTexture> icon = _load_custom_class_icon(icon_path);
 			if (icon.is_valid()) {
+				script_icon_cache[script] = icon;
 				return icon;
 			}
 
@@ -4052,12 +4055,18 @@ Ref<Texture> EditorNode::get_object_icon(const Object *p_object, const String &p
 				const Vector<EditorData::CustomType> &types = EditorNode::get_editor_data().get_custom_types()[base];
 				for (int i = 0; i < types.size(); ++i) {
 					if (types[i].script == base_script && types[i].icon.is_valid()) {
+						script_icon_cache[script] = types[i].icon;
 						return types[i].icon;
 					}
 				}
 			}
 			base_script = base_script->get_base_script();
 		}
+
+		// If no icon found, cache it as null.
+		script_icon_cache[script] = Ref<Texture>();
+	} else if (script.is_valid() && script_icon_cache.has(script) && script_icon_cache[script].is_valid()) {
+		return script_icon_cache[script];
 	}
 
 	// should probably be deprecated in 4.x
@@ -4097,7 +4106,10 @@ Ref<Texture> EditorNode::get_class_icon(const String &p_class, const String &p_f
 					// We've reached a native class, use its icon.
 					String base_type;
 					script->get_language()->get_global_class_name(script->get_path(), &base_type);
-					return gui_base->get_icon(base_type, "EditorIcons");
+					if (gui_base->has_icon(base_type, "EditorIcons")) {
+						return gui_base->get_icon(base_type, "EditorIcons");
+					}
+					return gui_base->get_icon(p_fallback, "EditorIcons");
 				}
 				script = base_script;
 				class_name = EditorNode::get_editor_data().script_class_get_name(script->get_path());
@@ -6958,11 +6970,15 @@ EditorNode::EditorNode() {
 	ScriptTextEditor::register_editor(); //register one for text scripts
 	TextEditor::register_editor();
 
+	// Asset Library can't work on Web editor for now as most assets are sourced
+	// directly from GitHub which does not set CORS.
+#ifndef JAVASCRIPT_ENABLED
 	if (StreamPeerSSL::is_available()) {
 		add_editor_plugin(memnew(AssetLibraryEditorPlugin(this)));
 	} else {
 		WARN_PRINT("Asset Library not available, as it requires SSL to work.");
 	}
+#endif
 
 	//add interface before adding plugins
 

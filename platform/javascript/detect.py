@@ -48,11 +48,6 @@ def get_flags():
     return [
         ("tools", False),
         ("builtin_pcre2_with_jit", False),
-        # Disabling the mbedtls module reduces file size.
-        # The module has little use due to the limited networking functionality
-        # in this platform. For the available networking methods, the browser
-        # manages TLS.
-        ("module_mbedtls_enabled", False),
     ]
 
 
@@ -201,6 +196,8 @@ def configure(env):
             sys.exit(255)
         env.Append(CCFLAGS=["-s", "RELOCATABLE=1"])
         env.Append(LINKFLAGS=["-s", "RELOCATABLE=1"])
+        # Weak symbols are broken upstream: https://github.com/emscripten-core/emscripten/issues/12819
+        env.Append(CPPDEFINES=["ZSTD_HAVE_WEAK_SYMBOLS=0"])
         env.extra_suffix = ".gdnative" + env.extra_suffix
 
     # Reduce code size by generating less support code (e.g. skip NodeJS support).

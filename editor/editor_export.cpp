@@ -818,22 +818,7 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 			}
 
 			//also save the .import file
-			// GOBLIN ENGINE remove unecessary import params and deps
-			// see https://github.com/godotengine/godot/pull/42441
-			config->erase_section("params");
-			config->erase_section("deps");
-			String tmp_path = EditorSettings::get_singleton()->get_cache_dir().plus_file("tmpfile.import");
-			err = config->save(tmp_path);
-			if (err != OK) {
-				DirAccess::remove_file_or_error(tmp_path);
-				return err;
-			}
-			Vector<uint8_t> array = FileAccess::get_file_as_array(tmp_path);
-			if (array.size() == 0) {
-				DirAccess::remove_file_or_error(tmp_path);
-				return ERR_FILE_CORRUPT;
-			}
-			DirAccess::remove_file_or_error(tmp_path);
+			Vector<uint8_t> array = FileAccess::get_file_as_array(path + ".import");
 			err = p_func(p_udata, path + ".import", array, idx, total);
 
 			if (err != OK) {
@@ -1642,6 +1627,9 @@ Error EditorExportPlatformPC::export_project(const Ref<EditorExportPreset> &p_pr
 
 	Error err = prepare_template(p_preset, p_debug, p_path, p_flags);
 	if (err == OK) {
+		err = modify_template(p_preset, p_debug, p_path, p_flags);
+	}
+	if (err == OK) {
 		err = export_project_data(p_preset, p_debug, p_path, p_flags);
 	}
 
@@ -1815,45 +1803,21 @@ void EditorExportTextSceneToBinaryPlugin::_export_file(const String &p_path, con
 	if (!convert) {
 		return;
 	}
-
-	// GOBLIN ENGINE Convert TSCN files into binary .scn on export by default 
-	int flg = 0;
-	if (GLOBAL_GET("filesystem/on_save/compress_binary_resources")) {
-		flg |= ResourceSaver::FLAG_COMPRESS;
-	}
-
 	String tmp_path = EditorSettings::get_singleton()->get_cache_dir().plus_file("tmpfile.res");
-	Error err; // GOBLIN ENGINE Convert TSCN files into binary .scn on export by default 
-	RES res = ResourceFormatLoaderText::singleton->load(p_path, p_path, &err);
-
+	Error err = ResourceFormatLoaderText::convert_file_to_binary(p_path, tmp_path);
 	if (err != OK) {
 		DirAccess::remove_file_or_error(tmp_path);
-		ERR_FAIL_MSG("Cannot load text resource from path '" + p_path + "'.");
+		ERR_FAIL();
 	}
-
-	// GOBLIN ENGINE Convert TSCN files into binary .scn on export by default 
-	err = ResourceSaver::save(tmp_path, res, flg);
-	if (err != OK) {
-		DirAccess::remove_file_or_error(tmp_path);
-		ERR_FAIL_MSG("Cannot save resource to file '" + tmp_path);
-	}
-
 	Vector<uint8_t> data = FileAccess::get_file_as_array(tmp_path);
 	if (data.size() == 0) {
 		DirAccess::remove_file_or_error(tmp_path);
 		ERR_FAIL();
 	}
 	DirAccess::remove_file_or_error(tmp_path);
-
-	// GOBLIN ENGINE Convert TSCN files into binary .scn on export by default 
-	if (extension == "tscn") {
-		add_file(p_path + ".converted.scn", data, true);
-	} else {
-		add_file(p_path + ".converted.res", data, true);
-	}
+	add_file(p_path + ".converted.res", data, true);
 }
 
-// GOBLIN ENGINE Convert TSCN files into binary .scn on export by default 
 EditorExportTextSceneToBinaryPlugin::EditorExportTextSceneToBinaryPlugin() {
-	GLOBAL_DEF("editor/convert_text_resources_to_binary_on_export", true);
+	GLOBAL_DEF("editor/convert_text_resources_to_binary_on_export", false);
 }

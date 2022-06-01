@@ -154,7 +154,7 @@ EditorAbout::EditorAbout() {
 	hbc->add_child(version_info_vbc);
 
 	TabContainer *tc = memnew(TabContainer);
-	tc->set_custom_minimum_size(Size2(950, 400) * EDSCALE);
+	tc->set_custom_minimum_size(Size2(400, 200) * EDSCALE);
 	tc->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	vbc->add_child(tc);
 
@@ -190,8 +190,7 @@ EditorAbout::EditorAbout() {
 	Label *tpl_label = memnew(Label);
 	tpl_label->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	tpl_label->set_autowrap(true);
-	// GOBLIN ENGINE
-	tpl_label->set_text(TTR("Goblin Engine relies on a number of third-party free and open source libraries, all compatible with the terms of its MIT license. The following is an exhaustive list of all such third-party components with their respective copyright statements and license terms."));
+	tpl_label->set_text(TTR("Goblin Engine relies on a number of third-party free and open source libraries, all compatible with the terms of its MIT license. The following is an exhaustive list of all such third-party components with their respective copyright statements and license terms.")); // GOBLIN ENGINE
 	tpl_label->set_size(Size2(630, 1) * EDSCALE);
 	license_thirdparty->add_child(tpl_label);
 

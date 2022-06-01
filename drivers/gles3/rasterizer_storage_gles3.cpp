@@ -4307,7 +4307,7 @@ void RasterizerStorageGLES3::mesh_render_blend_shapes(Surface *s, const float *p
 
 	shaders.blend_shapes.set_uniform(BlendShapeShaderGLES3::BLEND_AMOUNT, base_weight);
 	glEnable(GL_RASTERIZER_DISCARD);
-
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindBufferBase(GL_TRANSFORM_FEEDBACK_BUFFER, 0, resources.transform_feedback_buffers[0]);
 	glBeginTransformFeedback(GL_POINTS);
 	glDrawArrays(GL_POINTS, 0, s->array_len);
@@ -8141,7 +8141,7 @@ void RasterizerStorageGLES3::initialize() {
 	shaders.cache = nullptr;
 	shaders.cache_write_queue = nullptr;
 	bool effectively_on = false;
-	// GOBLIN ENGINE hide async
+	// GOBLIN ENGINE hide async (print_verbose)
 	if (config.async_compilation_enabled) {
 		if (config.parallel_shader_compile_supported) {
 			print_verbose("Async. shader compilation: ON (full native support)");

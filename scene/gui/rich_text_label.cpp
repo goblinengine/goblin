@@ -1051,9 +1051,8 @@ void RichTextLabel::_notification(int p_what) {
 			bool use_outline = get_constant("shadow_as_outline");
 			Point2 shadow_ofs(get_constant("shadow_offset_x"), get_constant("shadow_offset_y"));
 
-			// GOBLIN ENGINE distance field
-			VisualServer::get_singleton()->canvas_item_set_distance_field_mode(get_canvas_item(), base_font.is_valid() && base_font->is_distance_field_hint());
-
+			
+			VisualServer::get_singleton()->canvas_item_set_distance_field_mode(get_canvas_item(), base_font.is_valid() && base_font->is_distance_field_hint()); // GOBLIN ENGINE distance field
 			visible_line_count = 0;
 			while (y < size.height && from_line < main->lines.size()) {
 				visible_line_count += _process_line(main, text_rect.get_position(), y, text_rect.get_size().width - scroll_w, from_line, PROCESS_DRAW, base_font, base_color, font_color_shadow, use_outline, shadow_ofs, Point2i(), nullptr, nullptr, nullptr, total_chars);
@@ -1236,7 +1235,7 @@ void RichTextLabel::_gui_input(Ref<InputEvent> p_event) {
 				}
 				selection.click = nullptr;
 
-				if (!b->is_doubleclick() && !scroll_updated) {
+				if (!b->is_doubleclick() && !scroll_updated && !selection.active) {
 					int line = 0;
 					Item *item = nullptr;
 

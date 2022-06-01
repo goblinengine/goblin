@@ -190,6 +190,7 @@
 #include "scene/3d/gi_probe.h"
 #include "scene/3d/immediate_geometry.h"
 #include "scene/3d/interpolated_camera.h"
+#include "scene/3d/label_3d.h"
 #include "scene/3d/light.h"
 #include "scene/3d/listener.h"
 #include "scene/3d/mesh_instance.h"
@@ -443,6 +444,7 @@ void register_scene_types() {
 	ClassDB::register_virtual_class<SpriteBase3D>();
 	ClassDB::register_class<Sprite3D>();
 	ClassDB::register_class<AnimatedSprite3D>();
+	ClassDB::register_class<Label3D>();
 	ClassDB::register_virtual_class<Light>();
 	ClassDB::register_class<DirectionalLight>();
 	ClassDB::register_class<OmniLight>();
@@ -660,6 +662,7 @@ void register_scene_types() {
 	ClassDB::register_class<PrismMesh>();
 	ClassDB::register_class<QuadMesh>();
 	ClassDB::register_class<SphereMesh>();
+	ClassDB::register_class<TextMesh>();
 	ClassDB::register_class<PointMesh>();
 	ClassDB::register_virtual_class<Material>();
 	ClassDB::register_class<SpatialMaterial>();
@@ -787,13 +790,13 @@ void register_scene_types() {
 	OS::get_singleton()->yield(); //may take time to init
 
 	for (int i = 0; i < 20; i++) {
-		GLOBAL_DEF("layer_names/2d_render/layer_" + itos(i + 1), "");
-		GLOBAL_DEF("layer_names/3d_render/layer_" + itos(i + 1), "");
+		GLOBAL_DEF(vformat("%s/layer_%d", PNAME("layer_names/2d_render"), i + 1), "");
+		GLOBAL_DEF(vformat("%s/layer_%d", PNAME("layer_names/3d_render"), i + 1), "");
 	}
 
 	for (int i = 0; i < 32; i++) {
-		GLOBAL_DEF("layer_names/2d_physics/layer_" + itos(i + 1), "");
-		GLOBAL_DEF("layer_names/3d_physics/layer_" + itos(i + 1), "");
+		GLOBAL_DEF(vformat("%s/layer_%d", PNAME("layer_names/2d_physics"), i + 1), "");
+		GLOBAL_DEF(vformat("%s/layer_%d", PNAME("layer_names/3d_physics"), i + 1), "");
 	}
 }
 
