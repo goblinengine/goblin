@@ -11,10 +11,26 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  android-template:
+  build-android:
     runs-on: "ubuntu-20.04"
+    name: ${{ matrix.name }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: Editor (target=release_debug, tools=yes)
+            cache-name: android-editor
+            target: release_debug
+            tools: true
+            sconsflags: module_sqlite_enabled=yes use_llvm=yes
+            cmd: generateGodotEditor
 
-    name: Template (target=release, tools=no)
+          - name: Template (target=release, tools=no)
+            cache-name: android-template
+            target: release
+            tools: false
+            sconsflags:
+            cmd: generateGodotTemplates
 
     steps:
       - uses: actions/checkout@v2
@@ -33,34 +49,54 @@ jobs:
 
       - name: Setup Goblin build cache
         uses: ./.github/actions/goblin-cache
+        with:
+          cache-name: ${{ matrix.cache-name }}
         continue-on-error: true
 
       - name: Setup python and scons
         uses: ./.github/actions/goblin-deps
-
-      - name: Compilation (armv7)
+  
+      - name: Compilation (arm64v7)
         uses: ./.github/actions/goblin-build
         with:
-          sconsflags: ${{ env.SCONSFLAGS }} android_arch=armv7
+          sconsflags: ${{ env.SCONSFLAGS }} ${{ matrix.sconsflags }} android_arch=armv7
           platform: android
-          target: release
-          tools: false
+          target: ${{ matrix.target }}
+          tools: ${{ matrix.tools }}
 
       - name: Compilation (arm64v8)
         uses: ./.github/actions/goblin-build
         with:
-          sconsflags: ${{ env.SCONSFLAGS }} android_arch=arm64v8
+          sconsflags: ${{ env.SCONSFLAGS }} ${{ matrix.sconsflags }} android_arch=arm64v8
           platform: android
-          target: release
-          tools: false
+          target: ${{ matrix.target }}
+          tools: ${{ matrix.tools }}
+
+      # - name: Compilation (x86)
+      #   uses: ./.github/actions/goblin-build
+      #   with:
+      #     sconsflags: ${{ env.SCONSFLAGS }} ${{ matrix.sconsflags }} android_arch=x86
+      #     platform: android
+      #     target: ${{ matrix.target }}
+      #     tools: ${{ matrix.tools }}
+
+      # - name: Compilation (x86_64)
+      #   uses: ./.github/actions/goblin-build
+      #   with:
+      #     sconsflags: ${{ env.SCONSFLAGS }} ${{ matrix.sconsflags }} android_arch=x86_64
+      #     platform: android
+      #     target: ${{ matrix.target }}
+      #     tools: ${{ matrix.tools }}
 
       - name: Generate Goblin templates
         run: |
           cd platform/android/java
           chmod +x gradlew
-          ./gradlew generateGodotTemplates
+          ./gradlew ${{ matrix.cmd }}
           cd ../../..
           ls -l bin/
 
       - name: Upload artifact
         uses: ./.github/actions/upload-artifact
+        with:
+          name: ${{ matrix.cache-name }}
