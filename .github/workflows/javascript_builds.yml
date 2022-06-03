@@ -13,9 +13,24 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  javascript-template:
+  build-javascript:
     runs-on: "ubuntu-20.04"
-    name: Template (target=release, tools=no)
+    name: ${{ matrix.name }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: Editor (target=release_debug, tools=yes)
+            cache-name: javascript-editor
+            target: release_debug
+            tools: true
+            sconsflags: module_sqlite_enabled=yes threads_enabled=yes x11=no
+
+          - name: Template (target=release, tools=no, threads_enabled=no)
+            cache-name: javascript-template
+            target: release
+            tools: false
+            sconsflags: threads_enabled=no
 
     steps:
       - uses: actions/checkout@v2
@@ -37,9 +52,15 @@ jobs:
       - name: Verify Emscripten setup
         run: |
           emcc -v
+      
+      # - name: Install deps
+      #   run: |
+      #     sudo apt-get install libxcursor-dev libxinerama-dev libxrandr-dev libxi-dev libgl-dev
 
       - name: Setup Goblin build cache
         uses: ./.github/actions/goblin-cache
+        with:
+          cache-name: ${{ matrix.cache-name }}
         continue-on-error: true
 
       - name: Setup python and scons
@@ -48,10 +69,12 @@ jobs:
       - name: Compilation
         uses: ./.github/actions/goblin-build
         with:
-          sconsflags: ${{ env.SCONSFLAGS }}
+          sconsflags: ${{ env.SCONSFLAGS }} ${{ matrix.sconsflags }}
           platform: javascript
-          target: release
-          tools: false
+          target: ${{ matrix.target }}
+          tools: ${{ matrix.tools }}
 
       - name: Upload artifact
         uses: ./.github/actions/upload-artifact
+        with:
+          name: ${{ matrix.cache-name }}
