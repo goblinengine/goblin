@@ -477,14 +477,14 @@ Variant Array::max() const {
 	return maxval;
 }
 
-// GOBLIN ENGINE Array for_each
+// GOBLIN ENGINE Array for_each also breaks if returning false
 void Array::for_each(Object *p_obj, const StringName &p_function) {
 	Variant::CallError err;
 	for (int i = 0; i < size(); i++) {
-		const Variant *args[1] = { &get(i) };
-		p_obj->call(p_function, args, 1, err);
+		const Variant *args[1] =  { &get(i) };
+		if (p_obj->call(p_function, args, 1, err) == (Variant)false) break;
 		ERR_FAIL_COND_MSG(err.error != Variant::CallError::CALL_OK, "Called function must have 1 parameter.");
-	}	
+	}
 }
 
 const void *Array::id() const {
