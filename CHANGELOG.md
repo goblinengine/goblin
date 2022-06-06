@@ -5,7 +5,7 @@
 
 ### Additions
 
-- Added `remove_children()` to all notes which removes all children
+- Added `remove_children()` to Node which removes all children
 - Added `UPPER_SNAKE_CASE, kebab-case, UPPER-KEBAB-CASE` to Node Name Casing in Project Settings.
 - Added [Voxelman](https://github.com/Relintai/voxelman) and [Thread pool](https://github.com/Relintai/thread_pool) modules by [Relintai](https://github.com/Relintai). The docs still require a bit of cleanup.
 - Added `tightness` to `AudioStreamPlayer3D` which controls how tight the sound playing encloses the player. Based on an unmerged 4.0 pr found [here](https://github.com/godotengine/godot/pull/42358).
@@ -21,7 +21,7 @@
     * `roll_notation(dice_notation`) similar to a roll except it uses dice notation such as `2d6`, `2x(3d6!U)`. Als returns a Dictionary but contains additional information.
     * `i(from, to)` same as `rand_range` but shorter and slightly faster (defaults `0 -> 99`)
     * `f(from, to)` same as `randf_range` but shorter (default `0.0 -> 1.0`)
-    * `uuid()` generated a random UUID v4 string 8-4-4-4-12 (also known a GUID).
+    * `uuid()` generates a random UUID v4 string 8-4-4-4-12 (also known a GUID).
 - Added autotile auto-transforms pr found [here](https://github.com/godotengine/godot/pull/39046) to Goblin. The proposal is [here](https://github.com/godotengine/godot-proposals/issues/893). The idea here is to allow specific transforms on autotiles so that when looking up a specific bitmask the autotile is esentially transformed dynamically, based on allowed transformations. Allows for less manual tile work in some situations and smaller texture file. The drawback is the tiles resulting from transforms are repetitive. 
 - Added `eval("expression")` function in `@GDScript` which parses a string expression and outputs the result or null if couldn't parse. It does not take inputs like Expression but can be added since it actually uses Expression class in the backend. This is a common function in many interpeted languages. 
 - Added [SQLite Module](https://github.com/godot-extended-libraries/godot-sqlite/tree/3.2) by K. S. Ernest (iFire) Lee (fire). Is enabled by default in editor and server test builds but otherwise requires `module_sqlite_enabled=yes` to build manually. 
