@@ -58,8 +58,7 @@ void RasterizerCanvasBaseGLES2::canvas_begin() {
 	state.using_large_vertex = false;
 	state.using_modulate = false;
 
-	// GOBLIN ENGINE distance field
-	state.canvas_shader.set_conditional(CanvasShaderGLES2::USE_DISTANCE_FIELD, false);
+	state.canvas_shader.set_conditional(CanvasShaderGLES2::USE_DISTANCE_FIELD, false); // GOBLIN ENGINE distance field
 	
 	state.canvas_shader.set_conditional(CanvasShaderGLES2::USE_ATTRIB_LIGHT_ANGLE, false);
 	state.canvas_shader.set_conditional(CanvasShaderGLES2::USE_ATTRIB_MODULATE, false);

@@ -586,10 +586,12 @@ void main() {
 	color *= texture(color_texture, uv);
 #endif
 
+// GOBLIN ENGINE distance field
 #ifdef USE_DISTANCE_FIELD
-	const float smoothing = 1.0 / 16.0; // GOBLIN ENGINE distance field
+	// Higher is smoother, but also more blurry. Lower is crisper, but also more aliased.
+	const float smoothing = 0.125;
 	float distance = texture(color_texture, uv, 0.0).a;
-	color.a = smoothstep(0.5 - smoothing, 0.5 + smoothing, distance) * color.a;
+	color.a = smoothstep(0.5 - smoothing, 0.5 + smoothing, distance);
 #endif
 
 
