@@ -605,6 +605,7 @@ void EditorHelp::_update_doc() {
 			}
 
 			class_desc->pop();
+			class_desc->pop();
 			class_desc->pop(); // Cell
 		}
 
