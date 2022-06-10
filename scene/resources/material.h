@@ -155,7 +155,7 @@ public:
 		BLEND_MODE_ADD,
 		BLEND_MODE_SUB,
 		BLEND_MODE_MUL,
-		BLEND_MODE_PMALPHA, // GOBLIN ENGINE add blend_premul_alpha to shaders
+		BLEND_MODE_PREMULT_ALPHA, // GOBLIN ENGINE add blend_premul_alpha to shaders
 	};
 
 	enum DepthDrawMode {
