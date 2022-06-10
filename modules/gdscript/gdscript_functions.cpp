@@ -45,6 +45,7 @@ const char *GDScriptFunctions::get_func_name(Function p_func) {
 	ERR_FAIL_INDEX_V(p_func, FUNC_MAX, "");
 
 	static const char *_names[FUNC_MAX] = {
+		"swap", // GOBLIN ENGINE swap
 		"eval", // GOBLIN ENGINE eval
 		"sin",
 		"cos",
@@ -178,6 +179,17 @@ void GDScriptFunctions::call(Function p_func, const Variant **p_args, int p_arg_
 	//using a switch, so the compiler generates a jumptable
 
 	switch (p_func) {
+		case MATH_SWAP: { // GOBLIN ENGINE swap
+			VALIDATE_ARG_COUNT(2);
+
+			// swap Variant ** values in C++ stores in p_args 
+			Variant *v1 = (Variant *)p_args[0];
+			Variant *v2 = (Variant *)p_args[1];
+			Variant tmp = *v1;
+			*v1 = *v2;
+			*v2 = tmp;
+
+		} break;
 		case MATH_EVAL: { // GOBLIN ENGINE eval
 			VALIDATE_ARG_COUNT(1);
 			if (p_args[0]->get_type() == Variant::STRING) {
@@ -1489,6 +1501,11 @@ MethodInfo GDScriptFunctions::get_info(Function p_func) {
 #endif
 	//using a switch, so the compiler generates a jumptable
 	switch (p_func) {
+		case MATH_SWAP: { // GOBLIN ENGINE swap
+			MethodInfo mi("swap", PropertyInfo(Variant::OBJECT, ARGNAME("a")), PropertyInfo(Variant::OBJECT, ARGNAME("b")));
+			mi.return_val.type = Variant::NIL;
+			return mi;
+		} break;
 		case MATH_EVAL: { // GOBLIN ENGINE eval
 			MethodInfo mi("eval", PropertyInfo(Variant::STRING, "s"));
 			mi.return_val.type = Variant::NIL;
