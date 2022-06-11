@@ -50,8 +50,7 @@ void register_bullet_types() {
 	PhysicsServerManager::set_default_server("Bullet", 1);
 
 	GLOBAL_DEF("physics/3d/active_soft_world", true);
-	// GOBLIN ENGINE smooth trimesh collision
-	GLOBAL_DEF("physics/3d/smooth_trimesh_collision", false);
+
 	ProjectSettings::get_singleton()->set_custom_property_info("physics/3d/active_soft_world", PropertyInfo(Variant::BOOL, "physics/3d/active_soft_world"));
 #endif
 }
