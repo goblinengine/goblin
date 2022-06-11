@@ -1502,7 +1502,7 @@ MethodInfo GDScriptFunctions::get_info(Function p_func) {
 	//using a switch, so the compiler generates a jumptable
 	switch (p_func) {
 		case MATH_SWAP: { // GOBLIN ENGINE swap
-			MethodInfo mi("swap", PropertyInfo(Variant::OBJECT, ARGNAME("a")), PropertyInfo(Variant::OBJECT, ARGNAME("b")));
+			MethodInfo mi("swap", PropertyInfo(Variant::NIL, ARGNAME("a")), PropertyInfo(Variant::NIL, ARGNAME("b")));
 			mi.return_val.type = Variant::NIL;
 			return mi;
 		} break;
