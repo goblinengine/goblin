@@ -482,7 +482,7 @@ void Object::set(const StringName &p_name, const Variant &p_value, bool *r_valid
 	}
 }
 
-Variant Object::get(const StringName &p_name, bool *r_valid) const {
+Variant Object::get(const StringName &p_name, const Variant &defval, bool *r_valid) const { // GOBLIN ENGINE Object default return value
 	Variant ret;
 
 	if (script_instance) {
@@ -556,7 +556,7 @@ Variant Object::get(const StringName &p_name, bool *r_valid) const {
 		if (r_valid) {
 			*r_valid = false;
 		}
-		return Variant();
+		return defval; // GOBLIN ENGINE Object default return value
 	}
 }
 
@@ -1565,8 +1565,9 @@ void Object::_set_bind(const String &p_set, const Variant &p_value) {
 	set(p_set, p_value);
 }
 
-Variant Object::_get_bind(const String &p_name) const {
-	return get(p_name);
+ // GOBLIN ENGINE Object default return value
+Variant Object::_get_bind(const String &p_name, const Variant &defval) const {
+	return get(p_name, defval);
 }
 
 void Object::_set_indexed_bind(const NodePath &p_name, const Variant &p_value) {
@@ -1667,7 +1668,7 @@ void Object::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_class"), &Object::get_class);
 	ClassDB::bind_method(D_METHOD("is_class", "class"), &Object::is_class);
 	ClassDB::bind_method(D_METHOD("set", "property", "value"), &Object::_set_bind);
-	ClassDB::bind_method(D_METHOD("get", "property"), &Object::_get_bind);
+	ClassDB::bind_method(D_METHOD("get", "property", "default"), &Object::_get_bind, DEFVAL(Variant())); // GOBLIN ENGINE Object default return value
 	ClassDB::bind_method(D_METHOD("set_indexed", "property", "value"), &Object::_set_indexed_bind);
 	ClassDB::bind_method(D_METHOD("get_indexed", "property"), &Object::_get_indexed_bind);
 	ClassDB::bind_method(D_METHOD("get_property_list"), &Object::_get_property_list_bind);

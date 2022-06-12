@@ -498,7 +498,7 @@ private:
 	Array _get_signal_connection_list(const String &p_signal) const;
 	Array _get_incoming_connections() const;
 	void _set_bind(const String &p_set, const Variant &p_value);
-	Variant _get_bind(const String &p_name) const;
+	Variant _get_bind(const String &p_name, const Variant &defval = Variant()) const; // GOBLIN ENGINE Object default return value
 	void _set_indexed_bind(const NodePath &p_name, const Variant &p_value);
 	Variant _get_indexed_bind(const NodePath &p_name) const;
 
@@ -657,7 +657,7 @@ public:
 	//Variant get(const String& p_name) const;
 
 	void set(const StringName &p_name, const Variant &p_value, bool *r_valid = nullptr);
-	Variant get(const StringName &p_name, bool *r_valid = nullptr) const;
+	Variant get(const StringName &p_name, const Variant &defval = Variant(), bool *r_valid = nullptr) const; // GOBLIN ENGINE Object default return value
 	void set_indexed(const Vector<StringName> &p_names, const Variant &p_value, bool *r_valid = nullptr);
 	Variant get_indexed(const Vector<StringName> &p_names, bool *r_valid = nullptr) const;
 
