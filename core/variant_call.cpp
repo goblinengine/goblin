@@ -249,6 +249,7 @@ struct _VariantCall {
 	VCALL_LOCALMEM2R(String, substr);
 	VCALL_LOCALMEM2R(String, get_slice);
 	VCALL_LOCALMEM2R(String, find);
+	VCALL_LOCALMEM0R(String, invert); // GOBLIN ENGINE String invert the string
 	VCALL_LOCALMEM1R(String, find_last);
 	VCALL_LOCALMEM2R(String, findn);
 	VCALL_LOCALMEM2R(String, rfind);
@@ -1691,6 +1692,7 @@ void register_variant_methods() {
 	ADDFUNC3R(STRING, INT, String, count, STRING, "what", INT, "from", INT, "to", varray(0, 0));
 	ADDFUNC3R(STRING, INT, String, countn, STRING, "what", INT, "from", INT, "to", varray(0, 0));
 
+	ADDFUNC0R(STRING, STRING, String, invert, varray());  // GOBLIN ENGINE String invert
 	ADDFUNC1R(STRING, INT, String, find_last, STRING, "what", varray());
 	ADDFUNC2R(STRING, INT, String, findn, STRING, "what", INT, "from", varray(0));
 	ADDFUNC2R(STRING, INT, String, rfind, STRING, "what", INT, "from", varray(-1));

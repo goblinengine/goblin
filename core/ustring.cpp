@@ -2432,6 +2432,19 @@ String String::substr(int p_from, int p_chars) const {
 	return s;
 }
 
+// GOBLIN ENGINE String invert
+String String::invert() const {
+	String inv = *this;
+	const int len = inv.length();
+
+	for (int i = 0; i < len; i++) {
+		const CharType c = (*this)[len - i - 1];
+		inv[i] = c;
+	}
+
+	return inv;
+}
+
 // GOBLIN ENGINE optimized string functions
 int String::find_last(const String &p_str) const {
 	const int src_len = p_str.length();
@@ -2452,10 +2465,6 @@ int String::find_last(const String &p_str) const {
 			}
 		}
 	} else if (src_len == 2) {
-		if (len < 1) {
-			return -1;
-		}
-
 		const CharType *str = p_str.c_str();
 		const CharType *src = c_str();
 
@@ -2491,32 +2500,22 @@ int String::find(const String &p_str, int p_from) const {
 		return -1; // won't find anything!
 	}
 
-	if (src_len == 1) { // GOBLIN ENGINE optimized string functions
 	const CharType *str = p_str.c_str();
 	const CharType *src = c_str();
 
+	if (src_len == 1) { // GOBLIN ENGINE optimized string functions
 		for (int i = p_from; i < len; i++) {
 			if (str[0] == src[i]) {
 				return i;
 			}
 		}
 	} else if (src_len == 2) {
-		if (len < 1) {
-			return -1;
-		}
-
-		const CharType *str = p_str.c_str();
-		const CharType *src = c_str();
-
 		for (int i = p_from; i < len-1; i++) {
 			if (str[0] == src[i] && str[1] == src[i+1]) {
 				return i;
 			}
 		}
 	}
-
-	const CharType *src = c_str();
-	const CharType *str = p_str.c_str();
 
 	for (int i = p_from; i <= (len - src_len); i++) {
 		bool found = true;
