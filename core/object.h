@@ -657,7 +657,7 @@ public:
 	//Variant get(const String& p_name) const;
 
 	void set(const StringName &p_name, const Variant &p_value, bool *r_valid = nullptr);
-	Variant get(const StringName &p_name, const Variant &defval = Variant(), bool *r_valid = nullptr) const; // GOBLIN ENGINE Object default return value
+	Variant get(const StringName &p_name, bool *r_valid = nullptr) const;
 	void set_indexed(const Vector<StringName> &p_names, const Variant &p_value, bool *r_valid = nullptr);
 	Variant get_indexed(const Vector<StringName> &p_names, bool *r_valid = nullptr) const;
 

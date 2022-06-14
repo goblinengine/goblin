@@ -482,7 +482,7 @@ void Object::set(const StringName &p_name, const Variant &p_value, bool *r_valid
 	}
 }
 
-Variant Object::get(const StringName &p_name, const Variant &defval, bool *r_valid) const { // GOBLIN ENGINE Object default return value
+Variant Object::get(const StringName &p_name, bool *r_valid) const {
 	Variant ret;
 
 	if (script_instance) {
@@ -556,7 +556,7 @@ Variant Object::get(const StringName &p_name, const Variant &defval, bool *r_val
 		if (r_valid) {
 			*r_valid = false;
 		}
-		return defval; // GOBLIN ENGINE Object default return value
+		return Variant();
 	}
 }
 
@@ -1567,7 +1567,57 @@ void Object::_set_bind(const String &p_set, const Variant &p_value) {
 
  // GOBLIN ENGINE Object default return value
 Variant Object::_get_bind(const String &p_name, const Variant &defval) const {
-	return get(p_name, defval);
+	Variant ret;
+
+	if (script_instance) {
+		if (script_instance->get(p_name, ret)) {
+			return ret;
+		}
+	}
+
+	//try built-in setgetter
+	{
+		if (ClassDB::get_property(const_cast<Object *>(this), p_name, ret)) {
+			return ret;
+		}
+	}
+
+	if (p_name == CoreStringNames::get_singleton()->_script) {
+		ret = get_script();
+		return ret;
+
+	} else if (p_name == CoreStringNames::get_singleton()->_meta) {
+		ret = metadata;
+		return ret;
+
+	} else {
+		//something inside the object... :|
+		bool success = _getv(p_name, ret);
+		if (success) {
+			return ret;
+		}
+
+		//if nothing else, use getvar
+		{
+			bool valid;
+			ret = getvar(p_name, &valid);
+			if (valid) {
+				return ret;
+			}
+		}
+
+#ifdef TOOLS_ENABLED
+		if (script_instance) {
+			bool valid;
+			ret = script_instance->property_get_fallback(p_name, &valid);
+			if (valid) {
+				return ret;
+			}
+		}
+#endif
+
+		return defval; // GOBLIN ENGINE Object default return value
+	}
 }
 
 void Object::_set_indexed_bind(const NodePath &p_name, const Variant &p_value) {
