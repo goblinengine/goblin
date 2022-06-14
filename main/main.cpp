@@ -1334,19 +1334,20 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 	}
 #endif
 
+	// GOBLIN ENGINE vsync mode verbose
 	if (GLOBAL_GET("debug/settings/stdout/print_fps") || print_fps) {
 		// Print requested V-Sync mode at startup to diagnose the printed FPS not going above the monitor refresh rate.
 		if (OS::get_singleton()->_use_vsync && OS::get_singleton()->_vsync_via_compositor) {
 #ifdef WINDOWS_ENABLED
 			// V-Sync via compositor is only supported on Windows.
-			print_line("Requested V-Sync mode: Enabled (via compositor) - FPS will likely be capped to the monitor refresh rate.");
+			print_verbose("Requested V-Sync mode: Enabled (via compositor) - FPS will likely be capped to the monitor refresh rate.");
 #else
-			print_line("Requested V-Sync mode: Enabled - FPS will likely be capped to the monitor refresh rate.");
+			print_verbose("Requested V-Sync mode: Enabled - FPS will likely be capped to the monitor refresh rate.");
 #endif
 		} else if (OS::get_singleton()->_use_vsync) {
-			print_line("Requested V-Sync mode: Enabled - FPS will likely be capped to the monitor refresh rate.");
+			print_verbose("Requested V-Sync mode: Enabled - FPS will likely be capped to the monitor refresh rate.");
 		} else {
-			print_line("Requested V-Sync mode: Disabled");
+			print_verbose("Requested V-Sync mode: Disabled");
 		}
 	}
 
