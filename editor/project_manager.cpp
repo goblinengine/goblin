@@ -1767,6 +1767,16 @@ void ProjectManager::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			Engine::get_singleton()->set_editor_hint(false);
+			
+			// GOBLIN ENGINE project manager button icons
+			open_btn->set_icon(get_icon("Edit", "EditorIcons"));
+			run_btn->set_icon(get_icon("Play", "EditorIcons"));
+			rename_btn->set_icon(get_icon("Rename", "EditorIcons"));
+			erase_btn->set_icon(get_icon("Remove", "EditorIcons"));
+			erase_missing_btn->set_icon(get_icon("Clear", "EditorIcons"));
+			create->set_icon(get_icon("Add", "EditorIcons"));
+			import->set_icon(get_icon("Load", "EditorIcons"));
+			scan->set_icon(get_icon("Search", "EditorIcons"));
 		} break;
 		case NOTIFICATION_RESIZED: {
 			if (open_templates && open_templates->is_visible()) {
@@ -2537,7 +2547,7 @@ ProjectManager::ProjectManager() {
 
 	tree_vb->add_child(memnew(HSeparator));
 
-	Button *scan = memnew(Button);
+	scan = memnew(Button); // GOBLIN ENGINE project manager button icons
 	scan->set_text(TTR("Scan"));
 	scan->set_shortcut(ED_SHORTCUT("project_manager/scan_projects", TTR("Scan Projects"), KEY_MASK_CMD | KEY_S));
 	tree_vb->add_child(scan);
@@ -2553,13 +2563,13 @@ ProjectManager::ProjectManager() {
 	gui_base->add_child(scan_dir);
 	scan_dir->connect("dir_selected", this, "_scan_begin");
 
-	Button *create = memnew(Button);
+	create = memnew(Button); // GOBLIN ENGINE project manager button icons
 	create->set_text(TTR("New Project"));
 	create->set_shortcut(ED_SHORTCUT("project_manager/new_project", TTR("New Project"), KEY_MASK_CMD | KEY_N));
 	tree_vb->add_child(create);
 	create->connect("pressed", this, "_new_project");
 
-	Button *import = memnew(Button);
+	import = memnew(Button); // GOBLIN ENGINE project manager button icons
 	import->set_text(TTR("Import"));
 	import->set_shortcut(ED_SHORTCUT("project_manager/import_project", TTR("Import Project"), KEY_MASK_CMD | KEY_I));
 	tree_vb->add_child(import);
