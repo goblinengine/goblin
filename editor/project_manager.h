@@ -53,11 +53,6 @@ class ProjectManager : public Control {
 	Button *run_btn;
 	Button *about_btn;
 
-	// GOBLIN ENGINE project manager button icons
-	Button *create = nullptr;
-	Button *import = nullptr;
-	Button *scan = nullptr;
-
 	EditorAssetLibrary *asset_library = nullptr;
 
 	ProjectListFilter *project_filter;
