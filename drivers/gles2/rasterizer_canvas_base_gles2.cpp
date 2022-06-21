@@ -198,7 +198,7 @@ RasterizerStorageGLES2::Texture *RasterizerCanvasBaseGLES2::_bind_canvas_texture
 
 		} else {
 			if (texture->redraw_if_visible) {
-				VisualServerRaster::redraw_request();
+				VisualServerRaster::redraw_request(false);
 			}
 
 			texture = texture->get_ptr();
@@ -238,7 +238,7 @@ RasterizerStorageGLES2::Texture *RasterizerCanvasBaseGLES2::_bind_canvas_texture
 
 		} else {
 			if (normal_map->redraw_if_visible) { //check before proxy, because this is usually used with proxies
-				VisualServerRaster::redraw_request();
+				VisualServerRaster::redraw_request(false);
 			}
 
 			normal_map = normal_map->get_ptr();

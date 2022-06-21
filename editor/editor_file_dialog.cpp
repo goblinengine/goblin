@@ -203,7 +203,14 @@ Vector<String> EditorFileDialog::get_selected_files() const {
 
 void EditorFileDialog::update_dir() {
 	if (drives->is_visible()) {
-		drives->select(dir_access->get_current_drive());
+		if (dir_access->get_current_dir().is_network_share_path()) {
+			_update_drives(false);
+			drives->add_item(RTR("Network"));
+			drives->set_item_disabled(drives->get_item_count() - 1, true);
+			drives->select(drives->get_item_count() - 1);
+		} else {
+			drives->select(dir_access->get_current_drive());
+		}
 	}
 	dir->set_text(dir_access->get_current_dir_without_drive());
 
@@ -761,12 +768,7 @@ void EditorFileDialog::update_file_list() {
 			continue;
 		}
 
-		// GOBLIN ENGINE hide .import folder
-		if (cdir == "res://" && item == ".import") {
-			continue;
-		}
-
-		if (show_hidden_files || !dir_access->current_is_hidden()) {
+		if (show_hidden_files) {
 			if (!dir_access->current_is_dir()) {
 				files.push_back(item);
 			} else {
@@ -1130,7 +1132,7 @@ void EditorFileDialog::_select_drive(int p_idx) {
 	_push_history();
 }
 
-void EditorFileDialog::_update_drives() {
+void EditorFileDialog::_update_drives(bool p_select) {
 	int dc = dir_access->get_drive_count();
 	if (dc == 0 || access != ACCESS_FILESYSTEM) {
 		drives->hide();
@@ -1149,7 +1151,9 @@ void EditorFileDialog::_update_drives() {
 			drives->add_item(dir_access->get_drive(i));
 		}
 
-		drives->select(dir_access->get_current_drive());
+		if (p_select) {
+			drives->select(dir_access->get_current_drive());
+		}
 	}
 }
 
@@ -1683,6 +1687,7 @@ EditorFileDialog::EditorFileDialog() {
 	file = memnew(LineEdit);
 	file->set_stretch_ratio(4);
 	file->set_h_size_flags(SIZE_EXPAND_FILL);
+	file->set_deselect_on_focus_loss_enabled(false);
 	file_box->add_child(file);
 	filter = memnew(OptionButton);
 	filter->set_stretch_ratio(3);

@@ -980,6 +980,12 @@ void EditorPropertyLayers::setup(LayerType p_layer_type) {
 			layer_count = 32;
 		} break;
 
+		case LAYER_NAVIGATION_2D: {
+			basename = "layer_names/2d_navigation";
+			layer_group_size = 4;
+			layer_count = 32;
+		} break;
+
 		case LAYER_RENDER_3D: {
 			basename = "layer_names/3d_render";
 			layer_group_size = 5;
@@ -988,6 +994,12 @@ void EditorPropertyLayers::setup(LayerType p_layer_type) {
 
 		case LAYER_PHYSICS_3D: {
 			basename = "layer_names/3d_physics";
+			layer_group_size = 4;
+			layer_count = 32;
+		} break;
+
+		case LAYER_NAVIGATION_3D: {
+			basename = "layer_names/3d_navigation";
 			layer_group_size = 4;
 			layer_count = 32;
 		} break;
@@ -2350,8 +2362,8 @@ void EditorPropertyNodePath::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_node_selected"), &EditorPropertyNodePath::_node_selected);
 	ClassDB::bind_method(D_METHOD("_node_assign"), &EditorPropertyNodePath::_node_assign);
 	ClassDB::bind_method(D_METHOD("_node_clear"), &EditorPropertyNodePath::_node_clear);
-	ClassDB::bind_method(D_METHOD("_can_drop_data_fw", "position", "data", "from"), &EditorPropertyNodePath::can_drop_data_fw);
-	ClassDB::bind_method(D_METHOD("_drop_data_fw", "position", "data", "from"), &EditorPropertyNodePath::drop_data_fw);
+	ClassDB::bind_method(D_METHOD("can_drop_data_fw", "position", "data", "from"), &EditorPropertyNodePath::can_drop_data_fw);
+	ClassDB::bind_method(D_METHOD("drop_data_fw", "position", "data", "from"), &EditorPropertyNodePath::drop_data_fw);
 }
 
 EditorPropertyNodePath::EditorPropertyNodePath() {
@@ -2743,7 +2755,7 @@ bool EditorInspectorDefaultPlugin::parse_property(Object *p_object, Variant::Typ
 				editor->setup(options);
 				add_property_editor(p_path, editor);
 
-			} else if (p_hint == PROPERTY_HINT_LAYERS_2D_PHYSICS || p_hint == PROPERTY_HINT_LAYERS_2D_RENDER || p_hint == PROPERTY_HINT_LAYERS_3D_PHYSICS || p_hint == PROPERTY_HINT_LAYERS_3D_RENDER) {
+			} else if (p_hint == PROPERTY_HINT_LAYERS_2D_PHYSICS || p_hint == PROPERTY_HINT_LAYERS_2D_RENDER || p_hint == PROPERTY_HINT_LAYERS_2D_NAVIGATION || p_hint == PROPERTY_HINT_LAYERS_3D_PHYSICS || p_hint == PROPERTY_HINT_LAYERS_3D_RENDER || p_hint == PROPERTY_HINT_LAYERS_3D_NAVIGATION) {
 				EditorPropertyLayers::LayerType lt = EditorPropertyLayers::LAYER_RENDER_2D;
 				switch (p_hint) {
 					case PROPERTY_HINT_LAYERS_2D_RENDER:
@@ -2752,11 +2764,17 @@ bool EditorInspectorDefaultPlugin::parse_property(Object *p_object, Variant::Typ
 					case PROPERTY_HINT_LAYERS_2D_PHYSICS:
 						lt = EditorPropertyLayers::LAYER_PHYSICS_2D;
 						break;
+					case PROPERTY_HINT_LAYERS_2D_NAVIGATION:
+						lt = EditorPropertyLayers::LAYER_NAVIGATION_2D;
+						break;
 					case PROPERTY_HINT_LAYERS_3D_RENDER:
 						lt = EditorPropertyLayers::LAYER_RENDER_3D;
 						break;
 					case PROPERTY_HINT_LAYERS_3D_PHYSICS:
 						lt = EditorPropertyLayers::LAYER_PHYSICS_3D;
+						break;
+					case PROPERTY_HINT_LAYERS_3D_NAVIGATION:
+						lt = EditorPropertyLayers::LAYER_NAVIGATION_3D;
 						break;
 					default: {
 					} //compiler could be smarter here and realize this can't happen

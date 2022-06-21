@@ -18,14 +18,16 @@ def run_closure_compiler(target, source, env, for_signature):
 def get_build_version():
     import version
 
-    # GOBLIN ENGINE remove custom_build
+    name = "custom_build"
+    if os.getenv("BUILD_NAME") != None:
+        name = os.getenv("BUILD_NAME")
     v = "%d.%d" % (version.major, version.minor)
     if version.patch > 0:
         v += ".%d" % version.patch
     status = version.status
     if os.getenv("GODOT_VERSION_STATUS") != None:
         status = str(os.getenv("GODOT_VERSION_STATUS"))
-    v += ".%s" % (status) # GOBLIN ENGINE remove custom_build
+    v += ".%s.%s" % (status, name)
     return v
 
 
@@ -50,10 +52,10 @@ def create_template_zip(env, js, wasm, extra):
     ]
     # GDNative/Threads specific
     if env["gdnative_enabled"]:
-        in_files.append(extra)  # Runtime
+        in_files.append(extra.pop())  # Runtime
         out_files.append(zip_dir.File(binary_name + ".side.wasm"))
-    elif env["threads_enabled"]:
-        in_files.append(extra)  # Worker
+    if env["threads_enabled"]:
+        in_files.append(extra.pop())  # Worker
         out_files.append(zip_dir.File(binary_name + ".worker.js"))
 
     service_worker = "#misc/dist/html/service-worker.js"
@@ -72,7 +74,7 @@ def create_template_zip(env, js, wasm, extra):
         opt_cache = ["godot.tools.wasm"]
         subst_dict = {
             "@GODOT_VERSION@": get_build_version(),
-            "@GODOT_NAME@": "GoblinEngine",
+            "@GODOT_NAME@": "GodotEngine",
             "@GODOT_CACHE@": json.dumps(cache),
             "@GODOT_OPT_CACHE@": json.dumps(opt_cache),
             "@GODOT_OFFLINE_PAGE@": "offline.html",

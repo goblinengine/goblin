@@ -8,4 +8,4 @@ status = "rc"
 module_config = ""
 year = 2022
 website = "https://goblinengine.github.io"
-docs = "3.4"
+docs = "3.5"

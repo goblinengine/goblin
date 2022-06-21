@@ -120,7 +120,7 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2022-05-30 16:17+0000\n"
+"PO-Revision-Date: 2022-06-12 13:19+0000\n"
 "Last-Translator: FuzzMix <fmwolfiechad@gmail.com>\n"
 "Language-Team: Russian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ru/>\n"
@@ -314,9 +314,10 @@ msgid "Data"
 msgstr "Данные"
 
 #: core/io/file_access_network.cpp core/register_core_types.cpp
-#: editor/editor_settings.cpp main/main.cpp
+#: editor/editor_file_dialog.cpp editor/editor_settings.cpp main/main.cpp
 #: modules/gdscript/language_server/gdscript_language_server.cpp
 #: modules/webrtc/webrtc_data_channel.h modules/websocket/websocket_macros.h
+#: scene/gui/file_dialog.cpp
 msgid "Network"
 msgstr "Сеть"
 
@@ -422,8 +423,8 @@ msgid "Not enough bytes for decoding bytes, or invalid format."
 msgstr "Недостаточно байтов для декодирования байтов или неверный формат."
 
 #: core/math/expression.cpp
-msgid "Invalid input %i (not passed) in expression"
-msgstr "Некорректный ввод %i (не подходит) в выражении"
+msgid "Invalid input %d (not passed) in expression"
+msgstr "Некорректный ввод %d (не подходит) в выражении"
 
 #: core/math/expression.cpp
 msgid "self can't be used because instance is null (not passed)"
@@ -466,6 +467,16 @@ msgstr "Очередь сообщений"
 #: core/message_queue.cpp
 msgid "Max Size (KB)"
 msgstr "Максимальный размер (КБ)"
+
+#: core/os/input.cpp
+#, fuzzy
+msgid "Mouse Mode"
+msgstr "Режим перемещения"
+
+#: core/os/input.cpp
+#, fuzzy
+msgid "Use Accumulated Input"
+msgstr "Удалить вход"
 
 #: core/os/input_event.cpp editor/project_settings_editor.cpp
 #: servers/audio_server.cpp
@@ -646,7 +657,8 @@ msgstr "Описание"
 
 #: core/project_settings.cpp editor/editor_node.cpp editor/editor_settings.cpp
 #: editor/plugins/script_editor_plugin.cpp editor/project_manager.cpp
-#: main/main.cpp
+#: main/main.cpp platform/android/export/export_plugin.cpp
+#: platform/javascript/export/export.cpp
 msgid "Run"
 msgstr "Запустить"
 
@@ -729,6 +741,10 @@ msgid "Main Run Args"
 msgstr "Основные аргументы запуска"
 
 #: core/project_settings.cpp
+msgid "Scene Naming"
+msgstr "Именование сцен"
+
+#: core/project_settings.cpp
 msgid "Search In File Extensions"
 msgstr "Искать в расширениях файлов"
 
@@ -736,18 +752,15 @@ msgstr "Искать в расширениях файлов"
 msgid "Script Templates Search Path"
 msgstr "Путь поиска шаблонов скриптов"
 
-#: core/project_settings.cpp editor/editor_node.cpp
-#: editor/plugins/version_control_editor_plugin.cpp
-msgid "Version Control"
-msgstr "Контроль версий"
-
 #: core/project_settings.cpp
-msgid "Autoload On Startup"
+#, fuzzy
+msgid "Version Control Autoload On Startup"
 msgstr "Автозагрузка при запуске"
 
 #: core/project_settings.cpp
-msgid "Plugin Name"
-msgstr "Название плагина"
+#, fuzzy
+msgid "Version Control Plugin Name"
+msgstr "Контроль версий"
 
 #: core/project_settings.cpp scene/2d/collision_object_2d.cpp
 #: scene/3d/collision_object.cpp scene/gui/control.cpp
@@ -854,7 +867,8 @@ msgid "Quality"
 msgstr "Качество"
 
 #: core/project_settings.cpp scene/gui/file_dialog.cpp
-#: scene/main/scene_tree.cpp servers/visual_server.cpp
+#: scene/main/scene_tree.cpp scene/resources/navigation_mesh.cpp
+#: servers/visual_server.cpp
 msgid "Filters"
 msgstr "Фильтры"
 
@@ -1121,6 +1135,7 @@ msgstr "Высокое качество"
 msgid "Blend Shape Max Buffer Size (KB)"
 msgstr "Максимальный размер буфера смешивания форм (KB)"
 
+#. TRANSLATORS: Adjective, refers to the mode for Bezier handles (Free, Balanced, Mirror).
 #: editor/animation_bezier_editor.cpp
 msgid "Free"
 msgstr "Освободить"
@@ -1137,7 +1152,7 @@ msgstr "Отразить"
 msgid "Time:"
 msgstr "Время:"
 
-#: editor/animation_bezier_editor.cpp
+#: editor/animation_bezier_editor.cpp editor/animation_track_editor.cpp
 msgid "Value:"
 msgstr "Значение:"
 
@@ -1253,14 +1268,12 @@ msgid "Stream"
 msgstr "Поток"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Start Offset"
-msgstr "Смещение поворота"
+msgstr "Начальное смещение"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "End Offset"
-msgstr "Г смещение"
+msgstr "Конечное смещение"
 
 #: editor/animation_track_editor.cpp editor/editor_settings.cpp
 #: editor/import/resource_importer_scene.cpp
@@ -1384,8 +1397,66 @@ msgid "Remove this track."
 msgstr "Удалить эту дорожку."
 
 #: editor/animation_track_editor.cpp
-msgid "Time (s): "
-msgstr "Время (сек.): "
+msgid "Time (s):"
+msgstr "Время (сек.):"
+
+#: editor/animation_track_editor.cpp
+msgid "Position:"
+msgstr "Позиция:"
+
+#: editor/animation_track_editor.cpp
+msgid "Rotation:"
+msgstr "Поворот:"
+
+#: editor/animation_track_editor.cpp
+#: editor/plugins/animation_tree_player_editor_plugin.cpp
+#: editor/plugins/multimesh_editor_plugin.cpp
+msgid "Scale:"
+msgstr "Масштаб:"
+
+#: editor/animation_track_editor.cpp
+#: editor/plugins/resource_preloader_editor_plugin.cpp
+#: editor/plugins/theme_editor_plugin.cpp editor/project_settings_editor.cpp
+#: editor/scene_tree_editor.cpp editor/script_editor_debugger.cpp
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Type:"
+msgstr "Тип:"
+
+#: editor/animation_track_editor.cpp
+msgid "(Invalid, expected type: %s)"
+msgstr "(Неверный, ожидаемый тип: %s)"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Easing:"
+msgstr "Переход В-ИЗ"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "In-Handle:"
+msgstr "Задать обработчик"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Out-Handle:"
+msgstr "Задать обработчик"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Stream:"
+msgstr "Поток"
+
+#: editor/animation_track_editor.cpp
+msgid "Start (s):"
+msgstr "Начало (сек.):"
+
+#: editor/animation_track_editor.cpp
+msgid "End (s):"
+msgstr "Конец (сек.):"
+
+#: editor/animation_track_editor.cpp
+msgid "Animation Clip:"
+msgstr "Клип Анимации:"
 
 #: editor/animation_track_editor.cpp
 msgid "Toggle Track Enabled"
@@ -1599,8 +1670,8 @@ msgid "Add Method Track Key"
 msgstr "Добавить ключ дорожки для метода"
 
 #: editor/animation_track_editor.cpp
-msgid "Method not found in object: "
-msgstr "В объекте нет такого метода: "
+msgid "Method not found in object:"
+msgstr "В объекте нет такого метода:"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Move Keys"
@@ -2210,8 +2281,8 @@ msgid "Open"
 msgstr "Открыть"
 
 #: editor/dependency_editor.cpp
-msgid "Owners Of:"
-msgstr "Владельцы:"
+msgid "Owners of: %s (Total: %d)"
+msgstr ""
 
 #: editor/dependency_editor.cpp
 msgid ""
@@ -2512,7 +2583,7 @@ msgid "Bus Options"
 msgstr "Параметры шины"
 
 #: editor/editor_audio_buses.cpp editor/filesystem_dock.cpp
-#: editor/scene_tree_dock.cpp
+#: editor/project_export.cpp editor/scene_tree_dock.cpp
 msgid "Duplicate"
 msgstr "Дублировать"
 
@@ -2564,9 +2635,9 @@ msgstr "Открыть раскладку звуковой шины"
 msgid "There is no '%s' file."
 msgstr "Файла «%s» не существует."
 
-#: editor/editor_audio_buses.cpp editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Layout"
-msgstr "Макет"
+#: editor/editor_audio_buses.cpp
+msgid "Layout:"
+msgstr "Макет:"
 
 #: editor/editor_audio_buses.cpp
 msgid "Invalid file, not an audio bus layout."
@@ -2768,6 +2839,25 @@ msgid "Choose"
 msgstr "Выбрать"
 
 #: editor/editor_export.cpp
+msgid "Project export for platform:"
+msgstr ""
+
+#: editor/editor_export.cpp
+#, fuzzy
+msgid "Completed with errors."
+msgstr "Завершать пути файлов"
+
+#: editor/editor_export.cpp
+#, fuzzy
+msgid "Completed successfully."
+msgstr "Пакет успешно установлен!"
+
+#: editor/editor_export.cpp
+#, fuzzy
+msgid "Failed."
+msgstr "Не удалось:"
+
+#: editor/editor_export.cpp
 msgid "Storing File:"
 msgstr "Сохранение файла:"
 
@@ -2778,6 +2868,31 @@ msgstr "Шаблоны экспорта не найдены по ожидаем�
 #: editor/editor_export.cpp
 msgid "Packing"
 msgstr "Упаковывание"
+
+#: editor/editor_export.cpp
+#, fuzzy
+msgid "Save PCK"
+msgstr "Сохранить как"
+
+#: editor/editor_export.cpp
+#, fuzzy
+msgid "Cannot create file \"%s\"."
+msgstr "Невозможно создать папку."
+
+#: editor/editor_export.cpp
+#, fuzzy
+msgid "Failed to export project files."
+msgstr "Не удалось экспортировать файлы проекта"
+
+#: editor/editor_export.cpp
+#, fuzzy
+msgid "Can't open file to read from path \"%s\"."
+msgstr "Невозможно открыть файл для записи:"
+
+#: editor/editor_export.cpp
+#, fuzzy
+msgid "Save ZIP"
+msgstr "Сохранить как"
 
 #: editor/editor_export.cpp
 msgid ""
@@ -2895,9 +3010,31 @@ msgstr "Пользовательский отладочный шаблон не 
 msgid "Custom release template not found."
 msgstr "Пользовательский релизный шаблон не найден."
 
+#: editor/editor_export.cpp
+#, fuzzy
+msgid "Prepare Template"
+msgstr "Управление шаблонами"
+
+#: editor/editor_export.cpp platform/osx/export/export.cpp
+#, fuzzy
+msgid "The given export path doesn't exist."
+msgstr "Данный путь экспорта не существует:"
+
 #: editor/editor_export.cpp platform/javascript/export/export.cpp
-msgid "Template file not found:"
+#, fuzzy
+msgid "Template file not found: \"%s\"."
 msgstr "Файл шаблона не найден:"
+
+#: editor/editor_export.cpp
+#, fuzzy
+msgid "Failed to copy export template."
+msgstr "Неверный шаблон экспорта:"
+
+#: editor/editor_export.cpp platform/windows/export/export.cpp
+#: platform/x11/export/export.cpp
+#, fuzzy
+msgid "PCK Embedding"
+msgstr "Отступ"
 
 #: editor/editor_export.cpp
 msgid "On 32-bit exports the embedded PCK cannot be bigger than 4 GiB."
@@ -3075,9 +3212,9 @@ msgid "Import"
 msgstr "Импорт"
 
 #: editor/editor_feature_profile.cpp editor/project_export.cpp
-#: platform/android/export/export.cpp platform/javascript/export/export.cpp
-#: platform/osx/export/export.cpp platform/uwp/export/export.cpp
-#: platform/windows/export/export.cpp
+#: platform/android/export/export.cpp platform/android/export/export_plugin.cpp
+#: platform/javascript/export/export.cpp platform/osx/export/export.cpp
+#: platform/uwp/export/export.cpp platform/windows/export/export.cpp
 msgid "Export"
 msgstr "Экспорт"
 
@@ -4228,14 +4365,6 @@ msgstr ""
 "Невозможно записать в файл «%s», файл используется, заблокирован или "
 "отсутствуют разрешения."
 
-#: editor/editor_node.cpp editor/plugins/theme_editor_plugin.cpp
-msgid "Scene"
-msgstr "Сцена"
-
-#: editor/editor_node.cpp
-msgid "Scene Naming"
-msgstr "Именование сцен"
-
 #: editor/editor_node.cpp editor/editor_settings.cpp editor/scene_tree_dock.cpp
 #: servers/arvr/arvr_interface.cpp
 msgid "Interface"
@@ -4350,6 +4479,10 @@ msgid "Default Color Picker Mode"
 msgstr "Режим выбора цвета по умолчанию"
 
 #: editor/editor_node.cpp editor/plugins/version_control_editor_plugin.cpp
+msgid "Version Control"
+msgstr "Контроль версий"
+
+#: editor/editor_node.cpp editor/plugins/version_control_editor_plugin.cpp
 msgid "Username"
 msgstr "Имя пользователя"
 
@@ -4376,6 +4509,10 @@ msgstr "Переключить режим без отвлечения."
 #: editor/editor_node.cpp
 msgid "Add a new scene."
 msgstr "Добавить новую сцену."
+
+#: editor/editor_node.cpp editor/plugins/theme_editor_plugin.cpp
+msgid "Scene"
+msgstr "Сцена"
 
 #: editor/editor_node.cpp
 msgid "Go to previously opened scene."
@@ -5062,12 +5199,14 @@ msgid "Selected node is not a Viewport!"
 msgstr "Выбранный узел не Viewport!"
 
 #: editor/editor_properties_array_dict.cpp
-msgid "Size: "
-msgstr "Размер: "
+#: editor/plugins/spatial_editor_plugin.cpp
+#: editor/plugins/sprite_frames_editor_plugin.cpp
+msgid "Size:"
+msgstr "Размер:"
 
 #: editor/editor_properties_array_dict.cpp
-msgid "Page: "
-msgstr "Страница: "
+msgid "Page:"
+msgstr "Страница:"
 
 #: editor/editor_properties_array_dict.cpp
 #: editor/plugins/theme_editor_plugin.cpp
@@ -5162,6 +5301,11 @@ msgstr ""
 "Не найден активный пресет для данной платформы.\n"
 "Пожалуйста, добавьте активный пресет в меню экспорта или пометьте "
 "существующий пресет как активный."
+
+#: editor/editor_run_native.cpp
+#, fuzzy
+msgid "Project Run"
+msgstr "Проект"
 
 #: editor/editor_run_script.cpp
 msgid "Write your logic in the _run() method."
@@ -5417,7 +5561,9 @@ msgid "Draw Spaces"
 msgstr "Рисовать пробелы"
 
 #: editor/editor_settings.cpp editor/plugins/spatial_editor_plugin.cpp
-#: editor/plugins/tile_set_editor_plugin.cpp scene/main/scene_tree.cpp
+#: editor/plugins/tile_set_editor_plugin.cpp scene/2d/tile_map.cpp
+#: scene/main/scene_tree.cpp scene/resources/world.cpp
+#: scene/resources/world_2d.cpp
 msgid "Navigation"
 msgstr "Навигация"
 
@@ -5949,10 +6095,12 @@ msgstr "Хост"
 msgid "Port"
 msgstr "Порт"
 
+#. TRANSLATORS: Project Manager here refers to the tool used to create/manage Godot projects.
 #: editor/editor_settings.cpp
 msgid "Project Manager"
 msgstr "Менеджер проектов"
 
+#. TRANSLATORS: Project Manager here refers to the tool used to create/manage Godot projects.
 #: editor/editor_settings.cpp
 msgid "Sorting Order"
 msgstr "Порядок сортировки"
@@ -6702,14 +6850,6 @@ msgid "Replace in Files"
 msgstr "Заменить в файлах"
 
 #: editor/find_in_files.cpp
-msgid "Find: "
-msgstr "Найти: "
-
-#: editor/find_in_files.cpp
-msgid "Replace: "
-msgstr "Заменить: "
-
-#: editor/find_in_files.cpp
 msgid "Replace All (NO UNDO)"
 msgstr "Заменить всё (НЕЛЬЗЯ ОТМЕНИТЬ)"
 
@@ -6835,7 +6975,7 @@ msgstr "Повторить"
 
 #: editor/import/resource_importer_layered_texture.cpp
 #: editor/import/resource_importer_texture.cpp scene/2d/light_2d.cpp
-#: scene/gui/control.cpp scene/resources/navigation_mesh.cpp
+#: scene/gui/control.cpp
 msgid "Filter"
 msgstr "Фильтр"
 
@@ -7069,8 +7209,8 @@ msgid "Generating Lightmaps"
 msgstr "Создание карт освещения"
 
 #: editor/import/resource_importer_scene.cpp
-msgid "Generating for Mesh: "
-msgstr "Создание для полисетки: "
+msgid "Generating for Mesh:"
+msgstr "Создание для полисетки:"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Running Custom Script..."
@@ -7095,6 +7235,18 @@ msgstr "Вы вернули производный от Node объект в м�
 #: editor/import/resource_importer_scene.cpp
 msgid "Saving..."
 msgstr "Сохранение..."
+
+#: editor/import/resource_importer_texture.cpp
+msgid ""
+"%s: Texture detected as used as a normal map in 3D. Enabling red-green "
+"texture compression to reduce memory usage (blue channel is discarded)."
+msgstr ""
+
+#: editor/import/resource_importer_texture.cpp
+msgid ""
+"%s: Texture detected as used in 3D. Enabling filter, repeat, mipmap "
+"generation and VRAM texture compression."
+msgstr ""
 
 #: editor/import/resource_importer_texture.cpp
 msgid "2D, Detect 3D"
@@ -7893,10 +8045,12 @@ msgstr "Параметры режима кальки"
 msgid "Directions"
 msgstr "Направления"
 
+#. TRANSLATORS: Opposite of "Future", refers to a direction in animation onion skinning.
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Past"
 msgstr "Прошлые"
 
+#. TRANSLATORS: Opposite of "Past", refers to a direction in animation onion skinning.
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Future"
 msgstr "Будущие"
@@ -8056,8 +8210,8 @@ msgid "Set the end animation. This is useful for sub-transitions."
 msgstr "Установите конец анимации. Полезно для вспомогательных переходов."
 
 #: editor/plugins/animation_state_machine_editor.cpp
-msgid "Transition: "
-msgstr "Переход: "
+msgid "Transition:"
+msgstr "Переход:"
 
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "Play Mode:"
@@ -8071,11 +8225,6 @@ msgstr "Дерево анимации"
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "New name:"
 msgstr "Новое имя:"
-
-#: editor/plugins/animation_tree_player_editor_plugin.cpp
-#: editor/plugins/multimesh_editor_plugin.cpp
-msgid "Scale:"
-msgstr "Масштаб:"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Fade In (s):"
@@ -8982,6 +9131,7 @@ msgstr "Сделать пользовательские кость(и) от уз
 msgid "Clear Custom Bones"
 msgstr "Очистить пользовательские кости"
 
+#. TRANSLATORS: Noun, name of the 2D/3D View menus.
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "View"
@@ -9043,6 +9193,10 @@ msgstr "Кадрировать выбранное"
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Preview Canvas Scale"
 msgstr "Предпросмотр масштаба холста"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Layout"
+msgstr "Макет"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Translation mask for inserting keys."
@@ -9811,8 +9965,8 @@ msgid "Volume"
 msgstr "Объём"
 
 #: editor/plugins/particles_editor_plugin.cpp
-msgid "Emission Source: "
-msgstr "Источник излучения: "
+msgid "Emission Source:"
+msgstr "Источник излучения:"
 
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "A processor material of type 'ParticlesMaterial' is required."
@@ -10045,6 +10199,7 @@ msgid "Points"
 msgstr "Точки"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp scene/2d/polygon_2d.cpp
+#: scene/resources/navigation_mesh.cpp
 msgid "Polygons"
 msgstr "Полигоны"
 
@@ -10201,13 +10356,6 @@ msgid "Instance:"
 msgstr "Экземпляр:"
 
 #: editor/plugins/resource_preloader_editor_plugin.cpp
-#: editor/plugins/theme_editor_plugin.cpp editor/project_settings_editor.cpp
-#: editor/scene_tree_editor.cpp editor/script_editor_debugger.cpp
-#: modules/visual_script/visual_script_editor.cpp
-msgid "Type:"
-msgstr "Тип:"
-
-#: editor/plugins/resource_preloader_editor_plugin.cpp
 #: editor/scene_tree_dock.cpp editor/scene_tree_editor.cpp
 msgid "Open in Editor"
 msgstr "Открыть в редакторе"
@@ -10215,10 +10363,6 @@ msgstr "Открыть в редакторе"
 #: editor/plugins/resource_preloader_editor_plugin.cpp
 msgid "Load Resource"
 msgstr "Загрузить ресурс"
-
-#: editor/plugins/resource_preloader_editor_plugin.cpp
-msgid "ResourcePreloader"
-msgstr "Предзагрузчик ресурсов"
 
 #: editor/plugins/room_manager_editor_plugin.cpp
 msgid "Flip Portals"
@@ -10914,13 +11058,15 @@ msgstr "Повернуть"
 msgid "Translate"
 msgstr "Сдвинуть"
 
+#. TRANSLATORS: Refers to changing the scale of a node in the 3D editor.
 #: editor/plugins/spatial_editor_plugin.cpp
-msgid "Scaling: "
-msgstr "Масштаб: "
+msgid "Scaling:"
+msgstr "Масштаб:"
 
+#. TRANSLATORS: Refers to changing the position of a node in the 3D editor.
 #: editor/plugins/spatial_editor_plugin.cpp
-msgid "Translating: "
-msgstr "Перемещение: "
+msgid "Translating:"
+msgstr "Перемещение:"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Rotating %s degrees."
@@ -10941,11 +11087,6 @@ msgstr "Высота:"
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Yaw:"
 msgstr "Рыскание:"
-
-#: editor/plugins/spatial_editor_plugin.cpp
-#: editor/plugins/sprite_frames_editor_plugin.cpp
-msgid "Size:"
-msgstr "Размер:"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Objects Drawn:"
@@ -11436,7 +11577,8 @@ msgid "Invalid geometry, can't replace by mesh."
 msgstr "Недопустимая геометрия, не может быть заменена полисеткой."
 
 #: editor/plugins/sprite_editor_plugin.cpp
-msgid "Convert to Mesh2D"
+#, fuzzy
+msgid "Convert to MeshInstance2D"
 msgstr "Преобразовать в Mesh2D"
 
 #: editor/plugins/sprite_editor_plugin.cpp
@@ -11469,16 +11611,16 @@ msgid "Sprite"
 msgstr "Спрайт"
 
 #: editor/plugins/sprite_editor_plugin.cpp
-msgid "Simplification: "
-msgstr "Упрощение: "
+msgid "Simplification:"
+msgstr "Упрощение:"
 
 #: editor/plugins/sprite_editor_plugin.cpp
-msgid "Shrink (Pixels): "
-msgstr "Сжатие (пиксели): "
+msgid "Shrink (Pixels):"
+msgstr "Сжатие (пиксели):"
 
 #: editor/plugins/sprite_editor_plugin.cpp
-msgid "Grow (Pixels): "
-msgstr "Рост (пиксели): "
+msgid "Grow (Pixels):"
+msgstr "Рост (пиксели):"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Update Preview"
@@ -12420,8 +12562,7 @@ msgid "Select the previous shape, subtile, or Tile."
 msgstr "Выберите предыдущую форму, элемент тайла или тайл."
 
 #: editor/plugins/tile_set_editor_plugin.cpp scene/2d/sprite.cpp
-#: scene/3d/sprite_3d.cpp scene/resources/navigation_mesh.cpp
-#: scene/resources/texture.cpp
+#: scene/3d/sprite_3d.cpp scene/resources/texture.cpp
 msgid "Region"
 msgstr "Регион"
 
@@ -12711,7 +12852,6 @@ msgid "This property can't be changed."
 msgstr "Это свойство не может быть изменено."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Snap Options"
 msgstr "Параметры привязки"
 
@@ -12740,9 +12880,8 @@ msgid "Separation"
 msgstr "Разделение"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Selected Tile"
-msgstr "Выделение"
+msgstr "Выбранная плитка"
 
 #: editor/plugins/tile_set_editor_plugin.cpp scene/2d/cpu_particles_2d.cpp
 #: scene/2d/light_2d.cpp scene/2d/line_2d.cpp scene/2d/mesh_instance_2d.cpp
@@ -12771,9 +12910,8 @@ msgid "Modulate"
 msgstr "Модуляция"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Tile Mode"
-msgstr "Режим отображения"
+msgstr "Режим плитки"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 #, fuzzy
@@ -13925,45 +14063,21 @@ msgstr "Активный"
 
 #: editor/project_export.cpp
 msgid "Export the project for all the presets defined."
-msgstr ""
+msgstr "Экспортируйте проект для всех заданных предустановок."
 
 #: editor/project_export.cpp
 msgid "All presets must have an export path defined for Export All to work."
 msgstr ""
+"Для работы функции \"Экспортировать все\" у всех предустановок должен быть "
+"определен путь экспорта."
 
 #: editor/project_export.cpp
 msgid "Delete preset '%s'?"
 msgstr "Удалить пресет «%s»?"
 
 #: editor/project_export.cpp
-msgid ""
-"Failed to export the project for platform '%s'.\n"
-"Export templates seem to be missing or invalid."
-msgstr ""
-"Не удалось экспортировать проект для платформы «%s».\n"
-"Шаблоны экспорта отсутствуют или недействительны."
-
-#: editor/project_export.cpp
-msgid ""
-"Failed to export the project for platform '%s'.\n"
-"This might be due to a configuration issue in the export preset or your "
-"export settings."
-msgstr ""
-"Не удалось экспортировать проект для платформы «%s».\n"
-"Это может быть связано с проблемой конфигурации в предустановке экспорта или "
-"настройках экспорта."
-
-#: editor/project_export.cpp
 msgid "Exporting All"
 msgstr "Экспорт всех"
-
-#: editor/project_export.cpp
-msgid "The given export path doesn't exist:"
-msgstr "Данный путь экспорта не существует:"
-
-#: editor/project_export.cpp
-msgid "Export templates for this platform are missing/corrupted:"
-msgstr "Шаблоны экспорта для этой платформы отсутствуют/повреждены:"
 
 #: editor/project_export.cpp
 msgid "Export Path"
@@ -14111,6 +14225,11 @@ msgstr "Пакет игры Godot"
 #: editor/project_export.cpp
 msgid "Export templates for this platform are missing:"
 msgstr "Шаблоны экспорта для этой платформы отсутствуют:"
+
+#: editor/project_export.cpp
+#, fuzzy
+msgid "Project Export"
+msgstr "Основатели проекта"
 
 #: editor/project_export.cpp
 msgid "Manage Export Templates"
@@ -15659,7 +15778,8 @@ msgid "Attach Node Script"
 msgstr "Прикрепить скрипт"
 
 #: editor/script_editor_debugger.cpp
-msgid "Remote "
+#, fuzzy
+msgid "Remote %s:"
 msgstr "Удаленный "
 
 #: editor/script_editor_debugger.cpp
@@ -16476,7 +16596,7 @@ msgstr "Стороны кольца"
 
 #: modules/csg/csg_shape.cpp scene/2d/collision_polygon_2d.cpp
 #: scene/2d/light_occluder_2d.cpp scene/2d/polygon_2d.cpp
-#: scene/3d/collision_polygon.cpp scene/resources/navigation_mesh.cpp
+#: scene/3d/collision_polygon.cpp
 msgid "Polygon"
 msgstr "Полигон"
 
@@ -16636,7 +16756,8 @@ msgid "Disabled GDNative Singleton"
 msgstr "Выключен GDNative синглтон"
 
 #: modules/gdnative/gdnative_library_singleton_editor.cpp
-msgid "Libraries: "
+#, fuzzy
+msgid "Libraries:"
 msgstr "Библиотеки: "
 
 #: modules/gdnative/nativescript/nativescript.cpp
@@ -16955,7 +17076,7 @@ msgstr ""
 
 #: modules/gltf/gltf_state.cpp
 msgid "Json"
-msgstr ""
+msgstr "Json"
 
 #: modules/gltf/gltf_state.cpp
 msgid "Major Version"
@@ -17017,9 +17138,8 @@ msgid "Skeletons"
 msgstr "Скелеты"
 
 #: modules/gltf/gltf_state.cpp
-#, fuzzy
 msgid "Skeleton To Node"
-msgstr "Выбрать узел"
+msgstr "Скелет в узел"
 
 #: modules/gltf/gltf_state.cpp
 msgid "Animations"
@@ -17042,7 +17162,6 @@ msgid "Use In Baked Light"
 msgstr "Использовать в запечённом свете"
 
 #: modules/gridmap/grid_map.cpp scene/2d/tile_map.cpp
-#: scene/resources/navigation_mesh.cpp
 msgid "Cell"
 msgstr "Ячейка"
 
@@ -17070,6 +17189,19 @@ msgstr "По центру"
 #: scene/resources/material.cpp
 msgid "Mask"
 msgstr "Маска"
+
+#: modules/gridmap/grid_map.cpp scene/2d/tile_map.cpp
+#, fuzzy
+msgid "Bake Navigation"
+msgstr "Навигация"
+
+#: modules/gridmap/grid_map.cpp scene/2d/navigation_2d.cpp
+#: scene/2d/navigation_agent_2d.cpp scene/2d/navigation_polygon.cpp
+#: scene/2d/tile_map.cpp scene/3d/navigation.cpp scene/3d/navigation_agent.cpp
+#: scene/3d/navigation_mesh_instance.cpp
+#, fuzzy
+msgid "Navigation Layers"
+msgstr "Чувствительность навигации"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Next Plane"
@@ -17480,7 +17612,8 @@ msgstr ""
 "памяти! Исправьте узел пожалуйста."
 
 #: modules/visual_script/visual_script.cpp
-msgid "Node returned an invalid sequence output: "
+#, fuzzy
+msgid "Node returned an invalid sequence output:"
 msgstr "Узел вернул ошибочную последовательность: "
 
 #: modules/visual_script/visual_script.cpp
@@ -17489,7 +17622,8 @@ msgstr ""
 "Найдена последовательность бит, но не узел в стеке, сообщение об ошибке!"
 
 #: modules/visual_script/visual_script.cpp
-msgid "Stack overflow with stack depth: "
+#, fuzzy
+msgid "Stack overflow with stack depth:"
 msgstr "Переполнение стека с глубиной стека: "
 
 #: modules/visual_script/visual_script.cpp
@@ -17857,7 +17991,8 @@ msgid "for (elem) in (input):"
 msgstr "для (элемент) в (вход):"
 
 #: modules/visual_script/visual_script_flow_control.cpp
-msgid "Input type not iterable: "
+#, fuzzy
+msgid "Input type not iterable:"
 msgstr "Входной тип не итерируемый: "
 
 #: modules/visual_script/visual_script_flow_control.cpp
@@ -17865,7 +18000,8 @@ msgid "Iterator became invalid"
 msgstr "Итератор стал недействительным"
 
 #: modules/visual_script/visual_script_flow_control.cpp
-msgid "Iterator became invalid: "
+#, fuzzy
+msgid "Iterator became invalid:"
 msgstr "Итератор стал недействительным: "
 
 #: modules/visual_script/visual_script_flow_control.cpp
@@ -18020,11 +18156,13 @@ msgid "Operator"
 msgstr "Оператор"
 
 #: modules/visual_script/visual_script_nodes.cpp
-msgid ": Invalid argument of type: "
+#, fuzzy
+msgid "Invalid argument of type:"
 msgstr ": Недопустимый аргумент типа: "
 
 #: modules/visual_script/visual_script_nodes.cpp
-msgid ": Invalid arguments: "
+#, fuzzy
+msgid "Invalid arguments:"
 msgstr ": Недопустимые аргументы: "
 
 #: modules/visual_script/visual_script_nodes.cpp
@@ -18036,11 +18174,13 @@ msgid "Var Name"
 msgstr "Имя переменной"
 
 #: modules/visual_script/visual_script_nodes.cpp
-msgid "VariableGet not found in script: "
+#, fuzzy
+msgid "VariableGet not found in script:"
 msgstr "VariableGet не найден в скрипте: "
 
 #: modules/visual_script/visual_script_nodes.cpp
-msgid "VariableSet not found in script: "
+#, fuzzy
+msgid "VariableSet not found in script:"
 msgstr "VariableSet не найден в скрипте: "
 
 #: modules/visual_script/visual_script_nodes.cpp
@@ -18570,10 +18710,6 @@ msgid "Could not execute on device."
 msgstr "Не удалось выполнить на устройстве."
 
 #: platform/android/export/export_plugin.cpp
-msgid "Unable to find the 'apksigner' tool."
-msgstr "Не удалось найти инструмент «apksigner»."
-
-#: platform/android/export/export_plugin.cpp
 msgid ""
 "Android build template not installed in the project. Install it from the "
 "Project menu."
@@ -18702,12 +18838,17 @@ msgstr ""
 msgid "\"Target Sdk\" version must be greater or equal to \"Min Sdk\" version."
 msgstr "Версия «Target Sdk» должна быть больше или равна версии «Min Sdk»."
 
+#: platform/android/export/export_plugin.cpp platform/osx/export/export.cpp
+#: platform/windows/export/export.cpp
+#, fuzzy
+msgid "Code Signing"
+msgstr "Подпись кода DMG"
+
 #: platform/android/export/export_plugin.cpp
+#, fuzzy
 msgid ""
-"'apksigner' could not be found.\n"
-"Please check the command is available in the Android SDK build-tools "
-"directory.\n"
-"The resulting %s is unsigned."
+"'apksigner' could not be found. Please check that the command is available "
+"in the Android SDK build-tools directory. The resulting %s is unsigned."
 msgstr ""
 "Не удалось найти команду «apksigner».\n"
 "Пожалуйста, проверьте наличие программы в каталоге Android SDK build-tools.\n"
@@ -18724,6 +18865,11 @@ msgstr "Подписание релиза %s..."
 #: platform/android/export/export_plugin.cpp
 msgid "Could not find keystore, unable to export."
 msgstr "Не удалось найти хранилище ключей, невозможно экспортировать."
+
+#: platform/android/export/export_plugin.cpp
+#, fuzzy
+msgid "Could not start apksigner executable."
+msgstr "Не удаётся запустить подпроцесс!"
 
 #: platform/android/export/export_plugin.cpp
 msgid "'apksigner' returned with error #%d"
@@ -18754,7 +18900,8 @@ msgid "Invalid filename! Android APK requires the *.apk extension."
 msgstr "Неверное имя файла! Android APK требует расширения *.apk."
 
 #: platform/android/export/export_plugin.cpp
-msgid "Unsupported export format!\n"
+#, fuzzy
+msgid "Unsupported export format!"
 msgstr "Неподдерживаемый формат экспорта!\n"
 
 #: platform/android/export/export_plugin.cpp
@@ -18766,10 +18913,9 @@ msgstr ""
 "не существует. Пожалуйста, переустановите из меню «Проект»."
 
 #: platform/android/export/export_plugin.cpp
+#, fuzzy
 msgid ""
-"Android build version mismatch:\n"
-"   Template installed: %s\n"
-"   Godot Version: %s\n"
+"Android build version mismatch: Template installed: %s, Godot version: %s. "
 "Please reinstall Android build template from 'Project' menu."
 msgstr ""
 "Несоответствие версии сборки Android:\n"
@@ -18778,13 +18924,15 @@ msgstr ""
 "Пожалуйста, переустановите шаблон сборки Android из меню «Проект»."
 
 #: platform/android/export/export_plugin.cpp
+#, fuzzy
 msgid ""
-"Unable to overwrite res://android/build/res/*.xml files with project name"
+"Unable to overwrite res://android/build/res/*.xml files with project name."
 msgstr ""
 "Невозможно перезаписать файлы res://android/build/res/*.xml с именем проекта"
 
 #: platform/android/export/export_plugin.cpp
-msgid "Could not export project files to gradle project\n"
+#, fuzzy
+msgid "Could not export project files to gradle project."
 msgstr "Не удалось экспортировать файлы проекта в проект gradle\n"
 
 #: platform/android/export/export_plugin.cpp
@@ -18796,8 +18944,9 @@ msgid "Building Android Project (gradle)"
 msgstr "Сборка проекта Android (gradle)"
 
 #: platform/android/export/export_plugin.cpp
+#, fuzzy
 msgid ""
-"Building of Android project failed, check output for the error.\n"
+"Building of Android project failed, check output for the error. "
 "Alternatively visit docs.godotengine.org for Android build documentation."
 msgstr ""
 "Сборка проекта Android не удалась, проверьте вывод на ошибки.\n"
@@ -18817,7 +18966,8 @@ msgstr ""
 "проекта gradle на наличие выходных данных."
 
 #: platform/android/export/export_plugin.cpp
-msgid "Package not found: %s"
+#, fuzzy
+msgid "Package not found: \"%s\"."
 msgstr "Пакет не найден: %s"
 
 #: platform/android/export/export_plugin.cpp
@@ -18825,17 +18975,16 @@ msgid "Creating APK..."
 msgstr "Создание APK..."
 
 #: platform/android/export/export_plugin.cpp
-msgid ""
-"Could not find template APK to export:\n"
-"%s"
+#, fuzzy
+msgid "Could not find template APK to export: \"%s\"."
 msgstr ""
 "Не удалось найти шаблон APK для экспорта:\n"
 "%s"
 
 #: platform/android/export/export_plugin.cpp
+#, fuzzy
 msgid ""
-"Missing libraries in the export template for the selected architectures: "
-"%s.\n"
+"Missing libraries in the export template for the selected architectures: %s. "
 "Please build a template with all required libraries, or uncheck the missing "
 "architectures in the export preset."
 msgstr ""
@@ -18848,7 +18997,8 @@ msgid "Adding files..."
 msgstr "Добавление файлов..."
 
 #: platform/android/export/export_plugin.cpp
-msgid "Could not export project files"
+#, fuzzy
+msgid "Could not export project files."
 msgstr "Не удалось экспортировать файлы проекта"
 
 #: platform/android/export/export_plugin.cpp
@@ -19087,6 +19237,17 @@ msgstr "Пользовательский цвет"
 msgid "Custom BG Color"
 msgstr "Пользовательский цвет"
 
+#: platform/iphone/export/export.cpp platform/javascript/export/export.cpp
+#: platform/osx/export/export.cpp
+#, fuzzy
+msgid "Prepare Templates"
+msgstr "Управление шаблонами"
+
+#: platform/iphone/export/export.cpp platform/osx/export/export.cpp
+#, fuzzy
+msgid "Export template not found."
+msgstr "Пользовательский релизный шаблон не найден."
+
 #: platform/iphone/export/export.cpp
 msgid "App Store Team ID not specified - cannot configure the project."
 msgstr "App Store Team ID не указан - невозможно настроить проект."
@@ -19108,20 +19269,33 @@ msgid "Run exported HTML in the system's default browser."
 msgstr "Запустить HTML в системном браузере по умолчанию."
 
 #: platform/javascript/export/export.cpp
-msgid "Could not open template for export:"
+#, fuzzy
+msgid "Could not open template for export: \"%s\"."
 msgstr "Не удалось открыть шаблон для экспорта:"
 
 #: platform/javascript/export/export.cpp
-msgid "Invalid export template:"
+#, fuzzy
+msgid "Invalid export template: \"%s\"."
 msgstr "Неверный шаблон экспорта:"
 
 #: platform/javascript/export/export.cpp
-msgid "Could not write file:"
+#, fuzzy
+msgid "Could not write file: \"%s\"."
 msgstr "Не удалось записать файл:"
 
+#: platform/javascript/export/export.cpp platform/osx/export/export.cpp
+#, fuzzy
+msgid "Icon Creation"
+msgstr "Задать отступ"
+
 #: platform/javascript/export/export.cpp
-msgid "Could not read file:"
+#, fuzzy
+msgid "Could not read file: \"%s\"."
 msgstr "Не удалось прочитать файл:"
+
+#: platform/javascript/export/export.cpp
+msgid "PWA"
+msgstr ""
 
 #: platform/javascript/export/export.cpp
 #, fuzzy
@@ -19198,15 +19372,18 @@ msgid "Icon 512 X 512"
 msgstr ""
 
 #: platform/javascript/export/export.cpp
-msgid "Could not read HTML shell:"
+#, fuzzy
+msgid "Could not read HTML shell: \"%s\"."
 msgstr "Не удалось прочитать HTML-оболочку:"
 
 #: platform/javascript/export/export.cpp
-msgid "Could not create HTTP server directory:"
+#, fuzzy
+msgid "Could not create HTTP server directory: %s."
 msgstr "Не удалось создать каталог HTTP-сервера:"
 
 #: platform/javascript/export/export.cpp
-msgid "Error starting HTTP server:"
+#, fuzzy
+msgid "Error starting HTTP server: %d."
 msgstr "Ошибка запуска HTTP-сервера:"
 
 #: platform/javascript/export/export.cpp
@@ -19498,9 +19675,29 @@ msgid "Apple Team ID"
 msgstr ""
 
 #: platform/osx/export/export.cpp
+#, fuzzy
+msgid "Could not open icon file \"%s\"."
+msgstr "Не удалось экспортировать файлы проекта"
+
+#: platform/osx/export/export.cpp
+#, fuzzy
+msgid "Could not start xcrun executable."
+msgstr "Не удаётся запустить подпроцесс!"
+
+#: platform/osx/export/export.cpp
+#, fuzzy
+msgid "Notarization failed."
+msgstr "Локализация"
+
+#: platform/osx/export/export.cpp
+msgid "Notarization request UUID: \"%s\""
+msgstr ""
+
+#: platform/osx/export/export.cpp
+#, fuzzy
 msgid ""
-"Note: The notarization process generally takes less than an hour. When the "
-"process is completed, you'll receive an email."
+"The notarization process generally takes less than an hour. When the process "
+"is completed, you'll receive an email."
 msgstr ""
 "Примечание: Процесс подтверждения обычно занимает менее часа. Когда процесс "
 "завершится, вы получите электронное письмо."
@@ -19522,16 +19719,78 @@ msgstr ""
 "экспортированному приложению (необязательно):"
 
 #: platform/osx/export/export.cpp
+#, fuzzy
+msgid "Timestamping is not compatible with ad-hoc signature, and was disabled!"
+msgstr "Временные метки не совместимы с подписью ad-hoc и будут отключены!"
+
+#: platform/osx/export/export.cpp
+#, fuzzy
+msgid ""
+"Hardened Runtime is not compatible with ad-hoc signature, and was disabled!"
+msgstr ""
+"Защищённая среда выполнения несовместима с подписью ad-hoc и будет отключена!"
+
+#: platform/osx/export/export.cpp
+msgid "Built-in CodeSign failed with error \"%s\"."
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid "Built-in CodeSign require regex module."
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid ""
+"Could not start codesign executable, make sure Xcode command line tools are "
+"installed."
+msgstr ""
+
+#: platform/osx/export/export.cpp platform/windows/export/export.cpp
 msgid "No identity found."
 msgstr "Identity не найдена."
+
+#: platform/osx/export/export.cpp
+#, fuzzy
+msgid "Cannot sign file %s."
+msgstr "Ошибка при сохранении файла: %s"
+
+#: platform/osx/export/export.cpp
+#, fuzzy
+msgid "Relative symlinks are not supported, exported \"%s\" might be broken!"
+msgstr ""
+"Относительные символические ссылки не поддерживаются в этой ОС, "
+"экспортируемый проект может быть повреждён!"
+
+#: platform/osx/export/export.cpp
+#, fuzzy
+msgid "DMG Creation"
+msgstr "Направление"
+
+#: platform/osx/export/export.cpp
+#, fuzzy
+msgid "Could not start hdiutil executable."
+msgstr "Не удаётся запустить подпроцесс!"
+
+#: platform/osx/export/export.cpp
+msgid "`hdiutil create` failed - file exists."
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid "`hdiutil create` failed."
+msgstr ""
 
 #: platform/osx/export/export.cpp
 msgid "Creating app bundle"
 msgstr "Создание пакета приложения"
 
 #: platform/osx/export/export.cpp
-msgid "Could not find template app to export:"
+#, fuzzy
+msgid "Could not find template app to export: \"%s\"."
 msgstr "Не удалось найти шаблон приложения для экспорта:"
+
+#: platform/osx/export/export.cpp
+#, fuzzy
+msgid "Invalid export format."
+msgstr "Неверный шаблон экспорта:"
 
 #: platform/osx/export/export.cpp
 msgid ""
@@ -19542,8 +19801,9 @@ msgstr ""
 "экспортируемый проект может быть повреждён!"
 
 #: platform/osx/export/export.cpp
+#, fuzzy
 msgid ""
-"Requested template binary '%s' not found. It might be missing from your "
+"Requested template binary \"%s\" not found. It might be missing from your "
 "template archive."
 msgstr ""
 "Запрошенный двоичный файл шаблона «%s» не найден. Он может отсутствовать в "
@@ -19588,6 +19848,16 @@ msgstr ""
 #: platform/osx/export/export.cpp
 msgid "Sending archive for notarization"
 msgstr "Отправка архива для подтверждения"
+
+#: platform/osx/export/export.cpp
+#, fuzzy
+msgid "ZIP Creation"
+msgstr "Проекция"
+
+#: platform/osx/export/export.cpp
+#, fuzzy
+msgid "Could not open file to read from path \"%s\"."
+msgstr "Не удалось экспортировать файлы проекта в проект gradle\n"
 
 #: platform/osx/export/export.cpp
 msgid "Invalid bundle identifier:"
@@ -19927,6 +20197,11 @@ msgid "Debug Algorithm"
 msgstr "Отладчик"
 
 #: platform/windows/export/export.cpp
+#, fuzzy
+msgid "Failed to rename temporary file \"%s\"."
+msgstr "Невозможно удалить временный файл:"
+
+#: platform/windows/export/export.cpp
 msgid "Identity Type"
 msgstr ""
 
@@ -19972,6 +20247,76 @@ msgid "Trademarks"
 msgstr ""
 
 #: platform/windows/export/export.cpp
+#, fuzzy
+msgid "Resources Modification"
+msgstr "Всплывающее уведомление"
+
+#: platform/windows/export/export.cpp
+#, fuzzy
+msgid "Could not find rcedit executable at \"%s\"."
+msgstr "Не удалось найти хранилище ключей, невозможно экспортировать."
+
+#: platform/windows/export/export.cpp
+#, fuzzy
+msgid "Could not find wine executable at \"%s\"."
+msgstr "Не удалось найти хранилище ключей, невозможно экспортировать."
+
+#: platform/windows/export/export.cpp
+#, fuzzy
+msgid ""
+"Could not start rcedit executable, configure rcedit path in the Editor "
+"Settings (Export > Windows > Rcedit)."
+msgstr ""
+"Инструмент rcedit должен быть настроен в Настройках редактора (Export > "
+"Windows > Rcedit) для изменения значка или информационных данных приложения."
+
+#: platform/windows/export/export.cpp
+msgid ""
+"rcedit failed to modify executable:\n"
+"%s"
+msgstr ""
+
+#: platform/windows/export/export.cpp
+#, fuzzy
+msgid "Could not find signtool executable at \"%s\"."
+msgstr "Не удалось найти хранилище ключей, невозможно экспортировать."
+
+#: platform/windows/export/export.cpp
+#, fuzzy
+msgid "Could not find osslsigncode executable at \"%s\"."
+msgstr "Не удалось найти хранилище ключей, невозможно экспортировать."
+
+#: platform/windows/export/export.cpp
+#, fuzzy
+msgid "Invalid identity type."
+msgstr "Неверный идентификатор:"
+
+#: platform/windows/export/export.cpp
+#, fuzzy
+msgid "Invalid timestamp server."
+msgstr "Недопустимое имя."
+
+#: platform/windows/export/export.cpp
+#, fuzzy
+msgid ""
+"Could not start signtool executable, configure signtool path in the Editor "
+"Settings (Export > Windows > Signtool)."
+msgstr ""
+"Инструмент rcedit должен быть настроен в Настройках редактора (Export > "
+"Windows > Rcedit) для изменения значка или информационных данных приложения."
+
+#: platform/windows/export/export.cpp
+msgid ""
+"Signtool failed to sign executable:\n"
+"%s"
+msgstr ""
+
+#: platform/windows/export/export.cpp
+#, fuzzy
+msgid "Failed to remove temporary file \"%s\"."
+msgstr "Невозможно удалить временный файл:"
+
+#: platform/windows/export/export.cpp
 msgid ""
 "The rcedit tool must be configured in the Editor Settings (Export > Windows "
 "> Rcedit) to change the icon or app information data."
@@ -19992,6 +20337,23 @@ msgid "Invalid product version:"
 msgstr "Недопустимая версия продукта:"
 
 #: platform/windows/export/export.cpp
+msgid "Windows executables cannot be >= 4 GiB."
+msgstr ""
+
+#: platform/windows/export/export.cpp platform/x11/export/export.cpp
+#, fuzzy
+msgid "Failed to open executable file \"%s\"."
+msgstr "Недопустимый исполняемый файл."
+
+#: platform/windows/export/export.cpp platform/x11/export/export.cpp
+msgid "Executable file header corrupted."
+msgstr ""
+
+#: platform/windows/export/export.cpp platform/x11/export/export.cpp
+msgid "Executable \"pck\" section not found."
+msgstr ""
+
+#: platform/windows/export/export.cpp
 msgid "Windows"
 msgstr "Windows"
 
@@ -20005,6 +20367,10 @@ msgstr ""
 
 #: platform/windows/export/export.cpp
 msgid "Wine"
+msgstr ""
+
+#: platform/x11/export/export.cpp
+msgid "32-bit executables cannot have embedded data >= 4 GiB."
 msgstr ""
 
 #: scene/2d/animated_sprite.cpp scene/3d/sprite_3d.cpp
@@ -20130,7 +20496,8 @@ msgstr "Поток приостановлен"
 
 #: scene/2d/audio_stream_player_2d.cpp scene/3d/audio_stream_player_3d.cpp
 #: scene/3d/light.cpp scene/3d/reflection_probe.cpp
-#: scene/3d/visual_instance.cpp scene/resources/material.cpp
+#: scene/3d/visibility_notifier.cpp scene/3d/visual_instance.cpp
+#: scene/resources/material.cpp
 msgid "Max Distance"
 msgstr "Максимальное расстояние"
 
@@ -20976,16 +21343,18 @@ msgstr ""
 "Пожалуйста, установите свойство или нарисуйте многоугольник."
 
 #: scene/2d/navigation_polygon.cpp
-msgid ""
-"NavigationPolygonInstance must be a child or grandchild to a Navigation2D "
-"node. It only provides navigation data."
-msgstr ""
-"NavigationPolygonInstance должен быть ребёнком или внуком узла Navigation2D. "
-"Он предоставляет только навигационные данные."
-
-#: scene/2d/navigation_polygon.cpp
 msgid "Navpoly"
 msgstr ""
+
+#: scene/2d/navigation_polygon.cpp scene/3d/navigation_mesh_instance.cpp
+#, fuzzy
+msgid "Enter Cost"
+msgstr "Внизу посередине"
+
+#: scene/2d/navigation_polygon.cpp scene/3d/navigation_mesh_instance.cpp
+#, fuzzy
+msgid "Travel Cost"
+msgstr "Переместится"
 
 #: scene/2d/node_2d.cpp scene/2d/polygon_2d.cpp scene/3d/spatial.cpp
 #: scene/main/canvas_layer.cpp
@@ -21734,9 +22103,8 @@ msgid "Custom Sky"
 msgstr "Пользовательское небо"
 
 #: scene/3d/baked_lightmap.cpp
-#, fuzzy
 msgid "Custom Sky Rotation Degrees"
-msgstr "Пользовательские градусы вращения неба"
+msgstr "Пользовательские Градусы Вращения Неба"
 
 #: scene/3d/baked_lightmap.cpp scene/3d/ray_cast.cpp
 msgid "Custom Color"
@@ -21747,9 +22115,8 @@ msgid "Custom Energy"
 msgstr "Пользовательская энергия"
 
 #: scene/3d/baked_lightmap.cpp
-#, fuzzy
 msgid "Min Light"
-msgstr "Отступ вправо"
+msgstr "Минимальный Свет"
 
 #: scene/3d/baked_lightmap.cpp scene/3d/gi_probe.cpp
 #, fuzzy
@@ -21766,9 +22133,8 @@ msgid "Light Data"
 msgstr "С данными"
 
 #: scene/3d/bone_attachment.cpp scene/3d/physics_body.cpp
-#, fuzzy
 msgid "Bone Name"
-msgstr "Имя кости"
+msgstr "Имя Кости"
 
 #: scene/3d/camera.cpp
 msgid "Keep Aspect"
@@ -21784,9 +22150,8 @@ msgid "Doppler Tracking"
 msgstr "Трек параметра"
 
 #: scene/3d/camera.cpp
-#, fuzzy
 msgid "Projection"
-msgstr "Проект"
+msgstr "Проекция"
 
 #: scene/3d/camera.cpp
 msgid "FOV"
@@ -21798,13 +22163,12 @@ msgid "Frustum Offset"
 msgstr "Смещение усеченного конуса"
 
 #: scene/3d/camera.cpp
-#, fuzzy
 msgid "Near"
-msgstr "Ближайшие"
+msgstr "Близко"
 
 #: scene/3d/camera.cpp
 msgid "Far"
-msgstr ""
+msgstr "Далеко"
 
 #: scene/3d/camera.cpp scene/3d/collision_polygon.cpp scene/3d/spring_arm.cpp
 #: scene/gui/control.cpp scene/resources/default_theme/default_theme.cpp
@@ -21815,18 +22179,16 @@ msgid "Margin"
 msgstr "Отступ"
 
 #: scene/3d/camera.cpp
-#, fuzzy
 msgid "Clip To"
-msgstr "Обрезать сверху"
+msgstr "Обрезать До"
 
 #: scene/3d/collision_object.cpp scene/3d/soft_body.cpp
 msgid "Ray Pickable"
 msgstr ""
 
 #: scene/3d/collision_object.cpp
-#, fuzzy
 msgid "Capture On Drag"
-msgstr "Захват"
+msgstr "Захват При Перетаскивании"
 
 #: scene/3d/collision_object.cpp
 msgid ""
@@ -21902,24 +22264,20 @@ msgid "Box Extents"
 msgstr "Гизмо"
 
 #: scene/3d/cpu_particles.cpp scene/resources/particles_material.cpp
-#, fuzzy
 msgid "Ring Radius"
-msgstr "Маска излучения"
+msgstr "Радиус Кольца"
 
 #: scene/3d/cpu_particles.cpp scene/resources/particles_material.cpp
-#, fuzzy
 msgid "Ring Inner Radius"
-msgstr "Изменение внутреннего радиуса полукруга"
+msgstr "Внутренний Радиус Кольца"
 
 #: scene/3d/cpu_particles.cpp scene/resources/particles_material.cpp
-#, fuzzy
 msgid "Ring Height"
-msgstr "Повернуть вправо"
+msgstr "Высота Кольца"
 
 #: scene/3d/cpu_particles.cpp scene/resources/particles_material.cpp
-#, fuzzy
 msgid "Ring Axis"
-msgstr "Предупреждения"
+msgstr "Ось Кольца"
 
 #: scene/3d/cpu_particles.cpp scene/resources/particles_material.cpp
 #, fuzzy
@@ -22193,14 +22551,6 @@ msgstr "[Игнорировать]"
 msgid ""
 "The NavigationAgent can be used only under a Spatial inheriting parent node."
 msgstr "NavigationAgent можно использовать только под узлом Spatial."
-
-#: scene/3d/navigation_mesh_instance.cpp
-msgid ""
-"NavigationMeshInstance must be a child or grandchild to a Navigation node. "
-"It only provides navigation data."
-msgstr ""
-"NavigationMeshInstance должен быть дочерним или под-дочерним узлом "
-"Navigation. Он предоставляет только навигационные данные."
 
 #: scene/3d/navigation_mesh_instance.cpp scene/resources/mesh_library.cpp
 #, fuzzy
@@ -24908,6 +25258,16 @@ msgid "3D Physics"
 msgstr "Физика"
 
 #: scene/register_scene_types.cpp
+#, fuzzy
+msgid "2D Navigation"
+msgstr "Навигация"
+
+#: scene/register_scene_types.cpp
+#, fuzzy
+msgid "3D Navigation"
+msgstr "Навигация"
+
+#: scene/register_scene_types.cpp
 msgid "Use hiDPI"
 msgstr ""
 
@@ -26310,7 +26670,7 @@ msgstr "Пропускание света"
 msgid "Refraction"
 msgstr "Преломление"
 
-#: scene/resources/material.cpp scene/resources/navigation_mesh.cpp
+#: scene/resources/material.cpp
 msgid "Detail"
 msgstr "Деталь"
 
@@ -26395,7 +26755,12 @@ msgstr ""
 
 #: scene/resources/navigation_mesh.cpp
 #, fuzzy
-msgid "Sample Partition Type"
+msgid "Sampling"
+msgstr "Масштаб:"
+
+#: scene/resources/navigation_mesh.cpp
+#, fuzzy
+msgid "Partition Type"
 msgstr "Задать базовый тип вариации"
 
 #: scene/resources/navigation_mesh.cpp
@@ -26412,8 +26777,14 @@ msgid "Source Group Name"
 msgstr "Название группы-источника"
 
 #: scene/resources/navigation_mesh.cpp
-msgid "Agent"
-msgstr ""
+#, fuzzy
+msgid "Cells"
+msgstr "Ячейка"
+
+#: scene/resources/navigation_mesh.cpp
+#, fuzzy
+msgid "Agents"
+msgstr "Сегменты"
 
 #: scene/resources/navigation_mesh.cpp
 msgid "Max Climb"
@@ -26425,11 +26796,17 @@ msgstr ""
 
 #: scene/resources/navigation_mesh.cpp
 #, fuzzy
+msgid "Regions"
+msgstr "Регион"
+
+#: scene/resources/navigation_mesh.cpp
+#, fuzzy
 msgid "Merge Size"
 msgstr "Слияние из Сцены"
 
 #: scene/resources/navigation_mesh.cpp
-msgid "Edge"
+#, fuzzy
+msgid "Edges"
 msgstr "Край"
 
 #: scene/resources/navigation_mesh.cpp
@@ -26440,6 +26817,11 @@ msgstr "Ошибка"
 #: scene/resources/navigation_mesh.cpp
 msgid "Verts Per Poly"
 msgstr ""
+
+#: scene/resources/navigation_mesh.cpp
+#, fuzzy
+msgid "Details"
+msgstr "Деталь"
 
 #: scene/resources/navigation_mesh.cpp
 #, fuzzy
@@ -26460,7 +26842,7 @@ msgid "Ledge Spans"
 msgstr ""
 
 #: scene/resources/navigation_mesh.cpp
-msgid "Filter Walkable Low Height Spans"
+msgid "Walkable Low Height Spans"
 msgstr ""
 
 #: scene/resources/occluder_shape.cpp
@@ -26510,24 +26892,20 @@ msgid "Point Texture"
 msgstr "Текстура точки"
 
 #: scene/resources/particles_material.cpp
-#, fuzzy
 msgid "Normal Texture"
-msgstr "Обычная текстура"
+msgstr "Нормаль Текстура"
 
 #: scene/resources/particles_material.cpp
-#, fuzzy
 msgid "Color Texture"
-msgstr "Тема редактора"
+msgstr "Текстура Цвета"
 
 #: scene/resources/particles_material.cpp
-#, fuzzy
 msgid "Point Count"
-msgstr "Добавить входной порт"
+msgstr "Количество Точек"
 
 #: scene/resources/particles_material.cpp
-#, fuzzy
 msgid "Scale Random"
-msgstr "Случайный масштаб"
+msgstr "Случайный Масштаб"
 
 #: scene/resources/particles_material.cpp
 #, fuzzy
@@ -26860,6 +27238,11 @@ msgid "Scenario"
 msgstr "Сцена"
 
 #: scene/resources/world.cpp scene/resources/world_2d.cpp
+#, fuzzy
+msgid "Navigation Map"
+msgstr "Навигация"
+
+#: scene/resources/world.cpp scene/resources/world_2d.cpp
 msgid "Direct Space State"
 msgstr ""
 
@@ -26875,6 +27258,26 @@ msgstr "Левый линейный"
 #: scene/resources/world.cpp scene/resources/world_2d.cpp
 msgid "Default Angular Damp"
 msgstr ""
+
+#: scene/resources/world.cpp
+#, fuzzy
+msgid "Default Map Up"
+msgstr "Шаг по умолчанию плавающих чисел"
+
+#: scene/resources/world.cpp scene/resources/world_2d.cpp
+#, fuzzy
+msgid "Default Cell Size"
+msgstr "Размер ячейки"
+
+#: scene/resources/world.cpp scene/resources/world_2d.cpp
+#, fuzzy
+msgid "Default Cell Height"
+msgstr "Тестируемые"
+
+#: scene/resources/world.cpp scene/resources/world_2d.cpp
+#, fuzzy
+msgid "Default Edge Connection Margin"
+msgstr "Пограничное соединение"
 
 #: scene/resources/world_2d.cpp
 msgid "Canvas"

@@ -411,7 +411,10 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	ClassDB::register_class<Performance>();
 	engine->add_singleton(Engine::Singleton("Performance", performance));
 
-	GLOBAL_DEF("debug/settings/crash_handler/message", String("Please include this when reporting the bug on https://github.com/godotengine/godot/issues"));
+	GLOBAL_DEF("debug/settings/crash_handler/message",
+			String("Please include this when reporting the bug to the project developer."));
+	GLOBAL_DEF("debug/settings/crash_handler/message.editor",
+			String("Please include this when reporting the bug on: https://github.com/godotengine/godot/issues"));
 
 	MAIN_PRINT("Main: Parse CMDLine");
 
@@ -1249,7 +1252,11 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	}
 
 	GLOBAL_DEF("display/window/ios/hide_home_indicator", true);
-	GLOBAL_DEF("input_devices/pointing/ios/touch_delay", 0.150);
+	GLOBAL_DEF("input_devices/pointing/ios/touch_delay", 0.15);
+	ProjectSettings::get_singleton()->set_custom_property_info("input_devices/pointing/ios/touch_delay",
+			PropertyInfo(Variant::REAL,
+					"input_devices/pointing/ios/touch_delay",
+					PROPERTY_HINT_RANGE, "0,1,0.001"));
 
 	Engine::get_singleton()->set_frame_delay(frame_delay);
 
@@ -1340,14 +1347,14 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 		if (OS::get_singleton()->_use_vsync && OS::get_singleton()->_vsync_via_compositor) {
 #ifdef WINDOWS_ENABLED
 			// V-Sync via compositor is only supported on Windows.
-			print_verbose("Requested V-Sync mode: Enabled (via compositor) - FPS will likely be capped to the monitor refresh rate.");
+			print_line("Requested V-Sync mode: Enabled (via compositor) - FPS will likely be capped to the monitor refresh rate.");
 #else
-			print_verbose("Requested V-Sync mode: Enabled - FPS will likely be capped to the monitor refresh rate.");
+			print_line("Requested V-Sync mode: Enabled - FPS will likely be capped to the monitor refresh rate.");
 #endif
 		} else if (OS::get_singleton()->_use_vsync) {
-			print_verbose("Requested V-Sync mode: Enabled - FPS will likely be capped to the monitor refresh rate.");
+			print_line("Requested V-Sync mode: Enabled - FPS will likely be capped to the monitor refresh rate.");
 		} else {
-			print_verbose("Requested V-Sync mode: Disabled");
+			print_line("Requested V-Sync mode: Disabled");
 		}
 	}
 
