@@ -6,6 +6,7 @@
 #include "editor/editor_node.h"
 #include "editor/mixin_script_editor.h"
 #include "editor/mixin_script_editor_plugin.h"
+#include "editor/data_container_preview.h"
 #include "io/image_loader_indexed_png.h"
 #include "io/resource_saver_indexed_png.h"
 #include "src/mixin_script.h"
@@ -23,12 +24,18 @@ static Ref<ResourceSaverIndexedPNG> resource_saver_indexed_png;
 static MixinScriptLanguage *script_mixin_script = nullptr;
 static Ref<Rand> rand_ref;
 
-#if defined(TOOLS_ENABLED)
+#ifdef TOOLS_ENABLED
 static ScriptEditorBase *create_editor(const RES &p_resource) {
 	if (Object::cast_to<MixinScript>(*p_resource)) {
 		return memnew(MixinScriptEditor);
 	}
 	return nullptr;
+}
+
+void _data_container_preview_init() {
+	Ref<DataContainerPreviewGenerator> data_container_preview;
+	data_container_preview.instance();
+	EditorResourcePreview::get_singleton()->add_preview_generator(data_container_preview);
 }
 
 static void mixin_script_register_editor_callback() {
@@ -50,7 +57,7 @@ void register_goblin_types() {
 	ClassDB::register_class<MixinScript>();
 	ClassDB::register_class<Mixin>();
 
-	// Midi Playr
+	// Midi Player
 	ClassDB::register_class<MidiPlayer>();
 	ClassDB::register_class<MidiFile>();
 
@@ -76,6 +83,8 @@ void register_goblin_types() {
 		ResourceFormatImporter::get_singleton()->add_importer(midiobject);
 
 	}
+
+	EditorNode::add_init_callback(_data_container_preview_init);
 
 #endif
 
