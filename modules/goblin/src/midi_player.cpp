@@ -1,5 +1,5 @@
 /* 
-Copyright (c) 2021 Filip Anton (filipworks) 
+Copyright (c) 2021 Filip Anton (filipworksdev) 
 Created for Goblin Engine github.com/goblinengine
 Initial implementation based on https://github.com/RodZill4/godot-music
 

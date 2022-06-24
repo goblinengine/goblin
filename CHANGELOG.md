@@ -5,12 +5,19 @@
 
 ### Additions
 
+- Added `gif` module that is able to load animated gifs.
+- Ported the following classes from [Goost](https://github.com/goostengine/goost) with permission from the author [Xrayez](https://github.com/Xrayez):
+    - `GridRect` A Control for drawing infinite grids
+    - `Stopwatch` Similar to `Timer` except it counts time between start and stop
+    - `LinkedList`, `ListNode` allows you to create LinkedLists in Godot
+    - `DataContainer` A Resource which can store any Variant and which can be saved as a .tres file. The icon changes depending on what type of data is being stored.
+    - `Map2D` A generic 2D structure for storing data in a 2d coodinate system x, y or row/col etc
 - Added `remove_children()` to Node which removes all children
 - Added `UPPER_SNAKE_CASE, kebab-case, UPPER-KEBAB-CASE` to Node Name Casing in Project Settings.
-- Added [Voxelman](https://github.com/Relintai/voxelman) and [Thread pool](https://github.com/Relintai/thread_pool) modules by [Relintai](https://github.com/Relintai). The docs still require a bit of cleanup.
+- Added [Voxelman](https://github.com/Relintai/voxelman) and [Thread pool](https://github.com/Relintai/thread_pool) modules by [Relintai](https://github.com/Relintai). Still requires documentation.
 - Added `tightness` to `AudioStreamPlayer3D` which controls how tight the sound playing encloses the player. Based on an unmerged 4.0 pr found [here](https://github.com/godotengine/godot/pull/42358).
 - Implemented `Array.for_each(obj, "function")` which calls a function for each element of the array. The function can be any name but must have only 1 parameter to pass each element to. This is slighty faster than a for loop with 1 function and much faster than using `call()` in a for loop. To break the loop have the function return false. Returning nothing or anything else other than false will continue execution.
-- New `Rand` singleton that allows generating completely random values from anywhere. `Rand` auto randomizes every time the engine starts and since it extends `RandomNumberGenerator` you can also call `randomize()` or `set_seed()` manually.
+- New `Rand` singleton that allows generating completely random values from anywhere. `Rand` auto randomizes every time the engine starts and since it extends `RandomNumberGenerator` you can also call `randomize()` or `set_seed()` manually:
     * `shuffle(Array)` shuffles an Array
     * `pop(Array)` removes and returns a random element from a sequence
     * `choice(Variant)` picks a random value from an Array or Dictionary or random character from a string
