@@ -2380,7 +2380,7 @@ AnimatedTexture::AnimatedTexture() {
 	VisualServer::get_singleton()->texture_set_force_redraw_if_visible(proxy, true);
 	time = 0;
 	frame_count = 1;
-	fps = 4;
+	fps = 0; // GOBLIN ENGINE animated texture stop forcing 4 fps
 	prev_ticks = 0;
 	current_frame = 0;
 	pause = false;

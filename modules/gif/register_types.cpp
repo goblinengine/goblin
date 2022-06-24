@@ -11,7 +11,7 @@
 
 static ImageFramesLoaderGIF *image_frames_loader_gif = nullptr;
 
-static Ref<ResourceFormatLoaderImageFrames> resource_format_image_frames;
+// static Ref<ResourceFormatLoaderImageFrames> resource_format_image_frames;
 static Ref<ResourceFormatLoaderAnimatedTexture> resource_format_animated_texture;
 static Ref<ResourceFormatLoaderSpriteFrames> resource_format_sprite_frames;
 
@@ -19,8 +19,8 @@ void register_gif_types() {
 	image_frames_loader_gif = memnew(ImageFramesLoaderGIF);
 	ImageFramesLoader::add_image_frames_format_loader(image_frames_loader_gif);
 
-	resource_format_image_frames.instance();
-	ResourceLoader::add_resource_format_loader(resource_format_image_frames);
+	// resource_format_image_frames.instance();
+	// ResourceLoader::add_resource_format_loader(resource_format_image_frames);
 
 	resource_format_animated_texture.instance();
 	ResourceLoader::add_resource_format_loader(resource_format_animated_texture);
@@ -28,7 +28,7 @@ void register_gif_types() {
 	resource_format_sprite_frames.instance();
 	ResourceLoader::add_resource_format_loader(resource_format_sprite_frames);
 
-	ClassDB::register_class<ImageFrames>();
+	// ClassDB::register_class<ImageFrames>();
 
 #ifdef TOOLS_ENABLED
 	Ref<ResourceImporterAnimatedTexture> import_animated_texture;
@@ -46,8 +46,8 @@ void unregister_gif_types() {
 	if (image_frames_loader_gif) {
 		memdelete(image_frames_loader_gif);
 	}
-	ResourceLoader::remove_resource_format_loader(resource_format_image_frames);
-	resource_format_image_frames.unref();
+	// ResourceLoader::remove_resource_format_loader(resource_format_image_frames);
+	// resource_format_image_frames.unref();
 
 	ResourceLoader::remove_resource_format_loader(resource_format_animated_texture);
 	resource_format_animated_texture.unref();
