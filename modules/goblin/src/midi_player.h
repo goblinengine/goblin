@@ -29,8 +29,8 @@ SOFTWARE.
 #include "scene/main/node.h"
 #include "core/os/file_access.h"
 #include "scene/audio/audio_stream_player.h"
-#include "libs/tsf.h"
-#include "libs/tml.h"
+#include "../libs/tsf.h"
+#include "../libs/tml.h"
 #include "core/resource.h"
 
 // MIDIFILE RESOURCE

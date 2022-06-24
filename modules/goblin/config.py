@@ -24,5 +24,10 @@ def get_doc_classes():
         "MixinScript",
         "MidiPlayer",
         "MidiFile",
-        "Rand"
+        "Rand",
+        "GridRect",
+        "LinkedList",
+        "LinkNode",
+        "Map2D",
+        "Stopwatch"
     ]

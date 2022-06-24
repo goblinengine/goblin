@@ -23,7 +23,7 @@ SOFTWARE.
 
 #pragma once
 
-#include "../mixin_script.h"
+#include "../src/mixin_script.h"
 
 #include "editor/editor_node.h"
 #include "editor/editor_plugin.h"

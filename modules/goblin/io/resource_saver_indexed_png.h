@@ -24,7 +24,7 @@ SOFTWARE.
 #pragma once
 
 #include "core/io/resource_saver.h"
-#include "modules/goblin/image_indexed.h"
+#include "../src/image_indexed.h"
 
 class ResourceSaverIndexedPNG : public ResourceFormatSaver {
 public:

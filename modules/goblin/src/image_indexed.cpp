@@ -21,7 +21,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-#include "modules/goblin/image_indexed.h"
+#include "image_indexed.h"
 #include "core/io/image_loader.h"
 #include <modules/goblin/libs/exoquant.h>
 

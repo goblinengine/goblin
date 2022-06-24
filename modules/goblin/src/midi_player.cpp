@@ -26,9 +26,9 @@ SOFTWARE.
 
 #include "core/bind/core_bind.h"
 #define TSF_IMPLEMENTATION
-#include "libs/tsf.h"
+#include "../libs/tsf.h"
 #define TML_IMPLEMENTATION
-#include "libs/tml.h"
+#include "../libs/tml.h"
 
 // MIDIFILE
 Error MidiFile::load(const String fileName) {

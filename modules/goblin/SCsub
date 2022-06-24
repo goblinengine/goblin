@@ -7,6 +7,7 @@ env_goblin = env.Clone()
 env_goblin.add_source_files(env.modules_sources, "*.cpp")
 env_goblin.add_source_files(env.modules_sources, "io/*.cpp")
 env_goblin.add_source_files(env.modules_sources, "libs/*.c")
+env_goblin.add_source_files(env.modules_sources, "src/*.cpp")
 
 if env["tools"]:
     env_goblin.add_source_files(env.modules_sources, "editor/*.cpp")

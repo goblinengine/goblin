@@ -1,7 +1,7 @@
 #pragma once
 
 #include "core/io/image_loader.h"
-#include "modules/goblin/image_indexed.h"
+#include "../src/image_indexed.h"
 
 #include <png.h>
 
