@@ -38,12 +38,84 @@ Rand::Rand() {
 }
 
 int Rand::i(int from, int to) {
-	// return int(abs(sin(OS::get_singleton()->get_ticks_usec() % to / 12.531)) * to * 11.31) % (to - from) + from;
 	return randi_range(from, to);
 }
 
 real_t Rand::f(real_t from, real_t to) {
 	return randf_range(from, to);
+}
+
+bool Rand::decision(float probability) {
+	ERR_FAIL_COND_V_MSG(probability <= 0.0f, Variant(), "Probability must be a positive value.");
+	return randbase.randf() <= probability;
+}
+
+Variant Rand::bernoulli(float probability, Variant success, Variant failure) {
+	ERR_FAIL_COND_V_MSG(probability <= 0.0f, Variant(), "Probability must be a positive value.");
+	if (decision(probability)) return success;
+	else return failure;
+}
+
+// a number the following distributions are
+// based on gdstats by doxpopuli 
+// https://github.com/droxpopuli/gdstats
+
+float Rand::normal() {
+	return sqrt(-2 * log(randbase.randf())) * cos(2 * PI * randbase.randf());
+}
+
+int Rand::geometric(float probability) {
+	ERR_FAIL_COND_V_MSG(probability <= 0.0f, Variant(), "Probability must be a positive value.");
+	float ra = log(randbase.randf());
+	float under = log(1 - probability);
+	return int(ceil(ra / under));
+}
+
+int Rand::binomial(float probability, int number) {
+	ERR_FAIL_COND_V_MSG(probability <= 0.0f, Variant(), "Probability must be a positive value.");
+	ERR_FAIL_COND_V_MSG(number <= 0, Variant(), "Number must be a positive value.");
+	int count = 0;
+	while(true) {
+		int curr = geometric(probability);
+		if (curr > number) return count;
+		count += 1;
+		number -= curr;
+	}
+}
+
+float Rand::exponential(float lambda) {
+	ERR_FAIL_COND_V_MSG(lambda <= 0.0f, Variant(), "Lambda must be a positive value.");
+	return log(1 - randbase.randf()) / (-1 * lambda);
+}
+
+int Rand::poisson(float lambda) {
+	ERR_FAIL_COND_V_MSG(lambda <= 0.0f, Variant(), "Lambda must be a positive value.");
+	float L = exp(-1.0f * lambda);
+	float probability = 1.0f;
+	int k = 0;
+	
+	k += 1;
+	probability = probability * randbase.randf();
+	
+	while(probability > L) {
+		k += 1;
+		probability = probability * randbase.randf();
+	}
+		
+	return k - 1;
+}
+
+int Rand::pseudo(float probability) {
+	ERR_FAIL_COND_V_MSG(probability <= 0.0f || probability > 1.0f, Variant(), "Probability must be a positive value up to 1.0.");
+	float curr = probability;
+	int trial = 0;
+	while (curr < 1.0) {
+		trial += 1;
+		if (decision(curr)) break;
+		curr += probability;
+	}
+		
+	return trial;
 }
 
 Variant Rand::pop(const Variant &sequence) {
@@ -238,10 +310,6 @@ void Rand::shuffle(Array array) {
 	}
 }
 
-bool Rand::decision(float probability) {
-	return randbase.randf() <= probability;
-}
-
 Variant Rand::roll(uint32_t count, uint32_t faces) {
 	Dictionary roll_res;	
 
@@ -430,8 +498,17 @@ String Rand::uuid() {
 void Rand::_bind_methods() { 
 	ClassDB::bind_method(D_METHOD("i", "from", "to"), &Rand::i, DEFVAL(0), DEFVAL(99));
 	ClassDB::bind_method(D_METHOD("f", "from", "to"), &Rand::f, DEFVAL(0.0f), DEFVAL(1.0f));
+
 	ClassDB::bind_method(D_METHOD("decision", "probability"), &Rand::decision);
+	ClassDB::bind_method(D_METHOD("bernoulli", "probability", "sucess", "failure"), &Rand::bernoulli, DEFVAL(1), DEFVAL(0));
 	
+	ClassDB::bind_method(D_METHOD("normal"), &Rand::normal);
+	ClassDB::bind_method(D_METHOD("geometric", "probability"), &Rand::geometric);
+	ClassDB::bind_method(D_METHOD("binomial", "probability", "number"), &Rand::binomial);
+	ClassDB::bind_method(D_METHOD("exponential", "lambda"), &Rand::exponential);
+	ClassDB::bind_method(D_METHOD("poisson", "lambda"), &Rand::poisson);
+	ClassDB::bind_method(D_METHOD("pseudo", "probability"), &Rand::pseudo);
+
 	ClassDB::bind_method(D_METHOD("pop", "sequence"), &Rand::pop);
     ClassDB::bind_method(D_METHOD("choice", "sequence"), &Rand::choice);
 	ClassDB::bind_method(D_METHOD("choices", "sequence", "count", "weights", "cumulative"), &Rand::choices, DEFVAL(1), DEFVAL(Variant()), DEFVAL(false));
