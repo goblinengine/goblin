@@ -46,12 +46,12 @@ real_t Rand::f(real_t from, real_t to) {
 }
 
 bool Rand::decision(float probability) {
-	ERR_FAIL_COND_V_MSG(probability <= 0.0f, Variant(), "Probability must be a positive value.");
+	ERR_FAIL_COND_V_MSG(probability < 0.0f || probability > 1.0f, Variant(), "Probability must be a value between 0.0 and 1.0.");
 	return randbase.randf() <= probability;
 }
 
 Variant Rand::bernoulli(float probability, Variant success, Variant failure) {
-	ERR_FAIL_COND_V_MSG(probability <= 0.0f, Variant(), "Probability must be a positive value.");
+	ERR_FAIL_COND_V_MSG(probability < 0.0f || probability > 1.0f, Variant(), "Probability must be a value between 0.0 and 1.0.");
 	if (decision(probability)) return success;
 	else return failure;
 }
@@ -106,7 +106,7 @@ int Rand::poisson(float lambda) {
 }
 
 int Rand::pseudo(float probability) {
-	ERR_FAIL_COND_V_MSG(probability <= 0.0f || probability > 1.0f, Variant(), "Probability must be a positive value up to 1.0.");
+	ERR_FAIL_COND_V_MSG(probability < 0.0f || probability > 1.0f, Variant(), "Probability must be a value between 0.0 and 1.0.");
 	float curr = probability;
 	int trial = 0;
 	while (curr < 1.0) {
@@ -114,7 +114,7 @@ int Rand::pseudo(float probability) {
 		if (decision(curr)) break;
 		curr += probability;
 	}
-		
+
 	return trial;
 }
 
