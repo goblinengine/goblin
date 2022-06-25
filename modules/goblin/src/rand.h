@@ -32,8 +32,6 @@ private:
 	static Rand *singleton;
 	RegEx dice_regex;
 
-	const float PI = 2*acos(0.0);
-
 protected:
 	static void _bind_methods();
 
@@ -43,8 +41,7 @@ public:
 	int i(int from = 0, int to = 99);
 	real_t f(real_t from = 0.0f, real_t to = 1.0f);
 
-	bool decision(float probability);
-	Variant bernoulli(float probability, Variant success = 1, Variant failure = 0);
+	Variant decision(float probability, Variant success = true, Variant failure = false);
 
 	float normal();
 	int geometric(float probability);

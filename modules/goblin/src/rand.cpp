@@ -45,15 +45,9 @@ real_t Rand::f(real_t from, real_t to) {
 	return randf_range(from, to);
 }
 
-bool Rand::decision(float probability) {
-	ERR_FAIL_COND_V_MSG(probability < 0.0f || probability > 1.0f, Variant(), "Probability must be a value between 0.0 and 1.0.");
-	return randbase.randf() <= probability;
-}
-
-Variant Rand::bernoulli(float probability, Variant success, Variant failure) {
-	ERR_FAIL_COND_V_MSG(probability < 0.0f || probability > 1.0f, Variant(), "Probability must be a value between 0.0 and 1.0.");
-	if (decision(probability)) return success;
-	else return failure;
+Variant Rand::decision(float probability, Variant success, Variant failure) {
+	if (randbase.randf() <= probability) return success;
+	return failure;
 }
 
 // a number the following distributions are
@@ -61,7 +55,7 @@ Variant Rand::bernoulli(float probability, Variant success, Variant failure) {
 // https://github.com/droxpopuli/gdstats
 
 float Rand::normal() {
-	return sqrt(-2 * log(randbase.randf())) * cos(2 * PI * randbase.randf());
+	return sqrt(-2 * log(randbase.randf())) * cos(2 * Math_PI * randbase.randf());
 }
 
 int Rand::geometric(float probability) {
@@ -106,7 +100,8 @@ int Rand::poisson(float lambda) {
 }
 
 int Rand::pseudo(float probability) {
-	ERR_FAIL_COND_V_MSG(probability < 0.0f || probability > 1.0f, Variant(), "Probability must be a value between 0.0 and 1.0.");
+	if (probability > 1.0f) return 0; // instant success
+	else if (probability <= 0.0f) return -1; // success impossible
 	float curr = probability;
 	int trial = 0;
 	while (curr < 1.0) {
@@ -499,8 +494,7 @@ void Rand::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("i", "from", "to"), &Rand::i, DEFVAL(0), DEFVAL(99));
 	ClassDB::bind_method(D_METHOD("f", "from", "to"), &Rand::f, DEFVAL(0.0f), DEFVAL(1.0f));
 
-	ClassDB::bind_method(D_METHOD("decision", "probability"), &Rand::decision);
-	ClassDB::bind_method(D_METHOD("bernoulli", "probability", "sucess", "failure"), &Rand::bernoulli, DEFVAL(1), DEFVAL(0));
+	ClassDB::bind_method(D_METHOD("decision", "probability", "sucess", "failure"), &Rand::decision, DEFVAL(true), DEFVAL(false));
 	
 	ClassDB::bind_method(D_METHOD("normal"), &Rand::normal);
 	ClassDB::bind_method(D_METHOD("geometric", "probability"), &Rand::geometric);

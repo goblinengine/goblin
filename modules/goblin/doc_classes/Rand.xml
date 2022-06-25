@@ -133,34 +133,25 @@
 		</method>
 		<method name="decision">
 			<return type="bool" />
-			<argument index="0" name="probability" type="float" />
-			<description>
-				Returns a boolean based on a given [code]probability[/code] value in the range of [code]0.0..1.0[/code]. The higher the probability value the higher the chance of this returning [code]true[/code].
-				[b]Note:[/b] Probability needs to be a positive value
-			</description>
-		</method>
-		<method name="bernoulli">
-			<return type="Variant" />
-			<argument index="0" name="probability" type="float" />
 			<argument index="1" name="success" type="Variant" />
 			<argument index="2" name="failure" type="Variant" />
+			<argument index="0" name="probability" type="float" />
 			<description>
-				Same as [method decision] except you can customize what to return for success or failure (by default 1 or 0 but can be anything).
-				[b]Note:[/b] Probability needs to be a positive value
+				Returns a boolean based on a given [code]probability[/code] in the range [code]0.0..1.0[/code] inclusive. Commonly known as Bernoulli distribution. The higher the probability value the higher the chance of success. You can customize what to return for success or failure (by default true or false but can be anything).
 			</description>
 		</method>
 		<method name="normal">
 			<return type="float" />
 			<description>
-				Returns a standard normal distribution float value between -4.0 and 4.0 with 0.0 being in the middle. Useful for modelling values that use the distribution for example: size of living tissue, measurement of errors, standardized testing, rainfall, ground state.
+				Returns a standard normal distribution float value in the range [code]-4.0..4.0[/code] with 0.0 in the middle. Also known as gaussian distribution. Useful for modelling values that use the distribution for example: size of living tissue, measurement of errors, standardized testing, rainfall, ground state.
 			</description>
 		</method>
 		<method name="geometric">
 			<return type="int" />
 			<argument index="0" name="probability" type="float" />
 			<description>
-				Returns the number of Bernoulli Trials with the given probability until a result of 1. For example number of die rolls until a specific value shows which would have a probability of 1/6 (1/number of faces) in this case.
-				[b]Note:[/b] Probability needs to be a positive value
+				Returns the number of Bernoulli trials with probability until a result of 1 if encountered. For example number of die rolls until a specific value shows which would have a probability of 1.0/6.0 (1.0/number of faces) in this case.
+				[b]Note:[/b] Probability needs to be a positive value.
 			</description>
 		</method>
 		<method name="binomial">
@@ -168,8 +159,8 @@
 			<argument index="0" name="probability" type="float" />
 			<argument index="1" name="number" type="int" />
 			<description>
-				Returns the number of 1s on number of Bernoulli trials with the given probability. For example count of successful rolls from a number of attempts.
-				[b]Note:[/b] Probability and Number both need to be positive values.
+				Returns the count of 1s of Bernoulli trials with probability in number of attempts. For example count of successful rolls from a number of attempts.
+				[b]Note:[/b] Probability and Number must be positive values.
 			</description>
 		</method>
 		<method name="exponential">
@@ -177,7 +168,7 @@
 			<argument index="0" name="lambda" type="float" />
 			<description>
 				Return a value fitting the exponential distribution. For example time between independant events which occur at a constant average rate.
-				[b]Note:[/b] Lambda must be a positive value. A value of 0.0 is prohibited because it causes divide by zero but it would have a straight line.
+				[b]Note:[/b] Lambda must be a positive value. A value of 0.0 is prohibited due to divide by zero but it would have been a straight line while negative values gives impossible solutions.
 			</description>
 		</method>
 		<method name="poisson">
@@ -185,7 +176,7 @@
 			<argument index="0" name="lambda" type="float" />
 			<description>
 				Returns a poisson distribution int value which is a binomial where probability tends towards 0 and number tends towards infinity but number*probability = lambda. Useful for modelling values that use the distribution for example: number of phone calls in a given amount of time.
-				[b]Note:[/b] Lambda must be a positive value
+				[b]Note:[/b] Lambda must be a positive value.
 			</description>
 		</method>
 		<method name="pseudo">
@@ -193,7 +184,7 @@
 			<argument index="0" name="probability" type="float" />
 			<description>
 				Mimics the Warcraft 3 or Dota "fair" number generators. Gives the number of actions until an event occurs where on failure, the probability is increased by the given value. 
-				[b]Note:[/b] Probability needs to be a positive value up to 1.0. At 1.0 is instant success which means it will always happen in 1 action.
+				[b]Note:[/b] A value of 1.0 or greater will return 0 actions or instant success. A value of 0.0 or less gives -1 or success impossible. The values are supposed to be positive up to 1.0 but was coded to handle special cases to allow for more flexible game logic.
 			</description>
 		</method>
 		<method name="uuid">
