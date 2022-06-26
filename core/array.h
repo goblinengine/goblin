@@ -101,8 +101,10 @@ public:
 	Variant min() const;
 	Variant max() const;
 
-	void for_each(Object *p_obj, const StringName &p_function); // GOBLIN ENGINE Array for_each
-	
+	void for_each(Object *p_obj, const StringName &p_function); // GOBLIN ENGINE Array for_each, filter
+	Array filter(Object *p_obj, const StringName &p_function);
+	Array map(Object *p_obj, const StringName &p_function);
+
 	const void *id() const;
 
 	Array(const Array &p_from);

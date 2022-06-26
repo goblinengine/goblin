@@ -595,7 +595,9 @@ struct _VariantCall {
 	VCALL_LOCALMEM0(Array, invert);
 	VCALL_LOCALMEM0R(Array, max);
 	VCALL_LOCALMEM0R(Array, min);
-	VCALL_LOCALMEM2(Array, for_each); // GOBLIN ENGINE Array for_each
+	VCALL_LOCALMEM2(Array, for_each); // GOBLIN ENGINE Array for_each, filter, map
+	VCALL_LOCALMEM2R(Array, filter);
+	VCALL_LOCALMEM2R(Array, map);
 
 	static void _call_PoolByteArray_get_string_from_ascii(Variant &r_ret, Variant &p_self, const Variant **p_args) {
 		PoolByteArray *ba = reinterpret_cast<PoolByteArray *>(p_self._data._mem);
@@ -1966,7 +1968,9 @@ void register_variant_methods() {
 	ADDFUNC4R(ARRAY, ARRAY, Array, slice, INT, "begin", INT, "end", INT, "step", BOOL, "deep", varray(1, false));
 	ADDFUNC0R(ARRAY, NIL, Array, max, varray());
 	ADDFUNC0R(ARRAY, NIL, Array, min, varray());
-	ADDFUNC2NC(ARRAY, NIL, Array, for_each, OBJECT, "obj", STRING, "func", varray()); // GOBLIN ENGINE Array for_each
+	ADDFUNC2NC(ARRAY, NIL, Array, for_each, OBJECT, "obj", STRING, "func", varray()); // GOBLIN ENGINE Array for_each, filter, map
+	ADDFUNC2R(ARRAY, ARRAY, Array, filter, OBJECT, "obj", STRING, "func", varray());
+	ADDFUNC2R(ARRAY, ARRAY, Array, map, OBJECT, "obj", STRING, "func", varray());
 
 	ADDFUNC0R(POOL_BYTE_ARRAY, INT, PoolByteArray, size, varray());
 	ADDFUNC0R(POOL_BYTE_ARRAY, BOOL, PoolByteArray, empty, varray());

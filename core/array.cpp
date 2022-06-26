@@ -477,14 +477,61 @@ Variant Array::max() const {
 	return maxval;
 }
 
-// GOBLIN ENGINE Array for_each also breaks if returning false
+// GOBLIN ENGINE Array for_each, filter, map
 void Array::for_each(Object *p_obj, const StringName &p_function) {
+	const int s = size();
+	if (s == 0) return; // Don't run on empty lists
+
 	Variant::CallError err;
-	for (int i = 0; i < size(); i++) {
-		const Variant *args[1] =  { &get(i) };
-		if (p_obj->call(p_function, args, 1, err) == (Variant)false) break;
-		ERR_FAIL_COND_MSG(err.error != Variant::CallError::CALL_OK, "Called function must have 1 parameter.");
+
+	for (int i = 0; i < s; i++) {
+		const Variant *args[1] = { &get(i) };
+		if (p_obj->call(p_function, args, 1, err) == (Variant)false) break; // for_each also breaks if returning false
+		ERR_FAIL_COND_MSG(err.error != Variant::CallError::CALL_OK, "For each called function must have 1 parameter." );
 	}
+}
+
+Array Array::filter(Object *p_obj, const StringName &p_function) { // GOBLIN ENGINE filter
+	const int s = size();
+	if (s == 0) return Array(); // Don't run on empty lists
+
+	Variant::CallError err;
+
+	Array new_arr;
+	new_arr.resize(s);
+	int accepted_count = 0;
+
+	for (int i = 0; i < s; i++) {
+		const Variant *args[1] = { &get(i) };
+		Variant ret = p_obj->call(p_function, args, 1, err);
+		ERR_FAIL_COND_V_MSG(err.error != Variant::CallError::CALL_OK, Array(), "Filter called function must have 1 parameter and must return a bool.");
+		if (ret == (Variant)true) { // adds the original value if return is boolean true
+			new_arr[accepted_count] = get(i);
+			accepted_count++;
+		}
+	}
+
+	new_arr.resize(accepted_count);
+	return new_arr;
+}
+
+Array Array::map(Object *p_obj, const StringName &p_function) { // GOBLIN ENGINE map
+	const int s = size();
+	if (s == 0) return Array(); // Don't run on empty lists
+
+	Variant::CallError err;
+
+	Array new_arr;
+	new_arr.resize(s);
+
+	for (int i = 0; i < s; i++) {
+		const Variant *args[1] = { &get(i) };
+		Variant ret = p_obj->call(p_function, args, 1, err);
+		ERR_FAIL_COND_V_MSG(err.error != Variant::CallError::CALL_OK, Array(), "Map called function must have 1 parameter.");
+		new_arr[i] = ret;
+	}
+
+	return new_arr;
 }
 
 const void *Array::id() const {
