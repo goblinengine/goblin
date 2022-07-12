@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 	<string name="godot_editor_name_string">Goblin Editor</string> <!-- GOBLIN ENGINE -->
+
+	<string name="denied_storage_permission_error_msg">Missing storage access permission!</string>
 </resources>

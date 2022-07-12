@@ -478,6 +478,9 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	packed_data->add_pack_source(zip_packed_data);
 #endif
 
+	// Default exit code, can be modified for certain errors.
+	Error exit_code = ERR_INVALID_PARAMETER;
+
 	I = args.front();
 	while (I) {
 #ifdef OSX_ENABLED
@@ -494,10 +497,12 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		if (I->get() == "-h" || I->get() == "--help" || I->get() == "/?") { // display help
 
 			show_help = true;
+			exit_code = ERR_HELP; // Hack to force an early exit in `main()` with a success code.
 			goto error;
 
 		} else if (I->get() == "--version") {
 			print_line(get_full_version_string());
+			exit_code = ERR_HELP; // Hack to force an early exit in `main()` with a success code.
 			goto error;
 
 		} else if (I->get() == "-v" || I->get() == "--verbose") { // verbose output
@@ -1328,7 +1333,7 @@ error:
 	OS::get_singleton()->finalize_core();
 	locale = String();
 
-	return ERR_INVALID_PARAMETER;
+	return exit_code;
 }
 
 Error Main::setup2(Thread::ID p_main_tid_override) {
@@ -1347,14 +1352,14 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 		if (OS::get_singleton()->_use_vsync && OS::get_singleton()->_vsync_via_compositor) {
 #ifdef WINDOWS_ENABLED
 			// V-Sync via compositor is only supported on Windows.
-			print_line("Requested V-Sync mode: Enabled (via compositor) - FPS will likely be capped to the monitor refresh rate.");
+			print_verbose("Requested V-Sync mode: Enabled (via compositor) - FPS will likely be capped to the monitor refresh rate.");
 #else
-			print_line("Requested V-Sync mode: Enabled - FPS will likely be capped to the monitor refresh rate.");
+			print_verbose("Requested V-Sync mode: Enabled - FPS will likely be capped to the monitor refresh rate.");
 #endif
 		} else if (OS::get_singleton()->_use_vsync) {
-			print_line("Requested V-Sync mode: Enabled - FPS will likely be capped to the monitor refresh rate.");
+			print_verbose("Requested V-Sync mode: Enabled - FPS will likely be capped to the monitor refresh rate.");
 		} else {
-			print_line("Requested V-Sync mode: Disabled");
+			print_verbose("Requested V-Sync mode: Disabled");
 		}
 	}
 
