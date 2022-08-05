@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef GODOT_VERSION_H
-#define GODOT_VERSION_H
+#ifndef VERSION_H
+#define VERSION_H
 
 #include "core/version_generated.gen.h"
 
@@ -81,4 +81,4 @@ extern const char *const VERSION_HASH;
 // Example: Goblin v1.0 (Godot.stable.official.mono)
 #define VERSION_GOBLIN_FULL_NAME "" VERSION_NAME " v" VERSION_GOBLIN_FULL_BUILD
 
-#endif // GODOT_VERSION_H
+#endif // VERSION_H

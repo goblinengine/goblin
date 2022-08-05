@@ -218,7 +218,7 @@ public:
 	bool can_instance() const;
 	Node *instance(GenEditState p_edit_state = GEN_EDIT_STATE_DISABLED) const;
 	Node *instance_add(Node *p_parent, bool p_legible_unique_name = false, GenEditState p_edit_state = GEN_EDIT_STATE_DISABLED) const; // GOBLIN ENGINE instance as child
-
+	
 	void recreate_state();
 	void replace_state(Ref<SceneState> p_by);
 
@@ -234,4 +234,4 @@ public:
 
 VARIANT_ENUM_CAST(PackedScene::GenEditState)
 
-#endif // SCENE_PRELOADER_H
+#endif // PACKED_SCENE_H

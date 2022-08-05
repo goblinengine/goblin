@@ -29,7 +29,7 @@ msgstr ""
 "Project-Id-Version: Ukrainian (Godot Engine)\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2022-07-03 00:44+0000\n"
+"PO-Revision-Date: 2022-07-26 01:55+0000\n"
 "Last-Translator: Artem <artem@molotov.work>\n"
 "Language-Team: Ukrainian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/uk/>\n"
@@ -39,7 +39,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
 "n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
-"X-Generator: Weblate 4.13.1-dev\n"
+"X-Generator: Weblate 4.14-dev\n"
 
 #: core/bind/core_bind.cpp main/main.cpp
 msgid "Tablet Driver"
@@ -465,6 +465,11 @@ msgstr "Нахил"
 #: core/os/input_event.cpp
 msgid "Pressure"
 msgstr "Тиск"
+
+#: core/os/input_event.cpp
+#, fuzzy
+msgid "Pen Inverted"
+msgstr "Інвертувати"
 
 #: core/os/input_event.cpp
 msgid "Relative"
@@ -2111,14 +2116,15 @@ msgstr "Вибране:"
 msgid "Recent:"
 msgstr "Нещодавні:"
 
-#: editor/create_dialog.cpp editor/plugins/script_editor_plugin.cpp
-#: editor/property_selector.cpp editor/quick_open.cpp editor/rename_dialog.cpp
+#: editor/create_dialog.cpp editor/editor_quick_open.cpp
+#: editor/plugins/script_editor_plugin.cpp editor/property_selector.cpp
+#: editor/rename_dialog.cpp
 #: modules/visual_script/visual_script_property_selector.cpp
 msgid "Search:"
 msgstr "Пошук:"
 
-#: editor/create_dialog.cpp editor/plugins/script_editor_plugin.cpp
-#: editor/property_selector.cpp editor/quick_open.cpp
+#: editor/create_dialog.cpp editor/editor_quick_open.cpp
+#: editor/plugins/script_editor_plugin.cpp editor/property_selector.cpp
 #: modules/visual_script/visual_script_property_selector.cpp
 msgid "Matches:"
 msgstr "Збіги:"
@@ -2178,8 +2184,8 @@ msgstr "Знайти замінний ресурс:"
 
 #: editor/dependency_editor.cpp editor/editor_file_dialog.cpp
 #: editor/editor_help_search.cpp editor/editor_node.cpp
-#: editor/filesystem_dock.cpp editor/plugins/script_editor_plugin.cpp
-#: editor/property_selector.cpp editor/quick_open.cpp
+#: editor/editor_quick_open.cpp editor/filesystem_dock.cpp
+#: editor/plugins/script_editor_plugin.cpp editor/property_selector.cpp
 #: editor/script_create_dialog.cpp
 #: modules/visual_script/visual_script_property_selector.cpp
 #: scene/gui/file_dialog.cpp
@@ -2751,7 +2757,8 @@ msgid "Project export for platform:"
 msgstr "Експортування проєкту для платформи:"
 
 #: editor/editor_export.cpp
-msgid "Completed with errors."
+#, fuzzy
+msgid "Completed with warnings."
 msgstr "Завершено з помилками."
 
 #: editor/editor_export.cpp
@@ -5493,6 +5500,10 @@ msgstr "Додаткові кнопки миші для навігації жу�
 #, fuzzy
 msgid "Drag And Drop Selection"
 msgstr "Вибір GridMap"
+
+#: editor/editor_settings.cpp
+msgid "Stay In Script Editor On Node Selected"
+msgstr ""
 
 #: editor/editor_settings.cpp
 msgid "Appearance"
@@ -11605,6 +11616,11 @@ msgstr "Анімації:"
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "New Animation"
 msgstr "Нова анімація"
+
+#: editor/plugins/sprite_frames_editor_plugin.cpp
+#, fuzzy
+msgid "Filter animations"
+msgstr "Фільтрувати методи"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Speed:"
@@ -20108,18 +20124,18 @@ msgstr "Не вдалося знайти сховище ключів. Немож
 #: platform/windows/export/export.cpp
 #, fuzzy
 msgid ""
-"Could not start rcedit executable, configure rcedit path in the Editor "
-"Settings (Export > Windows > Rcedit)."
+"Could not start rcedit executable. Configure rcedit path in the Editor "
+"Settings (Export > Windows > Rcedit), or disable \"Application > Modify "
+"Resources\" in the export preset."
 msgstr ""
 "Щоб мати змогу змінювати піктограму або дані щодо програми, має бути "
 "налаштовано інструмент rcedit у параметрах редактора (Експорт > Windows > "
 "Rcedit)."
 
 #: platform/windows/export/export.cpp
-msgid ""
-"rcedit failed to modify executable:\n"
-"%s"
-msgstr ""
+#, fuzzy
+msgid "rcedit failed to modify executable: %s."
+msgstr "Некоректний виконуваний файл."
 
 #: platform/windows/export/export.cpp
 #, fuzzy
@@ -20144,18 +20160,18 @@ msgstr "Некоректна назва."
 #: platform/windows/export/export.cpp
 #, fuzzy
 msgid ""
-"Could not start signtool executable, configure signtool path in the Editor "
-"Settings (Export > Windows > Signtool)."
+"Could not start signtool executable. Configure signtool path in the Editor "
+"Settings (Export > Windows > Signtool), or disable \"Codesign\" in the "
+"export preset."
 msgstr ""
 "Щоб мати змогу змінювати піктограму або дані щодо програми, має бути "
 "налаштовано інструмент rcedit у параметрах редактора (Експорт > Windows > "
 "Rcedit)."
 
 #: platform/windows/export/export.cpp
-msgid ""
-"Signtool failed to sign executable:\n"
-"%s"
-msgstr ""
+#, fuzzy
+msgid "Signtool failed to sign executable: %s."
+msgstr "Некоректний виконуваний файл."
 
 #: platform/windows/export/export.cpp
 #, fuzzy
@@ -21149,7 +21165,7 @@ msgstr "Подорож"
 msgid "Rotation Degrees"
 msgstr "Грудуси обертання"
 
-#: scene/2d/node_2d.cpp
+#: scene/2d/node_2d.cpp scene/3d/spatial.cpp
 msgid "Global Rotation"
 msgstr "Загальна стала"
 
@@ -23107,6 +23123,11 @@ msgid ""
 msgstr ""
 "Зміни розмірів SoftBody буде перевизначено фізичним рушієм під час роботи.\n"
 "Замість цієї зміни, вам варто змінити розміри дочірніх форм зіткнення."
+
+#: scene/3d/spatial.cpp
+#, fuzzy
+msgid "Global Translation"
+msgstr "Зберегти загальне перетворення"
 
 #: scene/3d/spatial.cpp
 msgid "Matrix"
@@ -25878,11 +25899,11 @@ msgstr "Розмір крапки"
 
 #: scene/resources/material.cpp
 msgid "Billboard Mode"
-msgstr "Режим афіші"
+msgstr "Режим розголосника"
 
 #: scene/resources/material.cpp
 msgid "Billboard Keep Scale"
-msgstr "Зберегти масштаб афіші"
+msgstr "Зберегти масштаб розголосника"
 
 #: scene/resources/material.cpp
 msgid "Grow"

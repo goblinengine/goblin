@@ -74,6 +74,8 @@ public:
 	NSTimeInterval last_warp = 0;
 	bool ignore_warp = false;
 
+	bool last_pen_inverted = false;
+
 	Vector<KeyEvent> key_event_buffer;
 	int key_event_pos;
 
@@ -343,4 +345,4 @@ private:
 	Point2 get_screens_origin() const;
 };
 
-#endif
+#endif // OS_OSX_H

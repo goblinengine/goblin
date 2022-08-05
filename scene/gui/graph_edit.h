@@ -305,4 +305,4 @@ public:
 	GraphEdit();
 };
 
-#endif // GRAPHEdit_H
+#endif // GRAPH_EDIT_H

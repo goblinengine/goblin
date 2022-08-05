@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef MULTIPLAYER_PROTOCOL_H
-#define MULTIPLAYER_PROTOCOL_H
+#ifndef MULTIPLAYER_API_H
+#define MULTIPLAYER_API_H
 
 #include "core/io/networked_multiplayer_peer.h"
 #include "core/reference.h"
@@ -115,12 +115,14 @@ public:
 	};
 
 	enum RPCMode {
-		// GOBLIN ENGINE remove some deprecated features
+
 		RPC_MODE_DISABLED, // No rpc for this method, calls to this will be blocked (default)
 		RPC_MODE_REMOTE, // Using rpc() on it will call method / set property in all remote peers
 		RPC_MODE_MASTER, // Using rpc() on it will call method on wherever the master is, be it local or remote
 		RPC_MODE_PUPPET, // Using rpc() on it will call method for all puppets
+		// GOBLIN ENGINE remove some deprecated features
 		RPC_MODE_REMOTESYNC, // Using rpc() on it will call method / set property in all remote peers and locally
+		// GOBLIN ENGINE remove some deprecated features
 		RPC_MODE_MASTERSYNC, // Using rpc() on it will call method / set property in the master peer and locally
 		RPC_MODE_PUPPETSYNC, // Using rpc() on it will call method / set property in all puppets peers and locally
 	};
@@ -168,4 +170,4 @@ public:
 
 VARIANT_ENUM_CAST(MultiplayerAPI::RPCMode);
 
-#endif // MULTIPLAYER_PROTOCOL_H
+#endif // MULTIPLAYER_API_H

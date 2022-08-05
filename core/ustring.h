@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef USTRING_H
-#define USTRING_H
+#ifndef USTRING_GODOT_H
+#define USTRING_GODOT_H
 
 #include "core/array.h"
 #include "core/cowdata.h"
@@ -275,7 +275,7 @@ public:
 	Vector<int> split_ints(const String &p_splitter, bool p_allow_empty = true) const;
 	Vector<int> split_ints_mk(const Vector<String> &p_splitters, bool p_allow_empty = true) const;
 
-	String join(Vector<String> parts);
+	String join(const Vector<String> &parts) const;
 
 	static CharType char_uppercase(CharType p_char);
 	static CharType char_lowercase(CharType p_char);
@@ -302,7 +302,7 @@ public:
 
 	CharString ascii(bool p_allow_extended = false) const;
 	CharString utf8() const;
-	bool parse_utf8(const char *p_utf8, int p_len = -1); //return true on error
+	bool parse_utf8(const char *p_utf8, int p_len = -1, bool p_skip_cr = false); //return true on error
 	static String utf8(const char *p_utf8, int p_len = -1);
 
 	static uint32_t hash(const CharType *p_cstr, int p_len); /* hash the string */
@@ -456,4 +456,4 @@ String RTR(const String &);
 bool is_symbol(CharType c);
 bool select_word(const String &p_s, int p_col, int &r_beg, int &r_end);
 
-#endif // USTRING_H
+#endif // USTRING_GODOT_H
