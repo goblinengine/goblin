@@ -23,7 +23,7 @@ jobs:
             target: release_debug
             tools: true
             bin: "./bin/goblin.linux.opt.tools.64"
-            sconsflags: module_sqlite_enabled=yes use_llvm=yes use_thinlto=yes linker=lld
+            sconsflags: module_sqlite_enabled=yes use_thinlto=yes
 
           - name: Template (target=release, tools=no)
             cache-name: linux-template
