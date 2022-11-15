@@ -22,13 +22,13 @@ jobs:
             cache-name: server-editor
             target: release_debug
             tools: true
-            sconsflags: use_llvm=yes use_lto=thin
+            sconsflags: use_llvm=yes lto=thin
 
           - name: Linux Server (target=release, tools=no, module_sqlite_enabled=yes)
             cache-name: server-template
             target: release
             tools: false
-            sconsflags: use_lto=full
+            sconsflags: lto=full
 
     steps:
       - uses: actions/checkout@v3

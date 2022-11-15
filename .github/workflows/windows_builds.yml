@@ -27,13 +27,13 @@ jobs:
             target: release_debug
             tools: true
             bin: "./bin/goblin.windows.opt.tools.64.exe"
-            sconsflags: module_sqlite_enabled=yes use_lto=thin
+            sconsflags: module_sqlite_enabled=yes use_llvm=yes lto=thin
 
           - name: Template (target=release, tools=no)
             cache-name: windows-template
             target: release
             tools: false
-            sconsflags: use_lto=full
+            sconsflags: lto=full
 
     steps:
       - uses: actions/checkout@v3

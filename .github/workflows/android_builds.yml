@@ -71,7 +71,7 @@ jobs:
           sconsflags: ${{ env.SCONSFLAGS }} ${{ matrix.sconsflags }} android_arch=arm64v8
           platform: android
           target: ${{ matrix.target }}
-          tools: ${{ matrix.tools }
+          tools: ${{ matrix.tools }}
 
       - name: Generate Godot templates
         run: |

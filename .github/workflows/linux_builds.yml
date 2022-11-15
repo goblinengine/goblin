@@ -23,13 +23,13 @@ jobs:
             target: release_debug
             tools: true
             bin: "./bin/goblin.linux.opt.tools.64"
-            sconsflags: module_sqlite_enabled=yes use_lto=thin
+            sconsflags: module_sqlite_enabled=yes lto=thin
 
           - name: Template (target=release, tools=no)
             cache-name: linux-template
             target: release
             tools: false
-            sconsflags: use_lto=full
+            sconsflags: lto=full
 
     steps:
       - uses: actions/checkout@v3
