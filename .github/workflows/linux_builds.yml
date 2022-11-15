@@ -65,13 +65,11 @@ jobs:
           tools: ${{ matrix.tools }}
 
       - name: Prepare artifact
-        if: ${{ matrix.artifact }}
         run: |
           strip bin/goblin.*
           chmod +x bin/goblin.*
 
       - name: Upload artifact
         uses: ./.github/actions/upload-artifact
-        if: ${{ matrix.artifact }}
         with:
           name: ${{ matrix.cache-name }}

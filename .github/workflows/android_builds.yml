@@ -76,9 +76,11 @@ jobs:
       - name: Generate Godot templates
         run: |
           cd platform/android/java
-          ./gradlew generateGodotTemplates
+          ./gradlew ${{ matrix.cmd }}
           cd ../../..
           ls -l bin/
 
       - name: Upload artifact
         uses: ./.github/actions/upload-artifact
+        with:
+          name: ${{ matrix.cache-name }}
