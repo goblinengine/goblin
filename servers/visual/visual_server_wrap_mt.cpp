@@ -37,11 +37,10 @@ void VisualServerWrapMT::thread_exit() {
 }
 
 void VisualServerWrapMT::thread_draw(bool p_swap_buffers, double frame_step) {
-	visual_server->draw(p_swap_buffers, frame_step); // GOBLIN ENGINE remove redundant draw pending
+	visual_server->draw(p_swap_buffers, frame_step);
 }
 
 void VisualServerWrapMT::thread_flush() {
-	// GOBLIN ENGINE remove redundant draw pending
 }
 
 void VisualServerWrapMT::_thread_callback(void *_instance) {
@@ -73,7 +72,6 @@ void VisualServerWrapMT::thread_loop() {
 
 void VisualServerWrapMT::sync() {
 	if (create_thread) {
-		// GOBLIN ENGINE remove redundant draw pending
 		command_queue.push_and_sync(this, &VisualServerWrapMT::thread_flush);
 	} else {
 		command_queue.flush_all(); //flush all pending from other threads
@@ -82,7 +80,6 @@ void VisualServerWrapMT::sync() {
 
 void VisualServerWrapMT::draw(bool p_swap_buffers, double frame_step) {
 	if (create_thread) {
-		// GOBLIN ENGINE remove redundant draw pending
 		command_queue.push(this, &VisualServerWrapMT::thread_draw, p_swap_buffers, frame_step);
 	} else {
 		visual_server->draw(p_swap_buffers, frame_step);

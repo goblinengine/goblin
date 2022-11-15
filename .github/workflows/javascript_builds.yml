@@ -5,7 +5,7 @@ on: [push, pull_request]
 env:
   GODOT_BASE_BRANCH: main
   SCONSFLAGS: verbose=yes warnings=all debug_symbols=no deprecated=no
-  EM_VERSION: 3.1.10
+  EM_VERSION: 3.1.18
   EM_CACHE_FOLDER: "emsdk-cache"
 
 concurrency:
@@ -33,18 +33,10 @@ jobs:
             sconsflags: threads_enabled=no
 
     steps:
-      - uses: actions/checkout@v2
-
-      # Additional cache for Emscripten generated system libraries
-      - name: Load Emscripten cache
-        id: javascript-template-emscripten-cache
-        uses: actions/cache@v2
-        with:
-          path: ${{env.EM_CACHE_FOLDER}}
-          key: ${{env.EM_VERSION}}-${{github.job}}
+      - uses: actions/checkout@v3
 
       - name: Set up Emscripten latest
-        uses: mymindstorm/setup-emsdk@v10
+        uses: mymindstorm/setup-emsdk@v11
         with:
           version: ${{env.EM_VERSION}}
           actions-cache-folder: ${{env.EM_CACHE_FOLDER}}
@@ -52,10 +44,6 @@ jobs:
       - name: Verify Emscripten setup
         run: |
           emcc -v
-      
-      # - name: Install deps
-      #   run: |
-      #     sudo apt-get install libxcursor-dev libxinerama-dev libxrandr-dev libxi-dev libgl-dev
 
       - name: Setup Goblin build cache
         uses: ./.github/actions/goblin-cache

@@ -140,12 +140,17 @@ NavigationObstacle::~NavigationObstacle() {
 }
 
 void NavigationObstacle::set_navigation(Navigation *p_nav) {
-	if (navigation == p_nav) {
+	if (navigation == p_nav && navigation != nullptr) {
 		return; // Pointless
 	}
 
 	navigation = p_nav;
-	NavigationServer::get_singleton()->agent_set_map(agent, navigation == nullptr ? RID() : navigation->get_rid());
+
+	if (navigation != nullptr) {
+		NavigationServer::get_singleton()->agent_set_map(agent, navigation->get_rid());
+	} else if (parent_spatial && parent_spatial->is_inside_tree()) {
+		NavigationServer::get_singleton()->agent_set_map(agent, parent_spatial->get_world()->get_navigation_map());
+	}
 }
 
 void NavigationObstacle::set_navigation_node(Node *p_nav) {
@@ -211,12 +216,11 @@ real_t NavigationObstacle::estimate_agent_radius() const {
 		}
 		Vector3 s = parent_spatial->get_global_transform().basis.get_scale();
 		radius *= MAX(s.x, MAX(s.y, s.z));
-	}
 
-	if (radius > 0.0) {
-		return radius;
+		if (radius > 0.0) {
+			return radius;
+		}
 	}
-
 	return 1.0; // Never a 0 radius
 }
 

@@ -1757,6 +1757,15 @@ void NativeReloadNode::_notification(int p_what) {
 				}
 
 				for (Map<String, Set<NativeScript *>>::Element *U = NSL->library_script_users.front(); U; U = U->next()) {
+					// Multiple GDNative libraries may be reloaded. The library and script
+					// path should match to prevent failing `NSL->library_classes` lookup
+					// from `get_script_desc()` in `script->_update_placeholder` below.
+					// This check also prevents "!script_data is true" error from occuring
+					// when e. g. re-focusing editor window.
+					if (L->key() != U->key()) {
+						continue;
+					}
+
 					for (Set<NativeScript *>::Element *S = U->get().front(); S; S = S->next()) {
 						NativeScript *script = S->get();
 
@@ -1784,8 +1793,8 @@ void NativeReloadNode::_notification(int p_what) {
 #endif
 }
 
-RES ResourceFormatLoaderNativeScript::load(const String &p_path, const String &p_original_path, Error *r_error) {
-	return ResourceFormatLoaderText::singleton->load(p_path, p_original_path, r_error);
+RES ResourceFormatLoaderNativeScript::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_no_subresource_cache) {
+	return ResourceFormatLoaderText::singleton->load(p_path, p_original_path, r_error, p_no_subresource_cache);
 }
 
 void ResourceFormatLoaderNativeScript::get_recognized_extensions(List<String> *p_extensions) const {

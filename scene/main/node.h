@@ -210,6 +210,7 @@ private:
 	void _propagate_physics_interpolation_reset_requested();
 	void _print_stray_nodes();
 	void _propagate_pause_owner(Node *p_owner);
+	void _propagate_groups_dirty();
 	Array _get_node_and_resource(const NodePath &p_path);
 
 	void _duplicate_signals(const Node *p_original, Node *p_copy) const;
@@ -306,8 +307,8 @@ public:
 	StringName get_name() const;
 	void set_name(const String &p_name);
 
-	void add_child(Node *p_child, bool p_legible_unique_name = false);
-	void add_child_below_node(Node *p_node, Node *p_child, bool p_legible_unique_name = false);
+	void add_child(Node *p_child, bool p_force_readable_name = false);
+	void add_child_below_node(Node *p_node, Node *p_child, bool p_force_readable_name = false);
 	void remove_child(Node *p_child);
 	void remove_children(); // GOBLIN ENGINE remove children
 

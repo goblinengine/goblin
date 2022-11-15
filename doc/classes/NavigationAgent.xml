@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="NavigationAgent" inherits="Node" version="3.5" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="NavigationAgent" inherits="Node" version="3.6" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		3D agent used in navigation for collision avoidance.
 	</brief_description>
 	<description>
 		3D agent that is used in navigation to reach a location while avoiding static and dynamic obstacles. The dynamic obstacles are avoided using RVO (Reciprocal Velocity Obstacles) collision avoidance. The agent needs navigation data to work correctly. By default this node will register to the default [World] navigation map. If this node is a child of a [Navigation] node it will register to the navigation map of the navigation node or the function [method set_navigation] can be used to set the navigation node directly. [NavigationAgent] is physics safe.
 		[b]Note:[/b] After [method set_target_location] is used it is required to use the [method get_next_location] function once every physics frame to update the internal path logic of the NavigationAgent. The returned vector position from this function should be used as the next movement position for the agent's parent Node.
+		[b]Note:[/b] By default, the expensive calculations for avoidance are done in a thread. In HTML5 exports without thread support, they will be done on the main thread, which can lead to performance issues.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -169,7 +170,7 @@
 		<signal name="velocity_computed">
 			<argument index="0" name="safe_velocity" type="Vector3" />
 			<description>
-				Notifies when the collision avoidance velocity is calculated after a call to [method set_velocity].
+				Notifies when the collision avoidance velocity is calculated after a call to [method set_velocity]. Only emitted when [member avoidance_enabled] is true.
 			</description>
 		</signal>
 	</signals>

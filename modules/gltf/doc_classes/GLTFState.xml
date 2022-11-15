@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="GLTFState" inherits="Resource" version="3.5" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+<class name="GLTFState" inherits="Resource" version="3.6" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
 	<brief_description>
 	</brief_description>
 	<description>
@@ -84,6 +84,12 @@
 		<method name="get_skins">
 			<return type="Array" />
 			<description>
+			</description>
+		</method>
+		<method name="get_texture_samplers">
+			<return type="Array" />
+			<description>
+				Retrieves the array of texture samplers that are used by the textures contained in the GLTF.
 			</description>
 		</method>
 		<method name="get_textures">
@@ -171,6 +177,13 @@
 			<return type="void" />
 			<argument index="0" name="skins" type="Array" />
 			<description>
+			</description>
+		</method>
+		<method name="set_texture_samplers">
+			<return type="void" />
+			<argument index="0" name="texture_samplers" type="Array" />
+			<description>
+				Sets the array of texture samplers that are used by the textures contained in the GLTF.
 			</description>
 		</method>
 		<method name="set_textures">

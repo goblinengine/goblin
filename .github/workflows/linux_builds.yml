@@ -23,16 +23,16 @@ jobs:
             target: release_debug
             tools: true
             bin: "./bin/goblin.linux.opt.tools.64"
-            sconsflags: module_sqlite_enabled=yes use_thinlto=yes
+            sconsflags: module_sqlite_enabled=yes use_lto=thin
 
           - name: Template (target=release, tools=no)
             cache-name: linux-template
             target: release
             tools: false
-            sconsflags: use_lto=yes
+            sconsflags: use_lto=full
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - name: Linux dependencies
         shell: bash
@@ -44,7 +44,8 @@ jobs:
           # The actual dependencies
           sudo apt-get install build-essential pkg-config libx11-dev libxcursor-dev \
               libxinerama-dev libgl1-mesa-dev libglu-dev libasound2-dev libpulse-dev \
-              libdbus-1-dev libudev-dev libxi-dev libxrandr-dev yasm xvfb wget unzip
+              libdbus-1-dev libudev-dev libxi-dev libxrandr-dev yasm xvfb wget unzip \
+              libspeechd-dev speech-dispatcher
 
       - name: Setup Goblin build cache
         uses: ./.github/actions/goblin-cache
@@ -64,10 +65,13 @@ jobs:
           tools: ${{ matrix.tools }}
 
       - name: Prepare artifact
+        if: ${{ matrix.artifact }}
         run: |
-          strip bin/goblin*
+          strip bin/goblin.*
+          chmod +x bin/goblin.*
 
       - name: Upload artifact
         uses: ./.github/actions/upload-artifact
+        if: ${{ matrix.artifact }}
         with:
           name: ${{ matrix.cache-name }}

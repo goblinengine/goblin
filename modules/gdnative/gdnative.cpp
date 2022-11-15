@@ -172,15 +172,9 @@ void GDNativeLibrary::set_config_file(Ref<ConfigFile> p_config_file) {
 
 			bool skip = false;
 			for (int i = 0; i < tags.size(); i++) {
-				const bool has_feature = OS::get_singleton()->has_feature(tags[i]);
-				// GOBLIN ENGINE fallback to x11 for loading gdnative plugins
-				// see https://github.com/godotengine/godot/pull/38898
-				// Try looking for X11 libraries when running a server binary.
-				// This may not always succeed as server binaries can also be compiled for macOS,
-				// but in practice, most dedicated servers run Linux.
-				const bool has_server_x11_fallback = OS::get_singleton()->has_feature("Server") && tags[i] == "X11";
+				bool has_feature = OS::get_singleton()->has_feature(tags[i]);
 
-				if (!has_feature && !has_server_x11_fallback) {
+				if (!has_feature) {
 					skip = true;
 					break;
 				}
@@ -526,7 +520,7 @@ Error GDNative::get_symbol(StringName p_procedure_name, void *&r_handle, bool p_
 	return result;
 }
 
-RES GDNativeLibraryResourceLoader::load(const String &p_path, const String &p_original_path, Error *r_error) {
+RES GDNativeLibraryResourceLoader::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_no_subresource_cache) {
 	Ref<GDNativeLibrary> lib;
 	lib.instance();
 

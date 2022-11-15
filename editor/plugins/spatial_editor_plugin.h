@@ -712,11 +712,10 @@ private:
 	void _update_camera_override_button(bool p_game_running);
 	void _update_camera_override_viewport(Object *p_viewport);
 
-	HBoxContainer *hbc_menu;
 	// Used for secondary menu items which are displayed depending on the currently selected node
 	// (such as MeshInstance's "Mesh" menu).
-	PanelContainer *context_menu_container;
-	HBoxContainer *hbc_context_menu;
+	PanelContainer *context_menu_panel = nullptr;
+	HBoxContainer *context_menu_hbox = nullptr;
 
 	void _generate_selection_boxes();
 	UndoRedo *undo_redo;
@@ -753,6 +752,7 @@ private:
 
 	bool is_any_freelook_active() const;
 
+	void _selection_changed();
 	void _refresh_menu_icons();
 
 protected:

@@ -135,6 +135,8 @@ static bool delta_sync_after_draw = false;
 #ifdef TOOLS_ENABLED
 static bool auto_build_solutions = false;
 static String debug_server_uri;
+
+HashMap<Main::CLIScope, Vector<String>> forwardable_cli_arguments;
 #endif
 
 // Display
@@ -170,6 +172,12 @@ static bool print_fps = false;
 bool Main::is_project_manager() {
 	return project_manager;
 }
+
+#ifdef TOOLS_ENABLED
+const Vector<String> &Main::get_forwardable_cli_arguments(Main::CLIScope p_scope) {
+	return forwardable_cli_arguments[p_scope];
+}
+#endif
 
 static String unescape_cmdline(const String &p_str) {
 	return p_str.replace("%20", " ");
@@ -493,6 +501,22 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 #endif
 
 		List<String>::Element *N = I->next();
+
+#ifdef TOOLS_ENABLED
+		if (I->get() == "--debug" ||
+				I->get() == "--verbose" ||
+				I->get() == "--disable-crash-handler") {
+			forwardable_cli_arguments[CLI_SCOPE_TOOL].push_back(I->get());
+			forwardable_cli_arguments[CLI_SCOPE_PROJECT].push_back(I->get());
+		}
+		if (I->get() == "--audio-driver" ||
+				I->get() == "--video-driver") {
+			if (I->next()) {
+				forwardable_cli_arguments[CLI_SCOPE_TOOL].push_back(I->get());
+				forwardable_cli_arguments[CLI_SCOPE_TOOL].push_back(I->next()->get());
+			}
+		}
+#endif
 
 		if (I->get() == "-h" || I->get() == "--help" || I->get() == "/?") { // display help
 
@@ -1256,7 +1280,10 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		OS::get_singleton()->set_delta_smoothing(GLOBAL_GET("application/run/delta_smoothing"));
 	}
 
+	GLOBAL_DEF("display/window/ios/allow_high_refresh_rate", true);
 	GLOBAL_DEF("display/window/ios/hide_home_indicator", true);
+	GLOBAL_DEF("display/window/ios/hide_status_bar", true);
+	GLOBAL_DEF("display/window/ios/suppress_ui_gesture", true);
 	GLOBAL_DEF("input_devices/pointing/ios/touch_delay", 0.15);
 	ProjectSettings::get_singleton()->set_custom_property_info("input_devices/pointing/ios/touch_delay",
 			PropertyInfo(Variant::REAL,
@@ -1352,14 +1379,14 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 		if (OS::get_singleton()->_use_vsync && OS::get_singleton()->_vsync_via_compositor) {
 #ifdef WINDOWS_ENABLED
 			// V-Sync via compositor is only supported on Windows.
-			print_verbose("Requested V-Sync mode: Enabled (via compositor) - FPS will likely be capped to the monitor refresh rate.");
+			print_line("Requested V-Sync mode: Enabled (via compositor) - FPS will likely be capped to the monitor refresh rate.");
 #else
-			print_verbose("Requested V-Sync mode: Enabled - FPS will likely be capped to the monitor refresh rate.");
+			print_line("Requested V-Sync mode: Enabled - FPS will likely be capped to the monitor refresh rate.");
 #endif
 		} else if (OS::get_singleton()->_use_vsync) {
-			print_verbose("Requested V-Sync mode: Enabled - FPS will likely be capped to the monitor refresh rate.");
+			print_line("Requested V-Sync mode: Enabled - FPS will likely be capped to the monitor refresh rate.");
 		} else {
-			print_verbose("Requested V-Sync mode: Disabled");
+			print_line("Requested V-Sync mode: Disabled");
 		}
 	}
 
@@ -1678,6 +1705,13 @@ bool Main::start() {
 			doc_tool_path = ".";
 		}
 	}
+
+	uint64_t minimum_time_msec = GLOBAL_DEF("application/boot_splash/minimum_display_time", 0);
+	ProjectSettings::get_singleton()->set_custom_property_info("application/boot_splash/minimum_display_time",
+			PropertyInfo(Variant::INT,
+					"application/boot_splash/minimum_display_time",
+					PROPERTY_HINT_RANGE,
+					"0,100,1,or_greater")); // No negative numbers.
 
 #ifdef TOOLS_ENABLED
 	if (doc_tool_path != "") {
@@ -2160,6 +2194,14 @@ bool Main::start() {
 	}
 
 	OS::get_singleton()->set_main_loop(main_loop);
+
+	if (minimum_time_msec) {
+		uint64_t minimum_time = 1000 * minimum_time_msec;
+		uint64_t elapsed_time = OS::get_singleton()->get_ticks_usec();
+		if (elapsed_time < minimum_time) {
+			OS::get_singleton()->delay_usec(minimum_time - elapsed_time);
+		}
+	}
 
 	return true;
 }

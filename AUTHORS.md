@@ -1,12 +1,11 @@
 # Goblin Engine authors
 
-Goblin is based on Godot Engine which is developed by a community of voluntary contributors who
+Goblin Engine is developed by a community of voluntary contributors who
 contribute code, bug reports, documentation, artwork, support, etc.
 
 It is impossible to list them all; nevertheless, this file aims at listing
 the developers who contributed significant patches to this MIT licensed
 source code.
-
 GitHub usernames are indicated in parentheses, or as sole entry when no other
 name is available.
 
@@ -36,6 +35,7 @@ name is available.
     Alket Rexhepi (alketii)
     Andrea Catania (AndreaCatania)
     Andrii Doroshenko (Xrayez)
+    Andy Maloney (asmaloney)
     Andy Moss (MillionOstrich)
     Angad Kambli (angad-k)
     Anilforextra (AnilBK)
@@ -167,9 +167,12 @@ name is available.
     Max Hilbrunner (mhilbrunner)
     merumelu
     Meru Patel (Janglee123)
+    MewPurPur
     Michael Alexsander (YeldhamDev)
     Michał Iwańczuk (iwek7)
     MichiRecRoom (LikeLakers2)
+    Micky (Mickeon)
+    MinusKube
     Morris "Tabor" Arroad (mortarroad)
     mrezai
     Muhammad Huri (CakHuri)
@@ -203,6 +206,7 @@ name is available.
     Raphael2048
     Raul Santos (raulsntos)
     Ray Koopa (RayKoopa)
+    RedMser
     Rémi Verschelde (akien-mga)
     Rhody Lugo (rraallvv)
     Ricardo Buring (rburing)

@@ -148,7 +148,7 @@ EditorAbout::EditorAbout() {
 	Label *about_text = memnew(Label);
 	about_text->set_v_size_flags(Control::SIZE_SHRINK_CENTER);
 	about_text->set_text(String::utf8("\xc2\xa9 2021-2022 Filip Anton.\n\xc2\xa9 2007-2022 ") +
-			TTR("Goblin Engine contributors") + "\n");  // GOBLIN ENGINE
+			TTR("Goblin Engine contributors") + "\n"); // GOBLIN ENGINE
 	version_info_vbc->add_child(about_text);
 
 	hbc->add_child(version_info_vbc);

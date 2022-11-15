@@ -16,7 +16,7 @@ jobs:
     name: Template (target=release, tools=no)
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - name: Setup Goblin build cache
         uses: ./.github/actions/goblin-cache
@@ -25,7 +25,7 @@ jobs:
       - name: Setup python and scons
         uses: ./.github/actions/goblin-deps
 
-      - name: Compilation (armv7)
+      - name: Compilation (arm64v8)
         uses: ./.github/actions/goblin-build
         with:
           sconsflags: ${{ env.SCONSFLAGS }}

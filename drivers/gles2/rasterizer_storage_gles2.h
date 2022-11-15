@@ -111,6 +111,7 @@ public:
 	struct Resources {
 		GLuint white_tex;
 		GLuint black_tex;
+		GLuint transparent_tex;
 		GLuint normal_tex;
 		GLuint aniso_tex;
 
@@ -891,6 +892,7 @@ public:
 		bool use_2d;
 
 		int size;
+		uint32_t revision;
 
 		// TODO use float textures for storage
 
@@ -906,6 +908,7 @@ public:
 		Skeleton() :
 				use_2d(false),
 				size(0),
+				revision(1),
 				tex_id(0),
 				update_list(this) {
 		}
@@ -925,6 +928,7 @@ public:
 	virtual void skeleton_bone_set_transform_2d(RID p_skeleton, int p_bone, const Transform2D &p_transform);
 	virtual Transform2D skeleton_bone_get_transform_2d(RID p_skeleton, int p_bone) const;
 	virtual void skeleton_set_base_transform_2d(RID p_skeleton, const Transform2D &p_base_transform);
+	virtual uint32_t skeleton_get_revision(RID p_skeleton) const;
 
 	void _update_skeleton_transform_buffer(const PoolVector<float> &p_data, size_t p_size);
 
