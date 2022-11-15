@@ -27,7 +27,7 @@ jobs:
             target: release_debug
             tools: true
             bin: "./bin/goblin.windows.opt.tools.64.exe"
-            sconsflags: module_sqlite_enabled=yes use_llvm=yes lto=thin
+            sconsflags: module_sqlite_enabled=yes use_llvm=yes
 
           - name: Template (target=release, tools=no)
             cache-name: windows-template
