@@ -76,6 +76,7 @@ jobs:
       - name: Generate Godot templates
         run: |
           cd platform/android/java
+          chmod +x ./gradlew
           ./gradlew ${{ matrix.cmd }}
           cd ../../..
           ls -l bin/
