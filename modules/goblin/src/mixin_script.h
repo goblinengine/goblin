@@ -29,6 +29,8 @@ SOFTWARE.
 #include "core/os/thread_safe.h"
 #include "core/script_language.h"
 
+class MixinScript;
+
 class Mixin : public Object {
 	GDCLASS(Mixin, Object)
 
