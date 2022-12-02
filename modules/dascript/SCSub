@@ -1,0 +1,13 @@
+#!/usr/bin/env python
+import os
+
+Import("env")
+
+env_dascript = env.Clone()
+env_dascript.add_source_files(env.modules_sources, "*.cpp")
+env_dascript.add_source_files(env.modules_sources, "lang/*.c")
+
+if env["tools"]:
+    env_dascript.add_source_files(env.modules_sources, "editor/*.cpp")
+
+env_dascript.disable_warnings()
