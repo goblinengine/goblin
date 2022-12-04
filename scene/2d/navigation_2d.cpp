@@ -78,12 +78,12 @@ void Navigation2D::set_edge_connection_margin(float p_edge_connection_margin) {
 }
 
 Vector<Vector2> Navigation2D::get_simple_path(const Vector2 &p_start, const Vector2 &p_end, bool p_optimize) const {
-	WARN_DEPRECATED_MSG("'Navigation2D' node and 'Navigation2D.get_simple_path()' are deprecated and will be removed in a future version. Use 'Navigation2DServer.map_get_path()' instead.");
+	// WARN_DEPRECATED_MSG("'Navigation2D' node and 'Navigation2D.get_simple_path()' are deprecated and will be removed in a future version. Use 'Navigation2DServer.map_get_path()' instead."); GOBLIN ENGINE remove deprecated Navigation
 	return Navigation2DServer::get_singleton()->map_get_path(map, p_start, p_end, p_optimize, navigation_layers);
 }
 
 String Navigation2D::get_configuration_warning() const {
-	return TTR("'Navigation2D' node and 'Navigation2D.get_simple_path()' are deprecated and will be removed in a future version. Use 'Navigation2DServer.map_get_path()' instead.");
+	return ""; // GOBLIN ENGINE remove deprecated Navigation
 }
 
 Vector2 Navigation2D::get_closest_point(const Vector2 &p_point) const {
