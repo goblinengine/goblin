@@ -1,14 +1,14 @@
-#include "daScript/misc/platform.h"
+#include "modules/dascript/src/include/daScript/misc/platform.h"
 
 #include "module_builtin_rtti.h"
 
-#include "daScript/simulate/simulate_nodes.h"
-#include "daScript/ast/ast_interop.h"
-#include "daScript/simulate/sim_policy.h"
-#include "daScript/simulate/fs_file_info.h"
-#include "daScript/simulate/simulate_visit_op.h"
+#include "modules/dascript/src/include/daScript/simulate/simulate_nodes.h"
+#include "modules/dascript/src/include/daScript/ast/ast_interop.h"
+#include "modules/dascript/src/include/daScript/simulate/sim_policy.h"
+#include "modules/dascript/src/include/daScript/simulate/fs_file_info.h"
+#include "modules/dascript/src/include/daScript/simulate/simulate_visit_op.h"
 
-#include "daScript/misc/performance_time.h"
+#include "modules/dascript/src/include/daScript/misc/performance_time.h"
 
 using namespace das;
 

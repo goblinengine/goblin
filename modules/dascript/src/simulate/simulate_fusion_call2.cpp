@@ -1,16 +1,16 @@
-#include "daScript/misc/platform.h"
+#include "modules/dascript/src/include/daScript/misc/platform.h"
 
 #ifdef _MSC_VER
 #pragma warning(disable:4505)
 #endif
 
-#include "daScript/simulate/simulate_fusion.h"
+#include "modules/dascript/src/include/daScript/simulate/simulate_fusion.h"
 
 #if DAS_FUSION
 
-#include "daScript/simulate/sim_policy.h"
-#include "daScript/ast/ast.h"
-#include "daScript/simulate/simulate_visit_op.h"
+#include "modules/dascript/src/include/daScript/simulate/sim_policy.h"
+#include "modules/dascript/src/include/daScript/ast/ast.h"
+#include "modules/dascript/src/include/daScript/simulate/simulate_visit_op.h"
 
 namespace das {
 
@@ -130,7 +130,7 @@ __forceinline SimNode * safeArg2 ( SimNode * node, int index ) {
 #define FUSION_OP2_SUBEXPR_LEFT(CTYPE,node)     (safeArg2(node,0))
 #define FUSION_OP2_SUBEXPR_RIGHT(CTYPE,node)    (safeArg2(node,1))
 
-#include "daScript/simulate/simulate_fusion_op2_impl.h"
+#include "modules/dascript/src/include/daScript/simulate/simulate_fusion_op2_impl.h"
 
 IMPLEMENT_ANY_OP2(__forceinline, Call, Ptr, StringPtr)
 
@@ -181,7 +181,7 @@ IMPLEMENT_ANY_OP2(__forceinline, Call, Ptr, StringPtr)
         DAS_PTR_NODE; \
     };
 
-#include "daScript/simulate/simulate_fusion_op2_impl.h"
+#include "modules/dascript/src/include/daScript/simulate/simulate_fusion_op2_impl.h"
 
 IMPLEMENT_ANY_OP2(__forceinline, CallAndCopyOrMove, Ptr, StringPtr)
 
@@ -253,7 +253,7 @@ IMPLEMENT_ANY_OP2(__forceinline, CallAndCopyOrMove, Ptr, StringPtr)
         DAS_EVAL_NODE \
     };
 
-#include "daScript/simulate/simulate_fusion_op2_impl.h"
+#include "modules/dascript/src/include/daScript/simulate/simulate_fusion_op2_impl.h"
 
 IMPLEMENT_ANY_OP2(__forceinline, FastCall, Ptr, StringPtr)
 

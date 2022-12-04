@@ -1,17 +1,17 @@
-#include "daScript/misc/platform.h"
+#include "modules/dascript/src/include/daScript/misc/platform.h"
 
 #ifdef _MSC_VER
 #pragma warning(disable:4505)
 #endif
 
-#include "daScript/simulate/simulate_fusion.h"
+#include "modules/dascript/src/include/daScript/simulate/simulate_fusion.h"
 
 #if DAS_FUSION>=2
 
-#include "daScript/simulate/sim_policy.h"
-#include "daScript/ast/ast.h"
-#include "daScript/simulate/simulate_fusion_op2.h"
-#include "daScript/simulate/simulate_fusion_op2_vec_settings.h"
+#include "modules/dascript/src/include/daScript/simulate/sim_policy.h"
+#include "modules/dascript/src/include/daScript/ast/ast.h"
+#include "modules/dascript/src/include/daScript/simulate/simulate_fusion_op2.h"
+#include "modules/dascript/src/include/daScript/simulate/simulate_fusion_op2_vec_settings.h"
 
 // fake DAS_NODE to support boolean eval
 #undef DAS_NODE

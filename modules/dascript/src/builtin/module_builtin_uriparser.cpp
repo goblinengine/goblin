@@ -1,13 +1,13 @@
-#include "daScript/misc/platform.h"
+#include "modules/dascript/src/include/daScript/misc/platform.h"
 
 #include "module_builtin_uriparser.h"
-#include "daScript/simulate/aot_builtin_uriparser.h"
+#include "modules/dascript/src/include/daScript/simulate/aot_builtin_uriparser.h"
 
-#include "daScript/ast/ast.h"
-#include "daScript/ast/ast_interop.h"
-#include "daScript/ast/ast_handle.h"
-#include "daScript/simulate/hash.h"
-#include "daScript/misc/uric.h"
+#include "modules/dascript/src/include/daScript/ast/ast.h"
+#include "modules/dascript/src/include/daScript/ast/ast_interop.h"
+#include "modules/dascript/src/include/daScript/ast/ast_handle.h"
+#include "modules/dascript/src/include/daScript/simulate/hash.h"
+#include "modules/dascript/src/include/daScript/misc/uric.h"
 
 #ifndef URI_STATIC_BUILD
 #define URI_STATIC_BUILD

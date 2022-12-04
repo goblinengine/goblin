@@ -1,5 +1,5 @@
-#include "daScript/misc/platform.h"
-#include "daScript/ast/ast.h"
+#include "modules/dascript/src/include/daScript/misc/platform.h"
+#include "modules/dascript/src/include/daScript/ast/ast.h"
 
 das::Context * get_context ( int stackSize=0 );
 

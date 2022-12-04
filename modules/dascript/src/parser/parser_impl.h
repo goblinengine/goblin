@@ -1,7 +1,7 @@
 #pragma once
 
-#include "daScript/ast/ast.h"
-#include "daScript/ast/ast_expressions.h"
+#include "modules/dascript/src/include/daScript/ast/ast.h"
+#include "modules/dascript/src/include/daScript/ast/ast_expressions.h"
 
 #include "parser_state.h"
 

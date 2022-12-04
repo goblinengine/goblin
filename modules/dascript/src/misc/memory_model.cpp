@@ -1,7 +1,7 @@
-#include "daScript/misc/platform.h"
+#include "modules/dascript/src/include/daScript/misc/platform.h"
 
-#include "daScript/misc/memory_model.h"
-#include "daScript/misc/debug_break.h"
+#include "modules/dascript/src/include/daScript/misc/memory_model.h"
+#include "modules/dascript/src/include/daScript/misc/debug_break.h"
 
 namespace das {
 

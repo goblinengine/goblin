@@ -1,8 +1,8 @@
-#include "daScript/misc/platform.h"
+#include "modules/dascript/src/include/daScript/misc/platform.h"
 
-#include "daScript/ast/ast.h"
-#include "daScript/ast/ast_visitor.h"
-#include "daScript/ast/ast_generate.h"
+#include "modules/dascript/src/include/daScript/ast/ast.h"
+#include "modules/dascript/src/include/daScript/ast/ast_visitor.h"
+#include "modules/dascript/src/include/daScript/ast/ast_generate.h"
 
 #define DAS_XSTR(s) #s
 #define DAS_STR(s) DAS_XSTR(s)

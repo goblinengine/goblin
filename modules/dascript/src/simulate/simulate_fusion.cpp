@@ -1,13 +1,13 @@
-#include "daScript/misc/platform.h"
+#include "modules/dascript/src/include/daScript/misc/platform.h"
 
 #ifdef _MSC_VER
 #pragma warning(disable:4505)
 #endif
 
-#include "daScript/ast/ast.h"
-#include "daScript/simulate/simulate_fusion.h"
-#include "daScript/simulate/sim_policy.h"
-#include "daScript/simulate/simulate_visit_op.h"
+#include "modules/dascript/src/include/daScript/ast/ast.h"
+#include "modules/dascript/src/include/daScript/simulate/simulate_fusion.h"
+#include "modules/dascript/src/include/daScript/simulate/sim_policy.h"
+#include "modules/dascript/src/include/daScript/simulate/simulate_visit_op.h"
 
 namespace das {
 

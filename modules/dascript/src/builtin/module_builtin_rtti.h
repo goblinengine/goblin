@@ -1,10 +1,10 @@
 #pragma once
 
-#include "daScript/ast/ast.h"
-#include "daScript/ast/ast_handle.h"
-#include "daScript/simulate/bind_enum.h"
-#include "daScript/simulate/aot.h"
-#include "daScript/simulate/aot_builtin_rtti.h"
+#include "modules/dascript/src/include/daScript/ast/ast.h"
+#include "modules/dascript/src/include/daScript/ast/ast_handle.h"
+#include "modules/dascript/src/include/daScript/simulate/bind_enum.h"
+#include "modules/dascript/src/include/daScript/simulate/aot.h"
+#include "modules/dascript/src/include/daScript/simulate/aot_builtin_rtti.h"
 
 DAS_BASE_BIND_ENUM(das::Type, Type,
     none,           autoinfer,      alias,          fakeContext,    fakeLineInfo,

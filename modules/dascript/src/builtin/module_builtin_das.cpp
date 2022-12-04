@@ -1,4 +1,4 @@
-#include "daScript/misc/platform.h"
+#include "modules/dascript/src/include/daScript/misc/platform.h"
 
 #include "module_builtin.h"
 

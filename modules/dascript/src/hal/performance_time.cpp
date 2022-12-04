@@ -1,5 +1,5 @@
-#include "daScript/misc/platform.h"
-#include "daScript/misc/performance_time.h"
+#include "modules/dascript/src/include/daScript/misc/platform.h"
+#include "modules/dascript/src/include/daScript/misc/performance_time.h"
 
 #if DAS_PROFILE_SECTIONS
 namespace das {

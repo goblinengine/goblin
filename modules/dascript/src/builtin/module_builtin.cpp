@@ -1,17 +1,17 @@
-#include "daScript/misc/platform.h"
+#include "modules/dascript/src/include/daScript/misc/platform.h"
 
 #include "module_builtin.h"
 
-#include "daScript/simulate/simulate_nodes.h"
-#include "daScript/simulate/sim_policy.h"
+#include "modules/dascript/src/include/daScript/simulate/simulate_nodes.h"
+#include "modules/dascript/src/include/daScript/simulate/sim_policy.h"
 
-#include "daScript/ast/ast.h"
+#include "modules/dascript/src/include/daScript/ast/ast.h"
 
-#include "daScript/ast/ast_interop.h"
-#include "daScript/ast/ast_handle.h"
-#include "daScript/ast/ast_policy_types.h"
+#include "modules/dascript/src/include/daScript/ast/ast_interop.h"
+#include "modules/dascript/src/include/daScript/ast/ast_handle.h"
+#include "modules/dascript/src/include/daScript/ast/ast_policy_types.h"
 
-#include "daScript/misc/performance_time.h"
+#include "modules/dascript/src/include/daScript/misc/performance_time.h"
 
 namespace das
 {

@@ -1,6 +1,6 @@
-#include "daScript/misc/platform.h"
+#include "modules/dascript/src/include/daScript/misc/platform.h"
 
-#include "daScript/simulate/runtime_range.h"
+#include "modules/dascript/src/include/daScript/simulate/runtime_range.h"
 
 namespace das
 {

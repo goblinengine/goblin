@@ -1,12 +1,12 @@
-#include "daScript/misc/platform.h"
+#include "modules/dascript/src/include/daScript/misc/platform.h"
 
 #include "module_builtin.h"
 
-#include "daScript/simulate/simulate_nodes.h"
-#include "daScript/ast/ast_interop.h"
-#include "daScript/ast/ast_policy_types.h"
+#include "modules/dascript/src/include/daScript/simulate/simulate_nodes.h"
+#include "modules/dascript/src/include/daScript/ast/ast_interop.h"
+#include "modules/dascript/src/include/daScript/ast/ast_policy_types.h"
 
-#include "daScript/simulate/aot_builtin.h"
+#include "modules/dascript/src/include/daScript/simulate/aot_builtin.h"
 
 namespace das {
 

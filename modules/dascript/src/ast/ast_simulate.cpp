@@ -1,18 +1,18 @@
-#include "daScript/misc/platform.h"
+#include "modules/dascript/src/include/daScript/misc/platform.h"
 
-#include "daScript/ast/ast.h"
-#include "daScript/ast/ast_match.h"
-#include "daScript/ast/ast_expressions.h"
+#include "modules/dascript/src/include/daScript/ast/ast.h"
+#include "modules/dascript/src/include/daScript/ast/ast_match.h"
+#include "modules/dascript/src/include/daScript/ast/ast_expressions.h"
 
-#include "daScript/simulate/runtime_array.h"
-#include "daScript/simulate/runtime_table_nodes.h"
-#include "daScript/simulate/runtime_range.h"
-#include "daScript/simulate/runtime_string_delete.h"
-#include "daScript/simulate/hash.h"
+#include "modules/dascript/src/include/daScript/simulate/runtime_array.h"
+#include "modules/dascript/src/include/daScript/simulate/runtime_table_nodes.h"
+#include "modules/dascript/src/include/daScript/simulate/runtime_range.h"
+#include "modules/dascript/src/include/daScript/simulate/runtime_string_delete.h"
+#include "modules/dascript/src/include/daScript/simulate/hash.h"
 
-#include "daScript/simulate/simulate_nodes.h"
+#include "modules/dascript/src/include/daScript/simulate/simulate_nodes.h"
 
-#include "daScript/simulate/simulate_visit_op.h"
+#include "modules/dascript/src/include/daScript/simulate/simulate_visit_op.h"
 
 das::Context * get_context ( int stackSize=0 );//link time resolved dependencies
 

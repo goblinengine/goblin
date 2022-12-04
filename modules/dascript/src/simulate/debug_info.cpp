@@ -1,12 +1,12 @@
-#include "daScript/misc/platform.h"
+#include "modules/dascript/src/include/daScript/misc/platform.h"
 
-#include "daScript/simulate/debug_info.h"
-#include "daScript/ast/ast.h"
+#include "modules/dascript/src/include/daScript/simulate/debug_info.h"
+#include "modules/dascript/src/include/daScript/ast/ast.h"
 
-#include "daScript/misc/enums.h"
-#include "daScript/misc/arraytype.h"
-#include "daScript/misc/vectypes.h"
-#include "daScript/misc/rangetype.h"
+#include "modules/dascript/src/include/daScript/misc/enums.h"
+#include "modules/dascript/src/include/daScript/misc/arraytype.h"
+#include "modules/dascript/src/include/daScript/misc/vectypes.h"
+#include "modules/dascript/src/include/daScript/misc/rangetype.h"
 
 namespace das
 {

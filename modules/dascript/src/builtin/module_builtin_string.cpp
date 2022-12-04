@@ -1,13 +1,13 @@
-#include "daScript/misc/platform.h"
+#include "modules/dascript/src/include/daScript/misc/platform.h"
 
 #include "module_builtin.h"
 
-#include "daScript/ast/ast_interop.h"
-#include "daScript/ast/ast_handle.h"
-#include "daScript/misc/performance_time.h"
-#include "daScript/simulate/aot_builtin_string.h"
-#include "daScript/misc/string_writer.h"
-#include "daScript/misc/debug_break.h"
+#include "modules/dascript/src/include/daScript/ast/ast_interop.h"
+#include "modules/dascript/src/include/daScript/ast/ast_handle.h"
+#include "modules/dascript/src/include/daScript/misc/performance_time.h"
+#include "modules/dascript/src/include/daScript/simulate/aot_builtin_string.h"
+#include "modules/dascript/src/include/daScript/misc/string_writer.h"
+#include "modules/dascript/src/include/daScript/misc/debug_break.h"
 
 #include <inttypes.h>
 

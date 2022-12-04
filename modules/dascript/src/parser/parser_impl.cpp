@@ -1,9 +1,9 @@
-#include "daScript/misc/platform.h"
+#include "modules/dascript/src/include/daScript/misc/platform.h"
 
 #include "parser_impl.h"
 #include "parser_state.h"
 
-#include "daScript/ast/ast_generate.h"
+#include "modules/dascript/src/include/daScript/ast/ast_generate.h"
 
 #undef yyextra
 #define yyextra (*((das::DasParserState **)(scanner)))

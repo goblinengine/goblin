@@ -1,9 +1,9 @@
-#include "daScript/misc/platform.h"
+#include "modules/dascript/src/include/daScript/misc/platform.h"
 
-#include "daScript/ast/ast.h"
-#include "daScript/ast/ast_visitor.h"
-#include "daScript/ast/ast_generate.h"
-#include "daScript/simulate/debug_print.h"
+#include "modules/dascript/src/include/daScript/ast/ast.h"
+#include "modules/dascript/src/include/daScript/ast/ast_visitor.h"
+#include "modules/dascript/src/include/daScript/ast/ast_generate.h"
+#include "modules/dascript/src/include/daScript/simulate/debug_print.h"
 
 /*
 TODO:

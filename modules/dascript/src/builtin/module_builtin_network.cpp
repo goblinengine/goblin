@@ -1,9 +1,9 @@
-#include "daScript/misc/platform.h"
+#include "modules/dascript/src/include/daScript/misc/platform.h"
 
-#include "daScript/misc/performance_time.h"
-#include "daScript/simulate/aot_builtin_network.h"
-#include "daScript/ast/ast.h"
-#include "daScript/ast/ast_handle.h"
+#include "modules/dascript/src/include/daScript/misc/performance_time.h"
+#include "modules/dascript/src/include/daScript/simulate/aot_builtin_network.h"
+#include "modules/dascript/src/include/daScript/ast/ast.h"
+#include "modules/dascript/src/include/daScript/ast/ast_handle.h"
 #include "module_builtin_rtti.h"
 
 MAKE_TYPE_FACTORY(NetworkServer,Server)

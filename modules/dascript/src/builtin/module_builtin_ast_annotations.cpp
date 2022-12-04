@@ -1,15 +1,15 @@
-#include "daScript/misc/platform.h"
+#include "modules/dascript/src/include/daScript/misc/platform.h"
 
 #include "module_builtin_rtti.h"
 
-#include "daScript/simulate/simulate_visit_op.h"
-#include "daScript/ast/ast_policy_types.h"
-#include "daScript/ast/ast_expressions.h"
-#include "daScript/ast/ast_generate.h"
-#include "daScript/ast/ast_visitor.h"
-#include "daScript/simulate/aot_builtin_ast.h"
-#include "daScript/simulate/aot_builtin_string.h"
-#include "daScript/misc/performance_time.h"
+#include "modules/dascript/src/include/daScript/simulate/simulate_visit_op.h"
+#include "modules/dascript/src/include/daScript/ast/ast_policy_types.h"
+#include "modules/dascript/src/include/daScript/ast/ast_expressions.h"
+#include "modules/dascript/src/include/daScript/ast/ast_generate.h"
+#include "modules/dascript/src/include/daScript/ast/ast_visitor.h"
+#include "modules/dascript/src/include/daScript/simulate/aot_builtin_ast.h"
+#include "modules/dascript/src/include/daScript/simulate/aot_builtin_string.h"
+#include "modules/dascript/src/include/daScript/misc/performance_time.h"
 
 #include "module_builtin_ast.h"
 

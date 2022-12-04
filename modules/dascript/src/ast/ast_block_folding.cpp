@@ -1,7 +1,7 @@
-#include "daScript/misc/platform.h"
+#include "modules/dascript/src/include/daScript/misc/platform.h"
 
-#include "daScript/ast/ast.h"
-#include "daScript/ast/ast_visitor.h"
+#include "modules/dascript/src/include/daScript/ast/ast.h"
+#include "modules/dascript/src/include/daScript/ast/ast_visitor.h"
 
 namespace das {
 

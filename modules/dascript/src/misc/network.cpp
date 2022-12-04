@@ -1,6 +1,6 @@
-#include "daScript/misc/platform.h"
+#include "modules/dascript/src/include/daScript/misc/platform.h"
 
-#include "daScript/misc/network.h"
+#include "modules/dascript/src/include/daScript/misc/network.h"
 
 #ifdef _WIN32
 

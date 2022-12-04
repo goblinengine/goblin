@@ -1138,9 +1138,9 @@ static const flex_int32_t yy_rule_can_match_eol[224] =
 #define YY_RESTORE_YY_MORE_OFFSET
 #line 1 "ds_lexer.lpp"
 #line 2 "ds_lexer.lpp"
-    #include "daScript/misc/platform.h"
+    #include "modules/dascript/src/include/daScript/misc/platform.h"
     #include <inttypes.h>
-    #include "daScript/ast/ast.h"
+    #include "modules/dascript/src/include/daScript/ast/ast.h"
 
     #include "parser_state.h"
 

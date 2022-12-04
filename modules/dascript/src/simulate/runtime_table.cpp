@@ -1,6 +1,6 @@
-#include "daScript/misc/platform.h"
+#include "modules/dascript/src/include/daScript/misc/platform.h"
 
-#include "daScript/simulate/runtime_table_nodes.h"
+#include "modules/dascript/src/include/daScript/simulate/runtime_table_nodes.h"
 
 namespace das
 {

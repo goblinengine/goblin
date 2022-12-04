@@ -1,6 +1,6 @@
-#include "daScript/misc/platform.h"
+#include "modules/dascript/src/include/daScript/misc/platform.h"
 
-#include "daScript/misc/sysos.h"
+#include "modules/dascript/src/include/daScript/misc/sysos.h"
 
 #if defined(_MSC_VER) && !defined(_GAMING_XBOX) && !defined(_DURANGO)
     #define WIN32_LEAN_AND_MEAN

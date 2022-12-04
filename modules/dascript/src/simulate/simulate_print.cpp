@@ -1,7 +1,7 @@
-#include "daScript/misc/platform.h"
+#include "modules/dascript/src/include/daScript/misc/platform.h"
 
-#include "daScript/simulate/simulate.h"
-#include "daScript/ast/ast.h"
+#include "modules/dascript/src/include/daScript/simulate/simulate.h"
+#include "modules/dascript/src/include/daScript/ast/ast.h"
 
 namespace das {
 

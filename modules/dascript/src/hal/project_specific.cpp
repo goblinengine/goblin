@@ -1,5 +1,5 @@
-#include "daScript/misc/platform.h"
-#include "daScript/daScriptModule.h"
+#include "modules/dascript/src/include/daScript/misc/platform.h"
+#include "modules/dascript/src/include/daScript/daScriptModule.h"
 
 using namespace das;
 

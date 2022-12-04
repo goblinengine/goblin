@@ -1,6 +1,6 @@
-#include "daScript/misc/platform.h"
+#include "modules/dascript/src/include/daScript/misc/platform.h"
 
-#include "daScript/simulate/runtime_range.h"
+#include "modules/dascript/src/include/daScript/simulate/runtime_range.h"
 
 extern "C" int64_t ref_time_ticks ();
 extern "C" int get_time_usec (int64_t reft);

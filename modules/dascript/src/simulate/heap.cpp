@@ -1,8 +1,8 @@
-#include "daScript/misc/platform.h"
+#include "modules/dascript/src/include/daScript/misc/platform.h"
 
-#include "daScript/simulate/simulate.h"
-#include "daScript/simulate/heap.h"
-#include "daScript/misc/debug_break.h"
+#include "modules/dascript/src/include/daScript/simulate/simulate.h"
+#include "modules/dascript/src/include/daScript/simulate/heap.h"
+#include "modules/dascript/src/include/daScript/misc/debug_break.h"
 
 namespace das {
 

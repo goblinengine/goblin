@@ -75,9 +75,9 @@
 
 /* First part of user prologue.  */
 
-    #include "daScript/misc/platform.h"
-    #include "daScript/simulate/debug_info.h"
-    #include "daScript/ast/compilation_errors.h"
+    #include "modules/dascript/src/include/daScript/misc/platform.h"
+    #include "modules/dascript/src/include/daScript/simulate/debug_info.h"
+    #include "modules/dascript/src/include/daScript/ast/compilation_errors.h"
 
     #ifdef _MSC_VER
     #pragma warning(disable:4262)

@@ -1,6 +1,6 @@
-#include "daScript/misc/platform.h"
+#include "modules/dascript/src/include/daScript/misc/platform.h"
 
-#include "daScript/misc/job_que.h"
+#include "modules/dascript/src/include/daScript/misc/job_que.h"
 
 namespace das {
 

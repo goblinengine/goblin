@@ -1,13 +1,13 @@
-#include "daScript/misc/platform.h"
+#include "modules/dascript/src/include/daScript/misc/platform.h"
 
-#include "daScript/misc/performance_time.h"
-#include "daScript/ast/ast.h"
-#include "daScript/ast/ast_handle.h"
+#include "modules/dascript/src/include/daScript/misc/performance_time.h"
+#include "modules/dascript/src/include/daScript/ast/ast.h"
+#include "modules/dascript/src/include/daScript/ast/ast_handle.h"
 
-#include "daScript/simulate/simulate_visit_op.h"
-#include "daScript/simulate/aot_builtin_dasbind.h"
+#include "modules/dascript/src/include/daScript/simulate/simulate_visit_op.h"
+#include "modules/dascript/src/include/daScript/simulate/aot_builtin_dasbind.h"
 
-#include "daScript/misc/sysos.h"
+#include "modules/dascript/src/include/daScript/misc/sysos.h"
 
 #include <mutex>
 

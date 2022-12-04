@@ -1,8 +1,8 @@
-#include "daScript/misc/platform.h"
+#include "modules/dascript/src/include/daScript/misc/platform.h"
 
-#include "daScript/simulate/fs_file_info.h"
-#include "daScript/misc/sysos.h"
-#include "daScript/ast/ast.h"
+#include "modules/dascript/src/include/daScript/simulate/fs_file_info.h"
+#include "modules/dascript/src/include/daScript/misc/sysos.h"
+#include "modules/dascript/src/include/daScript/ast/ast.h"
 
 #define DASLIB_MODULE_NAME  "daslib"
 #define DASTEST_MODULE_NAME "dastest"

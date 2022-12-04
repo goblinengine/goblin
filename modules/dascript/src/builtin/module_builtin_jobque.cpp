@@ -1,9 +1,9 @@
-#include "daScript/misc/platform.h"
+#include "modules/dascript/src/include/daScript/misc/platform.h"
 
-#include "daScript/misc/performance_time.h"
-#include "daScript/simulate/aot_builtin_jobque.h"
-#include "daScript/ast/ast.h"
-#include "daScript/ast/ast_handle.h"
+#include "modules/dascript/src/include/daScript/misc/performance_time.h"
+#include "modules/dascript/src/include/daScript/simulate/aot_builtin_jobque.h"
+#include "modules/dascript/src/include/daScript/ast/ast.h"
+#include "modules/dascript/src/include/daScript/ast/ast_handle.h"
 
 MAKE_TYPE_FACTORY(JobStatus, JobStatus)
 MAKE_TYPE_FACTORY(Channel, Channel)

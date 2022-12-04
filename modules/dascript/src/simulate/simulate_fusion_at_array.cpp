@@ -1,17 +1,17 @@
-#include "daScript/misc/platform.h"
+#include "modules/dascript/src/include/daScript/misc/platform.h"
 
 #ifdef _MSC_VER
 #pragma warning(disable:4505)
 #endif
 
-#include "daScript/simulate/simulate_fusion.h"
+#include "modules/dascript/src/include/daScript/simulate/simulate_fusion.h"
 
 #if DAS_FUSION
 
-#include "daScript/simulate/runtime_array.h"
-#include "daScript/simulate/sim_policy.h"
-#include "daScript/ast/ast.h"
-#include "daScript/simulate/simulate_visit_op.h"
+#include "modules/dascript/src/include/daScript/simulate/runtime_array.h"
+#include "modules/dascript/src/include/daScript/simulate/sim_policy.h"
+#include "modules/dascript/src/include/daScript/ast/ast.h"
+#include "modules/dascript/src/include/daScript/simulate/simulate_visit_op.h"
 
 namespace das {
 
@@ -70,8 +70,8 @@ namespace das {
 #define FUSION_OP2_SUBEXPR_LEFT(CTYPE,node)     ((static_cast<SimNode_ArrayAt *>(node))->l)
 #define FUSION_OP2_SUBEXPR_RIGHT(CTYPE,node)    ((static_cast<SimNode_ArrayAt *>(node))->r)
 
-#include "daScript/simulate/simulate_fusion_op2_set_impl.h"
-#include "daScript/simulate/simulate_fusion_op2_set_perm.h"
+#include "modules/dascript/src/include/daScript/simulate/simulate_fusion_op2_set_impl.h"
+#include "modules/dascript/src/include/daScript/simulate/simulate_fusion_op2_set_perm.h"
 
     IMPLEMENT_SETOP_SCALAR(ArrayAtR2V);
 
@@ -101,8 +101,8 @@ namespace das {
         } \
     };
 
-#include "daScript/simulate/simulate_fusion_op2_set_impl.h"
-#include "daScript/simulate/simulate_fusion_op2_set_perm.h"
+#include "modules/dascript/src/include/daScript/simulate/simulate_fusion_op2_set_impl.h"
+#include "modules/dascript/src/include/daScript/simulate/simulate_fusion_op2_set_perm.h"
 
     IMPLEMENT_SETOP_NUMERIC_VEC(ArrayAtR2V);
 
@@ -142,8 +142,8 @@ namespace das {
     rn->offset = sn->offset; \
     rn->baseType = Type::none;
 
-#include "daScript/simulate/simulate_fusion_op2_set_impl.h"
-#include "daScript/simulate/simulate_fusion_op2_set_perm.h"
+#include "modules/dascript/src/include/daScript/simulate/simulate_fusion_op2_set_impl.h"
+#include "modules/dascript/src/include/daScript/simulate/simulate_fusion_op2_set_perm.h"
 
     IMPLEMENT_ANY_SETOP(__forceinline, ArrayAt, Ptr, StringPtr, StringPtr);
 

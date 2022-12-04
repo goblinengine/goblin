@@ -1,6 +1,6 @@
 #pragma once
 
-#include "daScript/ast/ast.h"
+#include "modules/dascript/src/include/daScript/ast/ast.h"
 
 namespace das {
     class Module_BuiltIn : public Module {

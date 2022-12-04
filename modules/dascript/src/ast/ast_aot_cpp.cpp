@@ -1,11 +1,11 @@
-#include "daScript/misc/platform.h"
+#include "modules/dascript/src/include/daScript/misc/platform.h"
 
-#include "daScript/ast/ast.h"
-#include "daScript/ast/ast_visitor.h"
-#include "daScript/ast/ast_generate.h"
+#include "modules/dascript/src/include/daScript/ast/ast.h"
+#include "modules/dascript/src/include/daScript/ast/ast_visitor.h"
+#include "modules/dascript/src/include/daScript/ast/ast_generate.h"
 
-#include "daScript/misc/enums.h"
-#include "daScript/simulate/hash.h"
+#include "modules/dascript/src/include/daScript/misc/enums.h"
+#include "modules/dascript/src/include/daScript/simulate/hash.h"
 
 namespace das {
 

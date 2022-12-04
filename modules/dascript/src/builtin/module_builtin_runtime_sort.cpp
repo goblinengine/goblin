@@ -1,10 +1,10 @@
-#include "daScript/misc/platform.h"
+#include "modules/dascript/src/include/daScript/misc/platform.h"
 
 #include "module_builtin.h"
 
-#include "daScript/ast/ast_interop.h"
-#include "daScript/simulate/aot_builtin.h"
-#include "daScript/simulate/sim_policy.h"
+#include "modules/dascript/src/include/daScript/ast/ast_interop.h"
+#include "modules/dascript/src/include/daScript/simulate/aot_builtin.h"
+#include "modules/dascript/src/include/daScript/simulate/sim_policy.h"
 #include "das_qsort_r.h"
 
 namespace das

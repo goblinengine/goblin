@@ -1,6 +1,6 @@
-#include "daScript/misc/platform.h"
+#include "modules/dascript/src/include/daScript/misc/platform.h"
 
-#include "daScript/simulate/runtime_array.h"
+#include "modules/dascript/src/include/daScript/simulate/runtime_array.h"
 
 namespace das
 {

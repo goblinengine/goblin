@@ -11,10 +11,10 @@
 */
 
 %code requires {
-    #include "daScript/misc/platform.h"
-    #include "daScript/ast/ast.h"
-    #include "daScript/ast/ast_generate.h"
-    #include "daScript/ast/ast_expressions.h"
+    #include "modules/dascript/src/include/daScript/misc/platform.h"
+    #include "modules/dascript/src/include/daScript/ast/ast.h"
+    #include "modules/dascript/src/include/daScript/ast/ast_generate.h"
+    #include "modules/dascript/src/include/daScript/ast/ast_expressions.h"
 
     #include "parser_state.h"
 
@@ -44,9 +44,9 @@
 }
 
 %{
-    #include "daScript/misc/platform.h"
-    #include "daScript/simulate/debug_info.h"
-    #include "daScript/ast/compilation_errors.h"
+    #include "modules/dascript/src/include/daScript/misc/platform.h"
+    #include "modules/dascript/src/include/daScript/simulate/debug_info.h"
+    #include "modules/dascript/src/include/daScript/ast/compilation_errors.h"
 
     #ifdef _MSC_VER
     #pragma warning(disable:4262)

@@ -1,8 +1,8 @@
 #pragma once
 
-#include "daScript/misc/type_name.h"
-#include "daScript/ast/ast_typefactory.h"
-#include "daScript/misc/uric.h"
+#include "modules/dascript/src/include/daScript/misc/type_name.h"
+#include "modules/dascript/src/include/daScript/ast/ast_typefactory.h"
+#include "modules/dascript/src/include/daScript/misc/uric.h"
 
 /*
     URI = scheme ":" ["//" authority] path ["?" query] ["#" fragment]

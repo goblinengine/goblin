@@ -1,6 +1,6 @@
-#include "daScript/misc/platform.h"
+#include "modules/dascript/src/include/daScript/misc/platform.h"
 
-#include "daScript/misc/smart_ptr.h"
+#include "modules/dascript/src/include/daScript/misc/smart_ptr.h"
 
 #include <signal.h>
 

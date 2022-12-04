@@ -1,8 +1,8 @@
-#include "daScript/misc/platform.h"
+#include "modules/dascript/src/include/daScript/misc/platform.h"
 
-#include "daScript/simulate/simulate.h"
-#include "daScript/simulate/data_walker.h"
-#include "daScript/simulate/debug_print.h"
+#include "modules/dascript/src/include/daScript/simulate/simulate.h"
+#include "modules/dascript/src/include/daScript/simulate/data_walker.h"
+#include "modules/dascript/src/include/daScript/simulate/debug_print.h"
 
 namespace das
 {

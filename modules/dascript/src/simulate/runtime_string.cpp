@@ -1,12 +1,12 @@
-#include "daScript/misc/platform.h"
+#include "modules/dascript/src/include/daScript/misc/platform.h"
 
-#include "daScript/simulate/runtime_string.h"
-#include "daScript/simulate/simulate.h"
-#include "daScript/simulate/hash.h"
-#include "daScript/simulate/debug_print.h"
-#include "daScript/simulate/runtime_string_delete.h"
-#include "daScript/simulate/simulate_nodes.h"
-#include "daScript/simulate/sim_policy.h"
+#include "modules/dascript/src/include/daScript/simulate/runtime_string.h"
+#include "modules/dascript/src/include/daScript/simulate/simulate.h"
+#include "modules/dascript/src/include/daScript/simulate/hash.h"
+#include "modules/dascript/src/include/daScript/simulate/debug_print.h"
+#include "modules/dascript/src/include/daScript/simulate/runtime_string_delete.h"
+#include "modules/dascript/src/include/daScript/simulate/simulate_nodes.h"
+#include "modules/dascript/src/include/daScript/simulate/sim_policy.h"
 
 namespace das
 {
