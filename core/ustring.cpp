@@ -4246,7 +4246,8 @@ String String::property_name_encode() const {
 }
 
 // Changes made to the set of invalid characters must also be reflected in the String documentation.
-const String String::invalid_node_name_characters = ". : @ / \" " UNIQUE_NODE_PREFIX;
+// GOBLIN ENGINE allow @ in node paths
+const String String::invalid_node_name_characters = ". : / \" " UNIQUE_NODE_PREFIX;
 ;
 
 String String::validate_node_name() const {
