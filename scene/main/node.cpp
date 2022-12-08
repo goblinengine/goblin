@@ -1093,9 +1093,9 @@ void Node::set_human_readable_collision_renaming(bool p_enabled) {
 
 #ifdef TOOLS_ENABLED
 String Node::validate_child_name(Node *p_child) {
-	StringName name = p_child->data.name;
-	_generate_serial_child_name(p_child, name);
-	return name;
+	// GOBLIN ENGINE generate more meaningful names for unnamed/editor nodes
+	_generate_serial_child_name(p_child, p_child->data.name);
+	return p_child->data.name;
 }
 #endif
 
@@ -1106,9 +1106,7 @@ void Node::_validate_child_name(Node *p_child, bool p_force_human_readable) {
 		//this approach to autoset node names is human readable but very slow
 		//it's turned on while running in the editor
 
-		StringName name = p_child->data.name;
-		_generate_serial_child_name(p_child, name);
-		p_child->data.name = name;
+		_generate_serial_child_name(p_child, p_child->data.name);
 
 	} else {
 		//this approach to autoset node names is fast but not as readable
@@ -1137,8 +1135,7 @@ void Node::_validate_child_name(Node *p_child, bool p_force_human_readable) {
 
 		if (!unique) {
 			ERR_FAIL_COND(!node_hrcr_count.ref());
-			String name = "@" + String(p_child->get_name()) + "@" + itos(node_hrcr_count.get());
-			p_child->data.name = name;
+			_generate_serial_child_name(p_child, p_child->data.name);
 		}
 	}
 }
