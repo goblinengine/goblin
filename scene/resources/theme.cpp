@@ -30,6 +30,7 @@
 
 #include "theme.h"
 #include "core/print_string.h"
+#include "dynamic_font.h"
 
 // Universal Theme resources used when no other theme has the item.
 Ref<Theme> Theme::default_theme;
@@ -39,6 +40,7 @@ Ref<Theme> Theme::project_default_theme;
 Ref<Texture> Theme::default_icon;
 Ref<StyleBox> Theme::default_style;
 Ref<Font> Theme::default_font;
+real_t Theme::scale = -1.0;
 
 // Dynamic properties.
 bool Theme::_set(const StringName &p_name, const Variant &p_value) {
@@ -270,6 +272,70 @@ Ref<Font> Theme::get_default_theme_font() const {
 
 bool Theme::has_default_theme_font() const {
 	return default_theme_font.is_valid();
+}
+
+void Theme::set_scale(const float new_scale) {
+	float old_scale = scale;
+	float actual_scale = 1.0/old_scale * new_scale;
+	scale = new_scale;
+
+	if (old_scale < 0) return;
+
+	_freeze_change_propagation();
+
+	//adjust scale for all components
+
+	//adjust dynamic font
+	DynamicFont *df = Object::cast_to<DynamicFont>(default_theme_font.ptr());
+	if (df != nullptr) {
+		df->set_size(Math::round(df->get_size() * actual_scale));
+	}
+
+	
+
+	//adjust styleboxes
+	List<Ref<StyleBox>> p_list;
+	const StringName *K = nullptr;
+	while (K = style_map.next(K)) {
+		const StringName *L = nullptr;
+		while (L = style_map[*K].next(L)) {
+			Ref<StyleBox> style = style_map[*K][*L];
+
+			// skip over styles that have been already set
+			if (p_list.find(style) != nullptr) continue;
+
+			style->set_default_margin(MARGIN_LEFT, style->get_default_margin(MARGIN_LEFT) * actual_scale);
+			style->set_default_margin(MARGIN_RIGHT, style->get_default_margin(MARGIN_RIGHT) * actual_scale);
+			style->set_default_margin(MARGIN_TOP, style->get_default_margin(MARGIN_TOP) * actual_scale);
+			style->set_default_margin(MARGIN_BOTTOM, style->get_default_margin(MARGIN_BOTTOM) * actual_scale);
+			
+			p_list.push_back(style);
+ 
+			// if (style->is_class("StyleBoxFlat")) {
+			// 	StyleBoxFlat *styleFlat = Object::cast_to<StyleBoxFlat>(style.ptr());
+
+			// 	styleFlat->set_expand_margin_size_individual(
+			// 		styleFlat->get_margin(MARGIN_LEFT) * actual_scale,
+			// 		styleFlat->get_margin(MARGIN_TOP) * actual_scale,
+			// 		styleFlat->get_margin(MARGIN_RIGHT) * actual_scale,
+			// 		styleFlat->get_margin(MARGIN_BOTTOM) * actual_scale
+			// 	);
+
+			// 	styleFlat->set_default_margin(MARGIN_LEFT, styleFlat->get_default_margin(MARGIN_LEFT) * actual_scale);
+			// 	styleFlat->set_default_margin(MARGIN_RIGHT, styleFlat->get_default_margin(MARGIN_RIGHT) * actual_scale);
+			// 	styleFlat->set_default_margin(MARGIN_TOP, styleFlat->get_default_margin(MARGIN_TOP) * actual_scale);
+			// 	styleFlat->set_default_margin(MARGIN_BOTTOM, styleFlat->get_default_margin(MARGIN_BOTTOM) * actual_scale);
+				
+			// }
+
+		}	
+	}
+
+	_unfreeze_and_propagate_changes();
+}
+
+float Theme::get_scale() {
+	return scale;
 }
 
 // Icons.
@@ -1694,6 +1760,9 @@ void Theme::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_default_font"), &Theme::get_default_theme_font);
 	ClassDB::bind_method(D_METHOD("has_default_font"), &Theme::has_default_theme_font);
 
+	ClassDB::bind_method(D_METHOD("set_scale", "scale"), &Theme::set_scale);
+	ClassDB::bind_method(D_METHOD("get_scale"), &Theme::get_scale);
+
 	ClassDB::bind_method(D_METHOD("set_theme_item", "data_type", "name", "theme_type", "value"), &Theme::set_theme_item);
 	ClassDB::bind_method(D_METHOD("get_theme_item", "data_type", "name", "theme_type"), &Theme::get_theme_item);
 	ClassDB::bind_method(D_METHOD("has_theme_item", "data_type", "name", "theme_type"), &Theme::has_theme_item);
@@ -1720,6 +1789,7 @@ void Theme::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("clear"), &Theme::clear);
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "default_font", PROPERTY_HINT_RESOURCE_TYPE, "Font"), "set_default_font", "get_default_font");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "scale", PROPERTY_HINT_RANGE, "0.5,5,0.01"), "set_scale", "get_scale");
 
 	BIND_ENUM_CONSTANT(DATA_TYPE_COLOR);
 	BIND_ENUM_CONSTANT(DATA_TYPE_CONSTANT);
