@@ -1,0 +1,39 @@
+#!/usr/bin/env python
+from misc.utility.scons_hints import *
+
+Import("env_goblin")
+
+# Splash screens and app icon builders
+import os
+import sys
+
+# Import main builders from root
+current_dir = Dir(".").abspath
+main_builders_path = os.path.join(current_dir, "..", "..", "..", "main")
+sys.path.insert(0, main_builders_path)
+import main_builders
+sys.path.pop(0)
+
+goblin_module_path = Dir("..").abspath
+
+# Override runtime splash screen (replaces main/splash.gen.h)
+env_goblin.CommandNoCache(
+    "#main/splash.gen.h",
+    goblin_module_path + "/main/splash.png",
+    env_goblin.Run(main_builders.make_splash),
+)
+
+# Override editor splash screen (replaces main/splash_editor.gen.h)
+if env_goblin.editor_build and not env_goblin["no_editor_splash"]:
+    env_goblin.CommandNoCache(
+        "#main/splash_editor.gen.h",
+        goblin_module_path + "/main/splash_editor.png",
+        env_goblin.Run(main_builders.make_splash_editor),
+    )
+
+# Override app icon (replaces main/app_icon.gen.h)
+env_goblin.CommandNoCache(
+    "#main/app_icon.gen.h",
+    goblin_module_path + "/main/app_icon.png",
+    env_goblin.Run(main_builders.make_app_icon),
+)
