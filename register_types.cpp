@@ -18,18 +18,22 @@ void preregister_goblin_types() {
 }
 
 void initialize_goblin_module(ModuleInitializationLevel p_level) {
-	if (p_level == MODULE_INITIALIZATION_LEVEL_SCENE) {
+	// Project Manager + Editor UI are initialized at EDITOR level.
+	// We also initialize at SCENE level to cover non-editor runtime usage.
+	if (p_level == MODULE_INITIALIZATION_LEVEL_EDITOR || p_level == MODULE_INITIALIZATION_LEVEL_SCENE) {
 		// Register Goblin branding class
 		GDREGISTER_CLASS(GoblinBranding);
 
 		// Initialize branding overrides
-		goblin_branding = memnew(GoblinBranding);
-		goblin_branding->initialize();
+		if (!goblin_branding) {
+			goblin_branding = memnew(GoblinBranding);
+			goblin_branding->initialize();
+		}
 	}
 }
 
 void uninitialize_goblin_module(ModuleInitializationLevel p_level) {
-	if (p_level == MODULE_INITIALIZATION_LEVEL_SCENE) {
+	if (p_level == MODULE_INITIALIZATION_LEVEL_EDITOR || p_level == MODULE_INITIALIZATION_LEVEL_SCENE) {
 		if (goblin_branding) {
 			memdelete(goblin_branding);
 			goblin_branding = nullptr;

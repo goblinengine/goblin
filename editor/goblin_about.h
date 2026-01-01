@@ -46,7 +46,7 @@ private:
 	static GoblinBranding *singleton;
 
 protected:
-	static void _bind_methods() {}
+	static void _bind_methods();
 
 public:
 	static GoblinBranding *get_singleton() { return singleton; }
@@ -61,6 +61,7 @@ private:
 	void _add_translation_overrides();
 
 #ifdef TOOLS_ENABLED
+	int _ui_install_attempts = 0;
 	void _install_ui_tweaks();
 	void _apply_ui_tweaks();
 	void _on_node_added(Node *p_node);

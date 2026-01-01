@@ -36,9 +36,13 @@
 #include "core/object/object.h"
 #include "editor/editor_node.h"
 #include "editor/project_manager/project_manager.h"
+#include "scene/gui/base_button.h"
 #include "scene/gui/button.h"
+#include "scene/gui/label.h"
+#include "scene/gui/link_button.h"
 #include "scene/gui/popup_menu.h"
 #include "scene/gui/tab_container.h"
+#include "scene/main/window.h"
 #include "scene/main/node.h"
 #include "scene/main/scene_tree.h"
 #endif
@@ -53,11 +57,20 @@ GoblinBranding::~GoblinBranding() {
 	singleton = nullptr;
 }
 
+void GoblinBranding::_bind_methods() {
+#ifdef TOOLS_ENABLED
+	ClassDB::bind_method(D_METHOD("_install_ui_tweaks"), &GoblinBranding::_install_ui_tweaks);
+	ClassDB::bind_method(D_METHOD("_apply_ui_tweaks"), &GoblinBranding::_apply_ui_tweaks);
+#endif
+}
+
 void GoblinBranding::initialize() {
 	_add_translation_overrides();
 
 #ifdef TOOLS_ENABLED
-	_install_ui_tweaks();
+	// SceneTree may not exist at module init time (especially in Project Manager).
+	// Defer installation, and retry until it succeeds.
+	call_deferred(SNAME("_install_ui_tweaks"));
 #endif
 }
 
@@ -67,27 +80,59 @@ void GoblinBranding::_add_translation_overrides() {
 		return;
 	}
 
-	Ref<Translation> translation;
-	translation.instantiate();
-	translation->set_locale("en");
+	const String active_locale = ts->get_locale();
 
-	translation->add_message("Thanks from the Godot community!", "Thanks from the Goblin community!");
-	translation->add_message("Godot Engine contributors", "Goblin Engine contributors");
-	translation->add_message(
-			"Godot Engine relies on a number of third-party free and open source libraries, all compatible with the terms of its MIT license. The following is an exhaustive list of all such third-party components with their respective copyright statements and license terms.",
-			"Goblin Engine relies on a number of third-party free and open source libraries, all compatible with the terms of its MIT license. The following is an exhaustive list of all such third-party components with their respective copyright statements and license terms.");
+	auto add_translation_for_locale = [&](const String &p_locale) {
+		Ref<Translation> translation;
+		translation.instantiate();
+		translation->set_locale(p_locale);
 
-	translation->add_message("About Godot...", "About Goblin...");
-	translation->add_message("About Godot", "About Goblin");
+	// Ordered replacements to ensure broad rebrand coverage without touching identifiers.
+	struct Replacement {
+		const char *from;
+		const char *to;
+	};
 
-	// We still remove the menu item via UI tweaks; keeping this empty avoids showing the original text
-	// in case the menu is rebuilt before our hook runs.
-	translation->add_message("Support Godot Development", "");
+	static const Replacement replacements[] = {
+		// Most specific first
+		{"Thanks from the Godot community!", "Thanks from the Goblin community!"},
+		{"Godot Engine contributors", "Goblin Engine contributors"},
+		{"Godot Engine relies on a number of third-party free and open source libraries, all compatible with the terms of its MIT license. The following is an exhaustive list of all such third-party components with their respective copyright statements and license terms.",
+				"Goblin Engine relies on a number of third-party free and open source libraries, all compatible with the terms of its MIT license. The following is an exhaustive list of all such third-party components with their respective copyright statements and license terms."},
+		{"Godot Engine", "Goblin Engine"},
+		{"GODOT ENGINE", "GOBLIN ENGINE"},
+		{"Godot community", "Goblin community"},
+		{"Godot editor", "Goblin editor"},
+		{"Godot project", "Goblin project"},
+		{"Godot Projects", "Goblin Projects"},
+		{"Godot Docs", "Goblin Docs"},
+		{"Godot documentation", "Goblin documentation"},
+		{"Godot website", "Goblin website"},
+		{"About Godot...", "About Goblin..."},
+		{"About Godot", "About Goblin"},
+		{"Godot version", "Goblin version"},
+		// Generic Godot -> Goblin (last to avoid over-matching)
+		{"Godot", "Goblin"},
+		{"GODOT", "GOBLIN"},
+		{"godot", "goblin"},
+		// UI items we hide; blank them to prevent flashes
+		{"Support Godot Development", ""},
+		{"Donate", ""},
+		{"Donors", ""},
+	};
 
-	translation->add_message("Donate", "");
-	translation->add_message("Donors", "");
+		for (const Replacement &repl : replacements) {
+			translation->add_message(repl.from, repl.to);
+		}
 
-	ts->add_translation(translation);
+		ts->add_translation(translation);
+	};
+
+	// Add for the active locale first, then for plain English as a fallback.
+	if (!active_locale.is_empty()) {
+		add_translation_for_locale(active_locale);
+	}
+	add_translation_for_locale("en");
 }
 
 #ifdef TOOLS_ENABLED
@@ -96,6 +141,11 @@ void GoblinBranding::_install_ui_tweaks() {
 	MainLoop *ml = OS::get_singleton()->get_main_loop();
 	SceneTree *tree = Object::cast_to<SceneTree>(ml);
 	if (!tree) {
+		// Retry later (bounded).
+		_ui_install_attempts++;
+		if (_ui_install_attempts < 120) {
+			call_deferred(SNAME("_install_ui_tweaks"));
+		}
 		return;
 	}
 
@@ -121,6 +171,36 @@ void GoblinBranding::_apply_ui_tweaks() {
 		return;
 	}
 	_strip_about_donors_tab(root);
+
+	// Best-effort runtime patching for strings that may not be translated.
+	Vector<Node *> stack;
+	stack.push_back(root);
+	while (!stack.is_empty()) {
+		Node *n = stack[stack.size() - 1];
+		stack.resize(stack.size() - 1);
+		if (!n) {
+			continue;
+		}
+
+		if (Window *w = Object::cast_to<Window>(n)) {
+			const String title = w->get_title();
+			if (title.contains("Thanks from the Godot community")) {
+				w->set_title("Thanks from the Goblin community!");
+			}
+		}
+
+		if (Label *lbl = Object::cast_to<Label>(n)) {
+			String t = lbl->get_text();
+			if (t.contains("Juan Linietsky") || t.contains("Ariel Manzur")) {
+				lbl->set_text("\u00A9 2007-present Goblin & Godot contributors.");
+			}
+		}
+
+		const int child_count = n->get_child_count();
+		for (int i = 0; i < child_count; i++) {
+			stack.push_back(n->get_child(i));
+		}
+	}
 }
 
 void GoblinBranding::_on_node_added(Node *p_node) {
@@ -131,6 +211,20 @@ void GoblinBranding::_on_node_added(Node *p_node) {
 	_strip_about_donors_tab(p_node);
 	_hide_project_manager_donate();
 	_strip_support_menu_item();
+
+	// Patch About dialog labels in newly added nodes too.
+	if (Window *w = Object::cast_to<Window>(p_node)) {
+		const String title = w->get_title();
+		if (title.contains("Thanks from the Godot community")) {
+			w->set_title("Thanks from the Goblin community!");
+		}
+	}
+	if (Label *lbl = Object::cast_to<Label>(p_node)) {
+		String t = lbl->get_text();
+		if (t.contains("Juan Linietsky") || t.contains("Ariel Manzur")) {
+			lbl->set_text("\u00A9 2007-present Goblin & Godot contributors.");
+		}
+	}
 }
 
 void GoblinBranding::_hide_project_manager_donate() {
@@ -139,7 +233,7 @@ void GoblinBranding::_hide_project_manager_donate() {
 		return;
 	}
 
-	// Best-effort: hide any Button labelled "Donate".
+	// Best-effort: hide any Button labelled "Donate" or with heart icon.
 	// We avoid touching upstream code by scanning the runtime UI tree.
 	Vector<Node *> stack;
 	stack.push_back(pm);
@@ -150,11 +244,21 @@ void GoblinBranding::_hide_project_manager_donate() {
 			continue;
 		}
 
-		if (Button *btn = Object::cast_to<Button>(n)) {
-			const String text = btn->get_text();
-			if (text == "Donate" || text.contains("Donate")) {
-				btn->hide();
-				btn->set_disabled(true);
+		BaseButton *base_btn = Object::cast_to<BaseButton>(n);
+		if (base_btn) {
+			const String name = base_btn->get_name();
+			String text;
+			if (Button *btn = Object::cast_to<Button>(base_btn)) {
+				text = btn->get_text();
+			} else if (LinkButton *lbtn = Object::cast_to<LinkButton>(base_btn)) {
+				text = lbtn->get_text();
+			}
+
+			const String tooltip = base_btn->get_tooltip_text();
+			if (text.contains("Donate") || name.to_lower().contains("donate") || tooltip.contains("Donate") || tooltip.contains("donate")) {
+				base_btn->hide();
+				base_btn->set_disabled(true);
+				base_btn->queue_free();
 			}
 		}
 
@@ -181,16 +285,18 @@ void GoblinBranding::_strip_about_donors_tab(Node *p_node) {
 		}
 
 		if (TabContainer *tc = Object::cast_to<TabContainer>(n)) {
-			// Remove any child tab with name "Donors" (or empty after translation override).
-			for (int i = tc->get_child_count() - 1; i >= 0; i--) {
-				Node *tab = tc->get_child(i);
-				if (!tab) {
-					continue;
-				}
-				const String tab_name = tab->get_name();
-				if (tab_name == "Donors" || tab_name.contains("Donors")) {
-					tc->remove_child(tab);
-					tab->queue_free();
+			// Remove/Hide any tab titled "Donors".
+			const int tab_count = tc->get_tab_count();
+			for (int i = tab_count - 1; i >= 0; i--) {
+				Control *tab_control = tc->get_tab_control(i);
+				const String title = tc->get_tab_title(i);
+				const String name = tab_control ? String(tab_control->get_name()) : String();
+				if (title.contains("Donors") || name.contains("Donors")) {
+					tc->set_tab_hidden(i, true);
+					if (tab_control) {
+						tc->remove_child(tab_control);
+						tab_control->queue_free();
+					}
 				}
 			}
 		}
@@ -203,14 +309,24 @@ void GoblinBranding::_strip_about_donors_tab(Node *p_node) {
 }
 
 void GoblinBranding::_strip_support_menu_item() {
-	EditorNode *en = EditorNode::get_singleton();
-	if (!en) {
+	// Works for both full Editor (EditorNode exists) and Project Manager (no EditorNode).
+	Node *scan_root = nullptr;
+	if (EditorNode *en = EditorNode::get_singleton()) {
+		scan_root = en;
+	} else {
+		MainLoop *ml = OS::get_singleton()->get_main_loop();
+		SceneTree *tree = Object::cast_to<SceneTree>(ml);
+		if (tree) {
+			scan_root = tree->get_root();
+		}
+	}
+	if (!scan_root) {
 		return;
 	}
 
-	// Scan popup menus and remove the support entry by label.
+	// Scan popup menus and remove support/donation entries.
 	Vector<Node *> stack;
-	stack.push_back(en);
+	stack.push_back(scan_root);
 	while (!stack.is_empty()) {
 		Node *n = stack[stack.size() - 1];
 		stack.resize(stack.size() - 1);
@@ -219,10 +335,17 @@ void GoblinBranding::_strip_support_menu_item() {
 		}
 
 		if (PopupMenu *pm = Object::cast_to<PopupMenu>(n)) {
+			// Remove from end to beginning to avoid index issues
 			for (int i = pm->get_item_count() - 1; i >= 0; i--) {
 				const String item_text = pm->get_item_text(i);
-				if (item_text == "Support Godot Development" || item_text.contains("Support Godot")) {
+				// Remove any donation/support related menu items.
+				if (item_text.contains("Support") || item_text.contains("Donate") || item_text.contains("Godot Development")) {
 					pm->remove_item(i);
+					continue;
+				}
+				// Also rename About item if needed.
+				if (item_text == "About Godot..." || item_text == "About Godot") {
+					pm->set_item_text(i, item_text.replace("Godot", "Goblin"));
 				}
 			}
 		}

@@ -1,5 +1,6 @@
 """Functions used to rebrand Godot to Goblin during build time"""
 
+import importlib.util
 import os
 import sys
 from collections import OrderedDict
@@ -9,71 +10,118 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "..", "core"))
 import core_builders
 sys.path.pop(0)
 
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "..", "editor"))
-import editor_icons_builders
-sys.path.pop(0)
-
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
 import methods
 sys.path.pop(0)
 
+# These will be set by config.py before builders are called
+_original_core_builders = {}
+_original_main_builders = {}
+
 
 def goblin_version_info_builder(target, source, env):
     """Override version info with Goblin branding"""
-    # NOTE: This builder may run as a post-action on Godot's original
-    # `version_generated.gen.h` target, in which case `source` may only
-    # contain the version Value() (no overrides file).
-    
-    # Start with base version info
-    version_data = source[0].read() if source else {}
-    
-    # Apply Goblin overrides
-    version_data["name"] = "Goblin Engine"
-    version_data["short_name"] = "Goblin"
-    version_data["website"] = "https://goblinengine.github.io/"  # Change this
+    # Source[0] is a Value() node containing version.version_info dict from version.py
+    # Source[1] is the version_override.py file (if present)
+
+    # Get base version info from SCons Value node
+    base_version = source[0].read() if hasattr(source[0], 'read') else {}
+    if not isinstance(base_version, dict):
+        base_version = {}
+
+    # Load Goblin overrides from modules/goblin/core/version_override.py
+    override_path = str(source[1]) if len(source) > 1 else os.path.join(os.path.dirname(__file__), "core", "version_override.py")
+    override_data = {}
+    if os.path.exists(override_path):
+        spec = importlib.util.spec_from_file_location("goblin_version_override", override_path)
+        override_mod = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(override_mod)
+        override_data = getattr(override_mod, "goblin_version", {})
+        if not isinstance(override_data, dict):
+            override_data = {}
+
+    version_data = {
+        # Numeric fields fall back to zero if the upstream dict is missing
+        "major": base_version.get("major", 0),
+        "minor": base_version.get("minor", 0),
+        "patch": base_version.get("patch", 0),
+        "status": base_version.get("status", ""),
+        "build": base_version.get("build", ""),
+        "module_config": base_version.get("module_config", ""),
+        "docs_branch": base_version.get("docs_branch", "stable"),
+        # Goblin-branded defaults
+        "name": "Goblin Engine",
+        "short_name": "Goblin",
+        "website": "https://goblinengine.github.io/",
+        "docs_url": "https://docs.goblinengine.org/en/",
+        "community_name": "Goblin community",
+        "contributors_name": "Goblin Engine contributors",
+    }
+
+    # Apply upstream overrides (base Version build data takes precedence over defaults).
+    version_data.update({k: v for k, v in base_version.items() if v not in (None, "")})
+    # Apply Goblin overrides from version_override.py.
+    version_data.update({k: v for k, v in override_data.items() if v not in (None, "")})
+
+    # Ensure docs_url is consistent with branch if only a base path was provided.
+    if "docs_url" not in override_data:
+        version_data["docs_url"] = version_data["docs_url"].rstrip("/") + "/"
+    if version_data.get("docs_branch"):
+        version_data["docs_url"] = f"{version_data['docs_url']}en/{version_data['docs_branch']}"
+
+    # Final guardrails to avoid missing keys in format().
+    required_defaults = {
+        "status": version_data.get("status", ""),
+        "build": version_data.get("build", ""),
+        "module_config": version_data.get("module_config", ""),
+        "docs_branch": version_data.get("docs_branch", "stable"),
+    }
+    version_data.update(required_defaults)
     
     with methods.generated_wrapper(str(target[0])) as file:
         file.write(
             """\
-#define GODOT_VERSION_SHORT_NAME "{short_name}"
-#define GODOT_VERSION_NAME "{name}"
-#define GODOT_VERSION_MAJOR {major}
-#define GODOT_VERSION_MINOR {minor}
-#define GODOT_VERSION_PATCH {patch}
-#define GODOT_VERSION_STATUS "{status}"
-#define GODOT_VERSION_BUILD "{build}"
-#define GODOT_VERSION_MODULE_CONFIG "{module_config}"
-#define GODOT_VERSION_WEBSITE "{website}"
-#define GODOT_VERSION_DOCS_BRANCH "{docs_branch}"
-#define GODOT_VERSION_DOCS_URL "https://docs.yourdomain.com/en/" GODOT_VERSION_DOCS_BRANCH
+    #define GODOT_VERSION_SHORT_NAME "{short_name}"
+    #define GODOT_VERSION_NAME "{name}"
+    #define GODOT_VERSION_MAJOR {major}
+    #define GODOT_VERSION_MINOR {minor}
+    #define GODOT_VERSION_PATCH {patch}
+    #define GODOT_VERSION_STATUS "{status}"
+    #define GODOT_VERSION_BUILD "{build}"
+    #define GODOT_VERSION_MODULE_CONFIG "{module_config}"
+    #define GODOT_VERSION_WEBSITE "{website}"
+    #define GODOT_VERSION_DOCS_BRANCH "{docs_branch}"
+    #define GODOT_VERSION_DOCS_URL "{docs_url}"
 
-// Goblin Engine specific defines
-#define GOBLIN_BRANDING_ENABLED
-#define GOBLIN_ENGINE_NAME "Goblin Engine"
-#define GOBLIN_ENGINE_SHORT_NAME "Goblin"
-#define GOBLIN_COMMUNITY_NAME "Goblin community"
-#define GOBLIN_CONTRIBUTORS_NAME "Goblin Engine contributors"
+    // Goblin Engine specific defines
+    #define GOBLIN_BRANDING_ENABLED
+    #define GOBLIN_ENGINE_NAME "{name}"
+    #define GOBLIN_ENGINE_SHORT_NAME "{short_name}"
+    #define GOBLIN_COMMUNITY_NAME "{community_name}"
+    #define GOBLIN_CONTRIBUTORS_NAME "{contributors_name}"
 
-// String replacements for UI text (can be used in editor code)
-#ifndef GOBLIN_NO_STRING_OVERRIDE
-	// These help replace Godot strings in translatable strings
-	#define GODOT_COMMUNITY_OVERRIDE "Goblin community"
-	#define GODOT_ENGINE_CONTRIBUTORS_OVERRIDE "Goblin Engine contributors"
-#endif
-""".format(**version_data)
+    // String replacements for UI text (can be used in editor code)
+    #ifndef GOBLIN_NO_STRING_OVERRIDE
+    	// These help replace Godot strings in translatable strings
+    	#define GODOT_COMMUNITY_OVERRIDE "{community_name}"
+    	#define GODOT_ENGINE_CONTRIBUTORS_OVERRIDE "{contributors_name}"
+    #endif
+    """.format(**version_data)
         )
 
 
 def goblin_authors_builder(target, source, env):
     """Generate authors with Goblin credits"""
     goblin_authors = os.path.join(os.path.dirname(__file__), "core", "AUTHORS.md")
-    return core_builders.make_authors_header(target, [env.File(goblin_authors)], env)
+    # Call ORIGINAL builder with goblin file
+    return _original_core_builders['make_authors_header'](target, [env.File(goblin_authors)], env)
 
 
 def goblin_donors_builder(target, source, env):
     """Generate donors with Goblin patrons"""
     goblin_donors = os.path.join(os.path.dirname(__file__), "core", "DONORS.md")
-    return core_builders.make_donors_header(target, [env.File(goblin_donors)], env)
+    # Call ORIGINAL builder with goblin file
+    return _original_core_builders['make_donors_header'](target, [env.File(goblin_donors)], env)
 
 
 def goblin_license_builder(target, source, env):
@@ -81,12 +129,14 @@ def goblin_license_builder(target, source, env):
     base_dir = os.path.dirname(__file__)
     goblin_copyright = os.path.join(base_dir, "core", "COPYRIGHT.txt")
     goblin_license = os.path.join(base_dir, "core", "LICENSE.txt")
-    return core_builders.make_license_header(target, [env.File(goblin_copyright), env.File(goblin_license)], env)
+    # Call ORIGINAL builder with goblin files
+    return _original_core_builders['make_license_header'](target, [env.File(goblin_copyright), env.File(goblin_license)], env)
 
 
 def goblin_splash_builder(target, source, env):
     """Generate splash screen with Goblin branding"""
     goblin_splash = os.path.join(os.path.dirname(__file__), "main", "splash.png")
+    # Read Goblin splash, not source
     buffer = methods.get_buffer(goblin_splash)
 
     with methods.generated_wrapper(str(target[0])) as file:
@@ -102,6 +152,7 @@ inline constexpr const unsigned char boot_splash_png[] = {{
 def goblin_splash_editor_builder(target, source, env):
     """Generate editor splash screen with Goblin branding"""
     goblin_splash_editor = os.path.join(os.path.dirname(__file__), "main", "splash_editor.png")
+    # Read Goblin splash, not source
     buffer = methods.get_buffer(goblin_splash_editor)
 
     with methods.generated_wrapper(str(target[0])) as file:
@@ -118,6 +169,7 @@ inline constexpr const unsigned char boot_splash_editor_png[] = {{
 def goblin_app_icon_builder(target, source, env):
     """Generate app icon with Goblin branding"""
     goblin_app_icon = os.path.join(os.path.dirname(__file__), "main", "app_icon.png")
+    # Read Goblin icon, not source
     buffer = methods.get_buffer(goblin_app_icon)
 
     with methods.generated_wrapper(str(target[0])) as file:
@@ -173,12 +225,16 @@ def text_replacer_builder(target, source, env):
         content = f.read()
     
     # Apply replacements (be careful with these!)
-    replacements = {
-        '"Godot Engine"': '"Goblin Engine"',
-        '"godot"': '"goblin"',
+    replacements = OrderedDict([
+        ('"Godot Engine"', '"Goblin Engine"'),
+        ('"Godot"', '"Goblin"'),
+        ('"GODOT"', '"GOBLIN"'),
+        ('"godot"', '"goblin"'),
+        ('"Godot Engine contributors"', '"Goblin Engine contributors"'),
+        ('"Godot community"', '"Goblin community"'),
         # Add more careful replacements as needed
         # Avoid replacing in code identifiers, only in strings
-    }
+    ])
     
     for old, new in replacements.items():
         content = content.replace(old, new)

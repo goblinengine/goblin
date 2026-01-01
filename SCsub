@@ -14,32 +14,10 @@ env_goblin.goblin_sources = []
 goblin_module_path = Dir(".").abspath
 
 # ===================================================================
-# REBRANDING APPROACH (Post Actions)
-# Let Godot define the build targets, then overwrite the generated
-# branding headers afterwards (no duplicate builders).
+# REBRANDING APPROACH - BUILDER MONKEY-PATCHING
+# The builders are replaced in config.py before core/main SCsub runs.
+# This SCsub just needs to build our custom goblin classes.
 # ===================================================================
-
-env.AddPostAction("#core/version_generated.gen.h", env.Run(goblin_builders.goblin_version_info_builder))
-env.Depends("#core/version_generated.gen.h", goblin_module_path + "/core/version_override.py")
-
-env.AddPostAction("#core/authors.gen.h", env.Run(goblin_builders.goblin_authors_builder))
-env.Depends("#core/authors.gen.h", goblin_module_path + "/core/AUTHORS.md")
-
-env.AddPostAction("#core/donors.gen.h", env.Run(goblin_builders.goblin_donors_builder))
-env.Depends("#core/donors.gen.h", goblin_module_path + "/core/DONORS.md")
-
-env.AddPostAction("#core/license.gen.h", env.Run(goblin_builders.goblin_license_builder))
-env.Depends("#core/license.gen.h", [goblin_module_path + "/core/COPYRIGHT.txt", goblin_module_path + "/core/LICENSE.txt"])
-
-env.AddPostAction("#main/splash.gen.h", env.Run(goblin_builders.goblin_splash_builder))
-env.Depends("#main/splash.gen.h", goblin_module_path + "/main/splash.png")
-
-if env.editor_build and not env["no_editor_splash"]:
-    env.AddPostAction("#main/splash_editor.gen.h", env.Run(goblin_builders.goblin_splash_editor_builder))
-    env.Depends("#main/splash_editor.gen.h", goblin_module_path + "/main/splash_editor.png")
-
-env.AddPostAction("#main/app_icon.gen.h", env.Run(goblin_builders.goblin_app_icon_builder))
-env.Depends("#main/app_icon.gen.h", goblin_module_path + "/main/app_icon.png")
 
 # Export environment for sub-SCsubs
 Export("env_goblin")
