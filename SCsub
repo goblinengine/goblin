@@ -31,7 +31,9 @@ Export("env_goblin")
 if os.path.exists(goblin_module_path + "/core/SCsub"):
     SConscript("core/SCsub")
 
-if env.editor_build and os.path.exists(goblin_module_path + "/editor/SCsub"):
+# Build branding sources even for export templates.
+# The C++ code itself gates editor-only behavior with TOOLS_ENABLED.
+if os.path.exists(goblin_module_path + "/editor/SCsub"):
     SConscript("editor/SCsub")
 
 # Add module registration
