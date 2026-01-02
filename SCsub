@@ -11,6 +11,11 @@ Import("env")
 env_goblin = env.Clone()
 env_goblin.goblin_sources = []
 
+# Enable Goblin branding only for editor/tools builds so export templates
+# (no tools) don't link editor-only symbols like GoblinBranding.
+if env.editor_build:
+    env_goblin.Append(CPPDEFINES=["GOBLIN_BRANDING_ENABLED"])
+
 goblin_module_path = Dir(".").abspath
 
 # ===================================================================

@@ -10,7 +10,7 @@
 #include "core/config/engine.h"
 #include "core/object/class_db.h"
 
-#ifdef TOOLS_ENABLED
+#if defined(TOOLS_ENABLED) && defined(GOBLIN_BRANDING_ENABLED)
 #include "editor/goblin_about.h"
 
 static GoblinBranding *goblin_branding = nullptr;
@@ -23,7 +23,7 @@ void preregister_goblin_types() {
 void initialize_goblin_module(ModuleInitializationLevel p_level) {
 	// Project Manager + Editor UI are initialized at EDITOR level.
 	// We also initialize at SCENE level to cover non-editor runtime usage.
-#ifdef TOOLS_ENABLED
+#if defined(TOOLS_ENABLED) && defined(GOBLIN_BRANDING_ENABLED)
 	if (p_level == MODULE_INITIALIZATION_LEVEL_EDITOR || p_level == MODULE_INITIALIZATION_LEVEL_SCENE) {
 		// Register Goblin branding class
 		GDREGISTER_CLASS(GoblinBranding);
@@ -38,7 +38,7 @@ void initialize_goblin_module(ModuleInitializationLevel p_level) {
 }
 
 void uninitialize_goblin_module(ModuleInitializationLevel p_level) {
-#ifdef TOOLS_ENABLED
+#if defined(TOOLS_ENABLED) && defined(GOBLIN_BRANDING_ENABLED)
 	if (p_level == MODULE_INITIALIZATION_LEVEL_EDITOR || p_level == MODULE_INITIALIZATION_LEVEL_SCENE) {
 		if (goblin_branding) {
 			memdelete(goblin_branding);
