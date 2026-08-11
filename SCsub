@@ -45,4 +45,22 @@ env_goblin.add_source_files(env_goblin.goblin_sources, "*.cpp")
 # Add all goblin sources to main modules sources
 env.modules_sources += env_goblin.goblin_sources
 
+# ===================================================================
+# SOURCE OVERRIDE SYSTEM — Full Module Replacement
+# modules/goblin/modules/<name>/ mirrors Godot's source tree.
+# When a goblin-owned copy exists, redirect the module build to it.
+# The configure phase still runs on the original (for registration),
+# but SCsub compiles our modified sources.
+# ===================================================================
+import os as _os
+
+GOBLIN_MODULE_OVERRIDES = {
+    "gdscript": _os.path.join(goblin_module_path, "modules", "gdscript"),
+}
+
+for _mod_name, _goblin_path in GOBLIN_MODULE_OVERRIDES.items():
+    if _os.path.isdir(_goblin_path) and _mod_name in env.module_list:
+        env.module_list[_mod_name] = _os.path.abspath(_goblin_path).replace("\\", "/")
+        print(f"Goblin: Overriding module '{_mod_name}' -> {env.module_list[_mod_name]}")
+
 print("Goblin Engine: Complete rebranding applied")
