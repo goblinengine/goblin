@@ -34,6 +34,7 @@
 
 #ifdef TOOLS_ENABLED
 #include "core/object/object.h"
+#include "core/object/callable_mp.h"
 #include "editor/editor_node.h"
 #include "editor/project_manager/project_manager.h"
 #include "scene/gui/base_button.h"

@@ -32,6 +32,7 @@
 #include "core/io/dir_access.h"
 #include "core/os/os.h"
 #include "core/version.h"
+#include "core/object/callable_mp.h"
 
 #ifdef TOOLS_ENABLED
 #include "core/object/object.h"

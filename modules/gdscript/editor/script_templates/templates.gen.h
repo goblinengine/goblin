@@ -32,8 +32,8 @@
 
 #pragma once
 
-#include "core/object/object.h"
 #include "core/object/script_language.h"
+#include "core/string/ustring.h"
 
 inline constexpr int TEMPLATES_ARRAY_SIZE = 10;
 static const struct ScriptLanguage::ScriptTemplate TEMPLATES[TEMPLATES_ARRAY_SIZE] = {
