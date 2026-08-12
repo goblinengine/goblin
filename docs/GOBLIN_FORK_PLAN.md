@@ -140,69 +140,37 @@ Each ADR must address:
 
 ## 4. Source Override System
 
-### The Problem
+### Implemented Mechanisms
 
-The current `modules/goblin/` can only ADD source files to the build. To truly customize Godot, we need the ability to REPLACE specific `.cpp`/`.h` files from any module with goblin-owned versions — all without modifying Godot's build files.
+Three build-time injection mechanisms replace upstream files without modifying Godot's source. Full details and code in ADR 0001 and [STRUCTURE.md](STRUCTURE.md).
 
-### The Mechanism
+**1. Module Directory Override** (`SCsub` → `GOBLIN_MODULE_OVERRIDES`)
+Swaps an entry in `env.module_list` for a goblin-owned mirror directory. Currently maps `gdscript` → `modules/goblin/modules/gdscript/`. Used for whole-module forks (the GDScript language fork).
 
-Godot collects module sources through a clean pipeline:
-```
-SConstruct → detect_modules() → config.py:configure() → modules/SCsub
-                                                           │
-                                           for each module:
-                                             env.modules_sources = []
-                                             SConscript(module + "/SCsub")
-                                               → add_source_files(sources, "*.cpp")
-                                             add_library("module_X", sources)
-```
+**2. Core File Override** (`config.py` → `goblin_add_library()`)
+Intercepts `env.add_library("core", ...)` and swaps a single source `Object` node before the library captures its sources. Currently swaps `variant_construct.cpp`. Used for surgical single-file overrides.
 
-The interception point is `env.add_source_files()`. By monkey-patching it in `config.py:configure()` (which runs before any SCsub), we can check `env.current_module` (set by SConstruct line 1102) and substitute goblin-owned files for originals during the glob expansion.
+**3. Builder Monkey-Patching** (`config.py` → `configure()`)
+Replaces build-time generator functions (version header, splash, icons, authors/license) and renames binaries `godot` → `goblin`. Used for branding.
 
-### Implementation
+### The Chosen Architecture
 
-**New files:**
-```
-modules/goblin/
-├── goblin_source_overrides.py    # Declarative override map
-└── overrides/                    # Replacement source tree
-    ├── gdscript/                 # Forked GDScript files
-    │   ├── gdscript_compiler.cpp
-    │   └── ...
-    ├── editor/                   # Editor UI overrides
-    │   └── editor_about.cpp      # Replaces hardcoded strings at compile time
-    └── scene/                    # Scene node overrides
-        └── ...
-```
-
-**`goblin_source_overrides.py`:**
-```python
-OVERRIDE_MAP = {
-    "gdscript": {
-        # filename → relative path to goblin override
-        "gdscript_compiler.cpp": "overrides/gdscript/gdscript_compiler.cpp",
-    },
-    "editor": {
-        "editor_about.cpp": "overrides/editor/editor_about.cpp",
-    },
-}
-```
-
-**`config.py` addition:** Intercept `env.add_source_files()`. When `env.current_module` matches an override map entry, substitute matching filenames with goblin paths. Files that don't exist on disk fall back gracefully to originals.
+The original fork plan proposed an `add_source_files()` interception layer with a declarative `OVERRIDE_MAP`. This was **rejected** in favor of the two simpler mechanisms above, which leverage Godot's existing `env.module_list` redirection and `add_library` infrastructure directly. No `goblin_source_overrides.py` or `overrides/` tree exists; the mirror directories are `modules/goblin/modules/` and `modules/goblin/core/`.
 
 ### What This Enables
 
 | Current Limitation | Solved By |
 |---|---|
-| Can't modify GDScript compiler | Override `gdscript_compiler.cpp` in goblin |
-| Hardcoded "Godot" strings in About dialog | Override `editor_about.cpp` — no more retry loops |
-| Can't add renderer hooks | Override `renderer_scene_render_rd.cpp` to inject callbacks |
-| Can't modify physics behavior | Override specific physics body files |
-| Awkward retry loops for SceneTree hooking | Replace with compile-time changes in the overridden source |
+| Fork GDScript (union types, @private, String ctors) | Module directory override — done |
+| Override a single core file (variant_construct.cpp) | Core file override — done |
+| Hardcoded "Godot" strings in About dialog | Compile-time override of `editor_about.cpp` (backlog B-04) |
+| Add renderer hooks later | Module or core override, chosen when needed |
+| Modify physics behavior | Single-file core override |
+| Awkward retry loops for SceneTree hooking | Compile-time changes instead of runtime polling (backlog B-04) |
 
 ### Eliminating the Retry Loops
 
-With source overrides, `goblin_about.cpp`'s SceneTree polling loop (120 attempts at one-per-idle-frame) can be replaced by directly modifying `editor_about.cpp` to use goblin branding strings at compile time. The runtime translation injection can be kept as a fallback, but the primary mechanism becomes compile-time — zero runtime overhead, zero polling.
+`goblin_about.cpp`'s SceneTree polling loop (120 attempts at one-per-idle-frame) is replaced by directly overriding `editor_about.cpp` to use goblin branding strings at compile time. The runtime translation injection can be kept as a fallback, but the primary mechanism becomes compile-time — zero runtime overhead, zero polling.
 
 ---
 
@@ -544,6 +512,24 @@ The custom engine at `D:\DEV\Goblin` (raylib + daslang, v0.37.0) has several arc
 5. **Light Probe Grid for Stealth:** Goblin Custom's retro-native RFC proposes a coarse ambient light probe grid with CPU-readable values. DB's `LightSensor` (viewport-based sampling) is not scalable. A first-class light probe grid as an engine feature would solve GDR-009a (stealth detection read from world, not HUD).
 
 6. **Basis-Frame + Position Transform Authority:** Goblin Custom avoids Euler angles and quaternions, using basis-frame transforms instead. This is a deep change but eliminates gimbal lock and axis-order ambiguity. For DB, the `Basis` type already exists — the convention could be enforced via the scripting layer.
+
+7. **Portals & Mirrors as Custom Nodes (not first-class core):** Provided by the goblin module as custom nodes — e.g. `PortalSurface3D` / `MirrorSurface3D` extending `Node3D`/`Area3D`, registered in ClassDB. They approximate the spatial-weirdness of Ultima Underworld / System Shock / Thief via `SubViewport` + teleportation plus portal-aware query helpers, without deep core surgery. The standalone engine made portals first-class because its renderer/physics are custom; the fork does not need that — a node is the right granularity. (`PortalSurface3D` is named to avoid the upstream `Portal`/`Room` occlusion-culling nodes in Godot 4.4+.)
+
+8. **Retro-Native Rendering (editor-provided):** Palette quantization, indexed-color looks, dithering, color cycling, and posterization as editor-provided tools — custom editor nodes/plugins (`PalettePostProcess`, `DitherPostProcess`, `ColorCycle`) — not core renderer changes. DB already uses pixel-art upscalers (scale2x, hq2x, eagle2x) as shaders; these can be consolidated into goblin-owned nodes exposed in the editor.
+
+9. **Generic Spatial Field System:** The standalone engine's "ambient probe / ambient field" concept, generalized. A coarse spatial field (scalar or vector samples over a grid) that multiple systems sample from — light exposure for stealth, audio environment/reverb zones, dynamic music behavior, and effect intensity. The retro-native RFC's post-1.0 direction explicitly expands the ambient probe beyond light into "environment channels that can drive audio environment response and dynamic music behavior." This is the Thief "light field" generalized: one field infrastructure, many consumers.
+
+10. **Native Stealth Shadow Value (Thief Light Gem):** A gameplay-facing shadow readout combining direct light, shadow occlusion between actor and lights, and ambient light — inspectable and queryable at runtime for AI, HUD, and scripting (GDR-009a). It is the stable, temporally-smoothed gameplay readout on top of the field system (idea 9).
+
+11. **Concrete retro-native features worth porting (from the retro-native RFC):**
+    - **Per-view palette selection and blending** — palette overrides that portal views inherit (Feature 1).
+    - **Texture-space animation families** — UV scroll and frame cycling driven by a global simulation clock, evaluated in-shader (Feature 3). This is the "color cycling" mechanism.
+    - **Hitscan surface metadata** — raycast results that return surface class (wall/floor/ceiling), object ID, and impact UV, for weapon/trigger/material logic (Feature 9). DB already resolves surface class via `UPDOWN_THRESHOLD`; a native contract would formalize it.
+    - **Kinematic brush movers** — doors, lifts, crushers with deterministic hull traces and blocking policy (Feature 7). DB already has `Moving` via `AnimatableBody3D`; the mover contract is the native generalization.
+    - **Lightstyle channels and surface-class lighting** — style-channel modulation of baked light plus per-surface retro class flags (Feature 8).
+    - **Visibility-set override** — precomputed visibility sets that reject offscreen partitions early (Feature 6).
+
+*Note: the scheduler/cadence idea (idea 3) and the "off-screen simulation" idea are already realized in DB — `scheduler.gd` implements custom process groups (`tick`/`anim`/`map`/`low`/`effect`/`condition`) and a tick-based event queue with save/restore. There is nothing further to port there.*
 
 ---
 

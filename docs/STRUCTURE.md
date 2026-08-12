@@ -1,161 +1,136 @@
-# Goblin Engine Module - Structure Overview
+# Goblin Engine — Module Structure
 
-This module follows Godot's directory structure, making it easy to understand what parts of Godot are being patched/overridden.
+This module mirrors Godot's source tree so that each override is immediately obvious: a file at `modules/goblin/<path>/<file>` overrides the upstream file at `<path>/<file>`.
 
-## Directory Structure
+## Directory Layout
 
 ```
 modules/goblin/
-├── config.py                    # Module configuration
-├── register_types.cpp/h         # Module registration
-├── SCsub                        # Main build script (orchestrates everything)
-├── goblin_builders.py           # Build helper functions
+├── config.py                    # configure() hook — runs before any SCsub
+│   │                            #   · monkey-patches builders (branding)
+│   │                            #   · goblin_add_library() — single-file core swap
+│   │                            #   · DISABLE_MODULES — module trim
+│   └── (registers the add_program/add_library/add_shared_library hooks)
 │
-├── core/                        # Patches for core/*
+├── SCsub                        # Main build script
+│   │                            #   · builds goblin-owned sources
+│   │                            #   · GOBLIN_MODULE_OVERRIDES — whole-module swaps
+│   └── (chains core/SCsub, editor/SCsub)
+│
+├── goblin_builders.py           # Branding builders (delegate to originals where possible)
+├── goblin_manager.py            # Utility for inspecting/verifying the module
+├── register_types.cpp/h         # Module registration (GoblinBranding, GoblinExportTweaks)
+│
+├── core/                        # Mirrors upstream core/ — single-file overrides
 │   ├── SCsub
-│   ├── AUTHORS.md              → Generates core/authors.gen.h
-│   ├── DONORS.md               → Generates core/donors.gen.h  
-│   ├── COPYRIGHT.txt           → Generates core/license.gen.h
-│   ├── LICENSE.txt             → Generates core/license.gen.h
-│   └── version_override.py     → Generates core/version_generated.gen.h
+│   ├── AUTHORS.md               # → core/authors.gen.h
+│   ├── DONORS.md                # → core/donors.gen.h
+│   ├── COPYRIGHT.txt + LICENSE.txt  # → core/license.gen.h
+│   ├── version_override.py      # → core/version_generated.gen.h
+│   └── variant/
+│       ├── variant_construct.cpp  # overrides core/variant/variant_construct.cpp
+│       └── variant_construct.h
 │
-├── main/                        # Patches for main/*
-│   ├── SCsub
-│   ├── splash.png              → Generates main/splash.gen.h
-│   ├── splash_editor.png       → Generates main/splash_editor.gen.h
-│   └── app_icon.png            → Generates main/app_icon.gen.h
+├── modules/                     # Mirrors upstream modules/ — whole-module overrides
+│   └── gdscript/                # The GDScript fork (compiled instead of modules/gdscript/)
+│       ├── config.py, SCsub, register_types.*
+│       ├── gdscript_parser/analyzer/compiler/vm/... (forked + modified)
+│       └── tests/
 │
-├── editor/                      # Patches for editor/*
-│   ├── SCsub
-│   ├── goblin_about.h          # Translation override system
-│   ├── goblin_about.cpp
-│   ├── icons/                  # Patches for editor/icons/*
-│   │   ├── Logo.svg           → About screen logo
-│   │   └── LogoOutlined.svg   → About screen logo outlined
-│   └── themes/                 # Future: editor theme patches
+├── editor/                      # Editor branding
+│   ├── goblin_about.cpp/h       # Translation overrides + UI scanning
+│   ├── goblin_export.cpp/h      # Export dialog tweaks
+│   └── icons/
 │
-├── doc_classes/                 # Module documentation classes
+├── main/                        # Splash / app icon overrides
+│   ├── splash.png, splash_editor.png, app_icon.png
 │
-└── Documentation files:
-    ├── README.md                # This file
-    ├── BRANDING_STATUS.md       # What's branded and how
-    ├── TRANSLATION_OVERRIDES.md # Translation system docs
-    └── IMPLEMENTATION_STATUS.md # Current implementation status
+├── platform/windows/            # Platform-specific overrides (goblin.rc)
+├── tools/                       # sync_godot_icons.py and other utilities
+└── docs/                        # All documentation (adr/, proposal/, backlog, vision, plan)
 ```
 
-## How It Works
+## The Three Override Mechanisms
 
-### 1. Mirror Structure = Clear Patches
+### 1. Module Directory Override (whole module)
 
-The structure mirrors Godot's main directories:
-- `goblin/core/` → patches `godot/core/`
-- `goblin/main/` → patches `godot/main/`
-- `goblin/editor/` → patches `godot/editor/`
+In `SCsub`:
 
-This makes it immediately clear **what you're patching** and **where it lives** in the main engine.
+```python
+GOBLIN_MODULE_OVERRIDES = {
+    "gdscript": os.path.join(goblin_module_path, "modules", "gdscript"),
+}
+for _mod_name, _goblin_path in GOBLIN_MODULE_OVERRIDES.items():
+    if os.path.isdir(_goblin_path) and _mod_name in env.module_list:
+        env.module_list[_mod_name] = os.path.abspath(_goblin_path).replace("\\", "/")
+```
 
-### 2. Self-Contained Build System
+SCons compiles each enabled module from the path in `env.module_list`. Replacing the `gdscript` entry redirects the ENTIRE module to the goblin copy. Upstream `modules/gdscript/` still exists for reference but is never compiled.
 
-Everything is orchestrated from `goblin/SCsub`:
-1. Generates core branding headers (version, authors, donors, license)
-2. Calls `core/SCsub`, `main/SCsub`, `editor/SCsub` in sequence
-3. Each subdirectory handles its own patches
-4. No modification of Godot's core SCons files needed
+**Use when:** forking many files of one module (the GDScript language fork).
 
-### 3. Component Organization
+### 2. Core File Override (single .cpp swap)
 
-**Core Branding** (`core/`)
-- VERSION_NAME, authors, donors, copyright/license
-- These are generated headers that replace Godot's equivalents
+In `config.py` → `goblin_add_library()`:
 
-**Visual Branding** (`main/`)
-- Splash screens, app icon
-- Uses main_builders from Godot directly
+```python
+if str(program).replace("#bin/obj/", "").startswith("core"):
+    _goblin_src = os.path.join(_goblin_dir, "core", "variant", "variant_construct.cpp")
+    if os.path.isfile(_goblin_src):
+        _new_source = []
+        for _s in source:
+            if "variant_construct" in str(_s):
+                _new_source.append(self_env.Object(_goblin_src))  # swap
+            else:
+                _new_source.append(_s)
+        source = _new_source
+```
 
-**Editor Branding** (`editor/`)
-- About dialog text via translation system
-- Editor icons (Logo.svg, etc.)
-- Future: editor themes, custom dialogs
+`configure()` runs before any SCsub and monkey-patches `env.add_library`. When `core/SCsub` creates the core static library, the hook swaps the `Object` node for `variant_construct.cpp` before the library captures its source list. The goblin `.obj` lands in `core.lib`; the original is never compiled.
 
-### 4. Translation Override System
+**Use when:** overriding one or two core files surgically. To add a second file, generalize the name-match into a `{basename: path}` dict.
 
-`editor/goblin_about.h` provides runtime string replacement:
-- Hooks into TranslationServer at startup
-- Replaces "Godot" → "Goblin" in UI strings
-- No core code modifications needed
+### 3. Builder Monkey-Patching (build-time generator)
 
-## Advantages of This Structure
+In `config.py` → `configure()`:
 
-1. **Visual Clarity**: You can see at a glance what's being patched
-2. **Easy Maintenance**: Updates to Godot won't conflict with your changes
-3. **Modular**: Each directory is self-contained with its own SCsub
-4. **Scalable**: Easy to add more patches (scenes/, servers/, etc.)
-5. **Clean**: No modifications to Godot's core build files
+```python
+core_builders.version_info_builder = goblin_builders.goblin_version_info_builder
+main_builders.make_splash = goblin_builders.goblin_splash_builder
+# ... authors, donors, license, app icon, editor splash
+```
 
-## Similar to Goost
+Also wraps `add_program` / `add_library` / `add_shared_library` to rename `godot.*` binaries to `goblin.*`.
 
-This structure is inspired by [goost](https://github.com/goostengine/goost), which pioneered this pattern for Godot 3.x. Key similarities:
-- Mirrored directory structure
-- Self-contained build system
-- Component-based organization
-- No core modifications
+**Use when:** replacing a build-time generator function (branding).
 
-## What Gets Patched
+## Adding A New Override
 
-### Core Patches (`core/`)
-- `AUTHORS.md` → `core/authors.gen.h`
-- `DONORS.md` → `core/donors.gen.h`
-- `COPYRIGHT.txt` + `LICENSE.txt` → `core/license.gen.h`
-- `version_override.py` → `core/version_generated.gen.h`
-
-### Main Patches (`main/`)
-- `splash.png` → `main/splash.gen.h`
-- `splash_editor.png` → `main/splash_editor.gen.h`
-- `app_icon.png` → `main/app_icon.gen.h`
-
-### Editor Patches (`editor/`)
-- `icons/Logo.svg` → Included in `editor/icons/editor_icons.gen.h`
-- `goblin_about.cpp` → Runtime translation overrides
-- About dialog, Help menu, etc.
+1. Decide which mechanism fits (whole module → `GOBLIN_MODULE_OVERRIDES`; single file → `goblin_add_library()`; generator → `configure()`).
+2. Mirror the upstream path under `modules/goblin/` (`core/`, `modules/`, `editor/`, `main/`, `platform/`, `scene/`, `servers/`, ...).
+3. Wire it into the appropriate hook.
+4. Document the mechanism in `.kilo/rules/rules.md` so the coder agent follows it.
+5. Update [gdscript_features.md](gdscript_features.md) (if a GDScript change) or the relevant ADR.
 
 ## Building
 
-```bash
-scons module_goblin_enabled=yes
+```
+scons platform=windows target=editor module_mono_enabled=no accesskit=no angle=no -j4
 ```
 
-Output:
-- Executable: `bin/goblin.windows.editor.x86_64.exe`
-- All branding applied automatically during build
+Output: `bin/goblin.windows.editor.x86_64.exe`. Never delete or clean `bin/`.
 
-## Adding New Patches
+## Porting Across Engine Versions
 
-Want to patch something new?
+When rebasing on a new stable release, diff:
+- `modules/goblin/modules/gdscript/` against `modules/gdscript/`
+- `modules/goblin/core/` against `core/`
 
-1. Create the appropriate subdirectory (e.g., `goblin/scene/` to patch `godot/scene/`)
-2. Add a `SCsub` file in that directory
-3. Import `env_goblin` and add your patches
-4. Update main `goblin/SCsub` to call your new SCsub
+Track the divergence surface explicitly. See ADR 0002.
 
-Example - adding scene patches:
-```python
-# goblin/scene/SCsub
-Import("env_goblin")
-env_goblin.add_source_files(env_goblin.goblin_sources, "*.cpp")
-```
+## Naming Conventions
 
-Then in `goblin/SCsub`:
-```python
-if os.path.exists(goblin_module_path + "/scene/SCsub"):
-    SConscript("scene/SCsub")
-```
-
-## Future Possibilities
-
-- `scene/` - Custom scene types, nodes
-- `servers/` - Rendering server patches
-- `modules/` - Sub-modules within Goblin!
-- `tests/` - Goblin-specific tests
-- `thirdparty/` - Goblin-specific dependencies
-
-The sky's the limit! The structure supports it all.
+- Engine features registered in ClassDB use **clean, descriptive Godot names**, not a `Goblin` prefix: `PortalSurface3D`, `PalettePostProcess`, `LightField`. This is a fork — the goblin module *is* the engine, so classes are named for what they do (like upstream `Light3D`, not `GodotLight3D`).
+- Prefix only where a real ClassDB collision exists with an upstream class (e.g. `PortalSurface3D` vs upstream `Portal`/`Room` occlusion nodes).
+- The `Goblin` prefix is reserved for module-internal housekeeping singletons (`GoblinBranding`, `GoblinExportTweaks`) that are not player-facing features.
+- Follow Godot's own suffix conventions (`*3D` for spatial nodes, `*PostProcess` for post-effects).
