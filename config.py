@@ -81,8 +81,19 @@ def configure(env):
         program_str = str(program)
         if program_str.startswith("#bin/godot"):
             program = program_str.replace("godot", "goblin")
-            if self_env.get("verbose"):
-                print(f"Goblin: Renaming {program_str} -> {program}")
+        # Replace variant_construct.cpp in core sources before library is created.
+        if str(program).replace("#bin/obj/", "").startswith("core"):
+            import os as _os
+            _goblin_dir = os.path.dirname(__file__)
+            _goblin_src = os.path.join(_goblin_dir, "core", "variant", "variant_construct.cpp")
+            if os.path.isfile(_goblin_src):
+                _new_source = []
+                for _s in source:
+                    if "variant_construct" in str(_s):
+                        _new_source.append(self_env.Object(_goblin_src))
+                    else:
+                        _new_source.append(_s)
+                source = _new_source
         return godot_methods.add_library(self_env, program, source, **kw)
 
     def goblin_add_shared_library(self_env, program, source, **kw):

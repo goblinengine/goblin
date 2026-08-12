@@ -231,6 +231,19 @@ static GDScriptParser::DataType make_builtin_meta_type(Variant::Type p_type) {
 	return type;
 }
 
+static bool _member_is_private(const GDScriptParser::ClassNode::Member &p_member) {
+	// Read the annotation directly instead of the `is_private` flags: annotations are
+	// attached to the member at parse time, while the flags are only set once the
+	// declaring class's interface is resolved, which is not guaranteed to happen before
+	// this check runs for cross-script access.
+	for (const GDScriptParser::AnnotationNode *annotation : p_member.get_source_node()->annotations) {
+		if (annotation->name == SNAME("@private")) {
+			return true;
+		}
+	}
+	return false;
+}
+
 bool GDScriptAnalyzer::has_member_name_conflict_in_script_class(const StringName &p_member_name, const GDScriptParser::ClassNode *p_class, const GDScriptParser::Node *p_member) {
 	if (p_class->members_indices.has(p_member_name)) {
 		int index = p_class->members_indices[p_member_name];
@@ -673,6 +686,34 @@ GDScriptParser::DataType GDScriptAnalyzer::resolve_datatype(GDScriptParser::Type
 	resolving_datatype.kind = GDScriptParser::DataType::RESOLVING;
 	p_type->set_datatype(resolving_datatype);
 
+	if (p_type->is_union()) {
+		GDScriptParser::DataType result;
+		result.kind = GDScriptParser::DataType::UNION;
+		result.type_source = GDScriptParser::DataType::ANNOTATED_EXPLICIT;
+
+		for (int i = 0; i < p_type->union_types.size(); i++) {
+			GDScriptParser::TypeNode *union_type = p_type->union_types[i];
+			GDScriptParser::DataType branch_type = resolve_datatype(union_type);
+			bool duplicated = false;
+			for (int j = 0; j < result.union_types.size(); j++) {
+				if (branch_type == result.union_types[j]) {
+					duplicated = true;
+					break;
+				}
+			}
+			if (!duplicated) {
+				result.union_types.push_back(branch_type);
+			}
+		}
+
+		if (result.union_types.size() == 1) {
+			result = result.union_types[0];
+		}
+
+		p_type->set_datatype(result);
+		return result;
+	}
+
 	GDScriptParser::DataType result;
 	result.type_source = GDScriptParser::DataType::ANNOTATED_EXPLICIT;
 
@@ -740,6 +781,13 @@ GDScriptParser::DataType GDScriptAnalyzer::resolve_datatype(GDScriptParser::Type
 				return bad_type;
 			}
 			result.kind = GDScriptParser::DataType::VARIANT;
+		} else if (first == SNAME("null")) {
+			if (p_type->type_chain.size() > 1) {
+				push_error(R"("null" type cannot contain nested types.)", p_type->type_chain[1]);
+				return bad_type;
+			}
+			result.kind = GDScriptParser::DataType::BUILTIN;
+			result.builtin_type = Variant::NIL;
 		} else if (GDScriptParser::get_builtin_type(first) < Variant::VARIANT_MAX) {
 			// Built-in types.
 			const Variant::Type builtin_type = GDScriptParser::get_builtin_type(first);
@@ -1252,6 +1300,11 @@ void GDScriptAnalyzer::resolve_class_member(GDScriptParser::ClassNode *p_class, 
 				if (!member.m_class->base_type.is_resolving()) {
 					resolve_class_inheritance(member.m_class, p_source);
 				}
+				// Apply annotations (e.g. "@private").
+				for (GDScriptParser::AnnotationNode *&E : member.m_class->annotations) {
+					resolve_annotation(E);
+					E->apply(parser, member.m_class, p_class);
+				}
 				break;
 			case GDScriptParser::ClassNode::Member::GROUP:
 				// No-op, but needed to silence warnings.
@@ -1442,7 +1495,7 @@ void GDScriptAnalyzer::resolve_class_body(GDScriptParser::ClassNode *p_class, co
 		GDScriptParser::ClassNode::Member member = p_class->members[i];
 		if (member.type == GDScriptParser::ClassNode::Member::VARIABLE) {
 #ifdef DEBUG_ENABLED
-			if (member.variable->usages == 0 && String(member.variable->identifier->name).begins_with("_")) {
+			if (member.variable->usages == 0 && (String(member.variable->identifier->name).begins_with("_") || member.variable->is_private)) {
 				parser->push_warning(member.variable->identifier, GDScriptWarning::UNUSED_PRIVATE_CLASS_VARIABLE, member.variable->identifier->name);
 			}
 #endif // DEBUG_ENABLED
@@ -3822,16 +3875,34 @@ void GDScriptAnalyzer::reduce_cast(GDScriptParser::CastNode *p_cast) {
 			parser->push_warning(p_cast, GDScriptWarning::UNSAFE_CAST, cast_type.to_string());
 #endif // DEBUG_ENABLED
 		} else {
+			auto _can_convert_branch = [&](const GDScriptParser::DataType &p_target_type) -> bool {
+				if (p_target_type.builtin_type == Variant::INT && cast_type.kind == GDScriptParser::DataType::ENUM) {
+					mark_node_unsafe(p_cast);
+					return true;
+				} else if (p_target_type.kind == GDScriptParser::DataType::ENUM && cast_type.builtin_type == Variant::INT) {
+					return true;
+				} else if (p_target_type.kind == GDScriptParser::DataType::BUILTIN && cast_type.kind == GDScriptParser::DataType::BUILTIN) {
+					return Variant::can_convert(p_target_type.builtin_type, cast_type.builtin_type);
+				} else if (p_target_type.kind != GDScriptParser::DataType::BUILTIN && cast_type.kind != GDScriptParser::DataType::BUILTIN) {
+					return is_type_compatible(cast_type, p_target_type) || is_type_compatible(p_target_type, cast_type);
+				}
+				return false;
+			};
+
 			bool valid = false;
-			if (op_type.builtin_type == Variant::INT && cast_type.kind == GDScriptParser::DataType::ENUM) {
+			if (op_type.kind == GDScriptParser::DataType::UNION) {
+				for (int i = 0; i < op_type.union_types.size(); i++) {
+					if (_can_convert_branch(op_type.union_types[i])) {
+						valid = true;
+						break;
+					}
+				}
 				mark_node_unsafe(p_cast);
+			} else if (cast_type.kind == GDScriptParser::DataType::UNION) {
 				valid = true;
-			} else if (op_type.kind == GDScriptParser::DataType::ENUM && cast_type.builtin_type == Variant::INT) {
-				valid = true;
-			} else if (op_type.kind == GDScriptParser::DataType::BUILTIN && cast_type.kind == GDScriptParser::DataType::BUILTIN) {
-				valid = Variant::can_convert(op_type.builtin_type, cast_type.builtin_type);
-			} else if (op_type.kind != GDScriptParser::DataType::BUILTIN && cast_type.kind != GDScriptParser::DataType::BUILTIN) {
-				valid = is_type_compatible(cast_type, op_type) || is_type_compatible(op_type, cast_type);
+				mark_node_unsafe(p_cast);
+			} else {
+				valid = _can_convert_branch(op_type);
 			}
 
 			if (!valid) {
@@ -4046,6 +4117,35 @@ void GDScriptAnalyzer::reduce_identifier_from_base_set_class(GDScriptParser::Ide
 	p_identifier->is_constant = true;
 }
 
+static bool _is_same_or_nested_class(const GDScriptParser::ClassNode *p_declaring, const GDScriptParser::ClassNode *p_accessing) {
+	// A private member is accessible when the accessing class is the declaring class itself,
+	// or when both classes belong to the same script (they share any enclosing class).
+	if (p_declaring == p_accessing) {
+		return true;
+	}
+	for (const GDScriptParser::ClassNode *ancestor = p_accessing->outer; ancestor != nullptr; ancestor = ancestor->outer) {
+		if (ancestor == p_declaring) {
+			return true;
+		}
+	}
+	for (const GDScriptParser::ClassNode *ancestor = p_declaring->outer; ancestor != nullptr; ancestor = ancestor->outer) {
+		if (ancestor == p_accessing) {
+			return true;
+		}
+	}
+	// Sibling classes nested in the same script share a common enclosing class.
+	const GDScriptParser::ClassNode *declaring_ancestor = p_declaring->outer;
+	while (declaring_ancestor != nullptr) {
+		for (const GDScriptParser::ClassNode *accessing_ancestor = p_accessing->outer; accessing_ancestor != nullptr; accessing_ancestor = accessing_ancestor->outer) {
+			if (accessing_ancestor == declaring_ancestor) {
+				return true;
+			}
+		}
+		declaring_ancestor = declaring_ancestor->outer;
+	}
+	return false;
+}
+
 void GDScriptAnalyzer::reduce_identifier_from_base(GDScriptParser::IdentifierNode *p_identifier, GDScriptParser::DataType *p_base) {
 	if (!p_identifier->get_datatype().has_no_type()) {
 		return;
@@ -4196,9 +4296,21 @@ void GDScriptAnalyzer::reduce_identifier_from_base(GDScriptParser::IdentifierNod
 		}
 
 		if (script_class->has_member(name)) {
+			GDScriptParser::ClassNode::Member member = script_class->get_member(name);
+
+			// @private check: members annotated with @private are only accessible from
+			// the class that declares them, or from any class in the same script.
+			const GDScriptParser::ClassNode *accessing_class = parser->current_class;
+			if (accessing_class == nullptr || !_is_same_or_nested_class(script_class, accessing_class)) {
+				const bool _block_access = _member_is_private(member);
+				if (_block_access) {
+					push_error(vformat(R"(Cannot access private member "%s" of class "%s".)", name, script_class->fqcn.get_file()), p_identifier);
+					return;
+				}
+			}
+
 			resolve_class_member(script_class, name, p_identifier);
 
-			GDScriptParser::ClassNode::Member member = script_class->get_member(name);
 			switch (member.type) {
 				case GDScriptParser::ClassNode::Member::CONSTANT: {
 					p_identifier->set_datatype(member.get_datatype());
@@ -5796,6 +5908,29 @@ GDScriptParser::DataType GDScriptAnalyzer::type_from_variant(const Variant &p_va
 }
 
 GDScriptParser::DataType GDScriptAnalyzer::type_from_metatype(const GDScriptParser::DataType &p_meta_type) {
+	if (p_meta_type.kind == GDScriptParser::DataType::UNION) {
+		GDScriptParser::DataType result;
+		result.kind = GDScriptParser::DataType::UNION;
+		result.type_source = p_meta_type.type_source;
+		for (int i = 0; i < p_meta_type.union_types.size(); i++) {
+			GDScriptParser::DataType converted = type_from_metatype(p_meta_type.union_types[i]);
+			bool duplicated = false;
+			for (int j = 0; j < result.union_types.size(); j++) {
+				if (converted == result.union_types[j]) {
+					duplicated = true;
+					break;
+				}
+			}
+			if (!duplicated) {
+				result.union_types.push_back(converted);
+			}
+		}
+		if (result.union_types.size() == 1) {
+			return result.union_types[0];
+		}
+		return result;
+	}
+
 	GDScriptParser::DataType result = p_meta_type;
 	result.is_meta_type = false;
 	result.is_pseudo_type = false;
@@ -6357,6 +6492,24 @@ bool GDScriptAnalyzer::check_type_compatibility(const GDScriptParser::DataType &
 	ERR_FAIL_COND_V_MSG(!p_target.is_set(), true, "Parser bug (please report): Trying to check compatibility of unset target type");
 	ERR_FAIL_COND_V_MSG(!p_source.is_set(), true, "Parser bug (please report): Trying to check compatibility of unset value type");
 
+	if (p_target.kind == GDScriptParser::DataType::UNION) {
+		for (int i = 0; i < p_target.union_types.size(); i++) {
+			if (check_type_compatibility(p_target.union_types[i], p_source, p_allow_implicit_conversion, p_source_node)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	if (p_source.kind == GDScriptParser::DataType::UNION) {
+		for (int i = 0; i < p_source.union_types.size(); i++) {
+			if (!check_type_compatibility(p_target, p_source.union_types[i], p_allow_implicit_conversion, p_source_node)) {
+				return false;
+			}
+		}
+		return true;
+	}
+
 	if (p_target.kind == GDScriptParser::DataType::VARIANT) {
 		// Variant can receive anything.
 		return true;
@@ -6371,6 +6524,13 @@ bool GDScriptAnalyzer::check_type_compatibility(const GDScriptParser::DataType &
 		bool valid = p_source.kind == GDScriptParser::DataType::BUILTIN && p_target.builtin_type == p_source.builtin_type;
 		if (!valid && p_allow_implicit_conversion) {
 			valid = Variant::can_convert_strict(p_source.builtin_type, p_target.builtin_type);
+		}
+		// The `null` type is a singleton: only `null` itself can be converted to it.
+		// `Variant::can_convert_strict` reports every type as convertible to NIL ("nil can
+		// convert to anything"), which is only sensible for the internal NIL Variant, not for
+		// the user-facing `null` type annotation.
+		if (valid && p_target.builtin_type == Variant::NIL && p_source.kind == GDScriptParser::DataType::BUILTIN && p_source.builtin_type != Variant::NIL) {
+			valid = false;
 		}
 		if (!valid && p_target.builtin_type == Variant::INT && p_source.kind == GDScriptParser::DataType::ENUM && !p_source.is_meta_type) {
 			// Enum value is also integer.
@@ -6460,6 +6620,7 @@ bool GDScriptAnalyzer::check_type_compatibility(const GDScriptParser::DataType &
 		case GDScriptParser::DataType::VARIANT:
 		case GDScriptParser::DataType::BUILTIN:
 		case GDScriptParser::DataType::ENUM:
+		case GDScriptParser::DataType::UNION:
 		case GDScriptParser::DataType::RESOLVING:
 		case GDScriptParser::DataType::UNRESOLVED:
 			break; // Already solved before.
@@ -6497,6 +6658,7 @@ bool GDScriptAnalyzer::check_type_compatibility(const GDScriptParser::DataType &
 		case GDScriptParser::DataType::VARIANT:
 		case GDScriptParser::DataType::BUILTIN:
 		case GDScriptParser::DataType::ENUM:
+		case GDScriptParser::DataType::UNION:
 		case GDScriptParser::DataType::RESOLVING:
 		case GDScriptParser::DataType::UNRESOLVED:
 			break; // Already solved before.

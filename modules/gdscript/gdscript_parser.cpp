@@ -149,6 +149,8 @@ GDScriptParser::GDScriptParser() {
 		register_annotation(MethodInfo("@abstract"), AnnotationInfo::SCRIPT | AnnotationInfo::CLASS | AnnotationInfo::FUNCTION, &GDScriptParser::abstract_annotation);
 		// Onready annotation.
 		register_annotation(MethodInfo("@onready"), AnnotationInfo::VARIABLE, &GDScriptParser::onready_annotation);
+		// Private annotation.
+		register_annotation(MethodInfo("@private"), AnnotationInfo::VARIABLE | AnnotationInfo::FUNCTION | AnnotationInfo::CONSTANT | AnnotationInfo::CLASS, &GDScriptParser::private_annotation);
 		// Export annotations.
 		register_annotation(MethodInfo("@export"), AnnotationInfo::VARIABLE, &GDScriptParser::export_annotations<PROPERTY_HINT_NONE, Variant::NIL>);
 		register_annotation(MethodInfo("@export_enum", PropertyInfo(Variant::STRING, "names")), AnnotationInfo::VARIABLE, &GDScriptParser::export_annotations<PROPERTY_HINT_ENUM, Variant::NIL>, varray(), true);
@@ -3868,11 +3870,14 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_invalid_token(ExpressionNo
 	return p_previous_operand;
 }
 
-GDScriptParser::TypeNode *GDScriptParser::parse_type(bool p_allow_void) {
+GDScriptParser::TypeNode *GDScriptParser::parse_type_single(bool p_allow_void) {
 	TypeNode *type = alloc_node<TypeNode>();
 	make_completion_context(p_allow_void ? COMPLETION_TYPE_NAME_OR_VOID : COMPLETION_TYPE_NAME, type);
+	bool using_null_literal = false;
 	if (!match(GDScriptTokenizer::Token::IDENTIFIER)) {
-		if (match(GDScriptTokenizer::Token::TK_VOID)) {
+		if (match(GDScriptTokenizer::Token::LITERAL) && previous.literal.get_type() == Variant::NIL) {
+			using_null_literal = true;
+		} else if (match(GDScriptTokenizer::Token::TK_VOID)) {
 			if (p_allow_void) {
 				complete_extents(type);
 				TypeNode *void_type = type;
@@ -3880,13 +3885,23 @@ GDScriptParser::TypeNode *GDScriptParser::parse_type(bool p_allow_void) {
 			} else {
 				push_error(R"("void" is only allowed for a function return type.)");
 			}
+		} else {
+			// Leave error message to the caller who knows the context.
+			complete_extents(type);
+			return nullptr;
 		}
-		// Leave error message to the caller who knows the context.
-		complete_extents(type);
-		return nullptr;
 	}
 
-	IdentifierNode *type_element = parse_identifier();
+	IdentifierNode *type_element = nullptr;
+	if (using_null_literal) {
+		type_element = alloc_node<IdentifierNode>();
+		reset_extents(type_element, previous);
+		complete_extents(type_element);
+		type_element->name = SNAME("null");
+		type_element->suite = current_suite;
+	} else {
+		type_element = parse_identifier();
+	}
 
 	type->type_chain.push_back(type_element);
 
@@ -3925,6 +3940,34 @@ GDScriptParser::TypeNode *GDScriptParser::parse_type(bool p_allow_void) {
 
 	complete_extents(type);
 	return type;
+}
+
+GDScriptParser::TypeNode *GDScriptParser::parse_type(bool p_allow_void) {
+	TypeNode *type = parse_type_single(p_allow_void);
+	if (type == nullptr) {
+		return nullptr;
+	}
+
+	if (!match(GDScriptTokenizer::Token::PIPE)) {
+		return type;
+	}
+
+	TypeNode *union_type = alloc_node<TypeNode>();
+	reset_extents(union_type, type);
+	union_type->union_types.push_back(type);
+
+	do {
+		TypeNode *next_type = parse_type_single(p_allow_void);
+		if (next_type == nullptr) {
+			push_error(R"(Expected type specifier after "|")");
+			break;
+		}
+		union_type->union_types.push_back(next_type);
+	} while (match(GDScriptTokenizer::Token::PIPE));
+
+	update_extents(union_type);
+	complete_extents(union_type);
+	return union_type;
 }
 
 #ifdef TOOLS_ENABLED
@@ -4546,6 +4589,51 @@ bool GDScriptParser::onready_annotation(AnnotationNode *p_annotation, Node *p_ta
 	return true;
 }
 
+bool GDScriptParser::private_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class) {
+	switch (p_target->type) {
+		case Node::VARIABLE: {
+			VariableNode *variable = static_cast<VariableNode *>(p_target);
+			if (variable->is_private) {
+				push_error(R"("@private" annotation can only be used once per member.)", p_annotation);
+				return false;
+			}
+			if (variable->exported) {
+				push_error(R"("@private" annotation cannot be combined with "@export".)", p_annotation);
+				return false;
+			}
+			variable->is_private = true;
+		} break;
+		case Node::FUNCTION: {
+			FunctionNode *function = static_cast<FunctionNode *>(p_target);
+			if (function->is_private) {
+				push_error(R"("@private" annotation can only be used once per member.)", p_annotation);
+				return false;
+			}
+			function->is_private = true;
+		} break;
+		case Node::CONSTANT: {
+			ConstantNode *constant = static_cast<ConstantNode *>(p_target);
+			if (constant->is_private) {
+				push_error(R"("@private" annotation can only be used once per member.)", p_annotation);
+				return false;
+			}
+			constant->is_private = true;
+		} break;
+		case Node::CLASS: {
+			ClassNode *inner_class = static_cast<ClassNode *>(p_target);
+			if (inner_class->is_private) {
+				push_error(R"("@private" annotation can only be used once per member.)", p_annotation);
+				return false;
+			}
+			inner_class->is_private = true;
+		} break;
+		default:
+			push_error(R"("@private" annotation can only be applied to variables, functions, constants, or inner classes.)", p_annotation);
+			return false;
+	}
+	return true;
+}
+
 static String _get_annotation_error_string(const StringName &p_annotation_name, const Vector<Variant::Type> &p_expected_types, const GDScriptParser::DataType &p_provided_type) {
 	Vector<String> types;
 	for (int i = 0; i < p_expected_types.size(); i++) {
@@ -4650,6 +4738,9 @@ static StringName _find_narrowest_native_or_global_class(const GDScriptParser::D
 			}
 			return _find_narrowest_native_or_global_class(p_type.class_type->base_type);
 		} break;
+		case GDScriptParser::DataType::UNION: {
+			return StringName();
+		} break;
 		default: {
 			ERR_FAIL_V(StringName());
 		} break;
@@ -4668,6 +4759,10 @@ bool GDScriptParser::export_annotations(AnnotationNode *p_annotation, Node *p_ta
 	}
 	if (variable->exported) {
 		push_error(vformat(R"(Annotation "%s" cannot be used with another "@export" annotation.)", p_annotation->name), p_annotation);
+		return false;
+	}
+	if (variable->is_private) {
+		push_error(vformat(R"(Annotation "%s" cannot be combined with "@private".)", p_annotation->name), p_annotation);
 		return false;
 	}
 
@@ -4805,6 +4900,9 @@ bool GDScriptParser::export_annotations(AnnotationNode *p_annotation, Node *p_ta
 				variable->export_info.hint = PROPERTY_HINT_NONE;
 				variable->export_info.hint_string = String();
 				break;
+			case GDScriptParser::DataType::UNION:
+				push_error(R"(Union types cannot be exported with the simple "@export" annotation.)", p_annotation);
+				return false;
 			case GDScriptParser::DataType::NATIVE:
 			case GDScriptParser::DataType::SCRIPT:
 			case GDScriptParser::DataType::CLASS: {
@@ -4882,6 +4980,9 @@ bool GDScriptParser::export_annotations(AnnotationNode *p_annotation, Node *p_ta
 					variable->export_info.hint = PROPERTY_HINT_NONE;
 					variable->export_info.hint_string = String();
 					break;
+				case GDScriptParser::DataType::UNION:
+					push_error(R"(Union types cannot be exported inside dictionary annotations.)", p_annotation);
+					return false;
 				case GDScriptParser::DataType::NATIVE:
 				case GDScriptParser::DataType::SCRIPT:
 				case GDScriptParser::DataType::CLASS: {
@@ -5006,6 +5107,10 @@ bool GDScriptParser::export_storage_annotation(AnnotationNode *p_annotation, Nod
 		push_error(vformat(R"(Annotation "%s" cannot be used with another "@export" annotation.)", p_annotation->name), p_annotation);
 		return false;
 	}
+	if (variable->is_private) {
+		push_error(vformat(R"(Annotation "%s" cannot be combined with "@private".)", p_annotation->name), p_annotation);
+		return false;
+	}
 
 	variable->exported = true;
 
@@ -5027,6 +5132,10 @@ bool GDScriptParser::export_custom_annotation(AnnotationNode *p_annotation, Node
 	}
 	if (variable->exported) {
 		push_error(vformat(R"(Annotation "%s" cannot be used with another "@export" annotation.)", p_annotation->name), p_annotation);
+		return false;
+	}
+	if (variable->is_private) {
+		push_error(vformat(R"(Annotation "%s" cannot be combined with "@private".)", p_annotation->name), p_annotation);
 		return false;
 	}
 
@@ -5062,6 +5171,10 @@ bool GDScriptParser::export_tool_button_annotation(AnnotationNode *p_annotation,
 	}
 	if (variable->exported) {
 		push_error(vformat(R"(Annotation "%s" cannot be used with another "@export" annotation.)", p_annotation->name), p_annotation);
+		return false;
+	}
+	if (variable->is_private) {
+		push_error(vformat(R"(Annotation "%s" cannot be combined with "@private".)", p_annotation->name), p_annotation);
 		return false;
 	}
 
@@ -5337,6 +5450,16 @@ String GDScriptParser::DataType::to_string() const {
 	switch (kind) {
 		case VARIANT:
 			return "Variant";
+		case UNION: {
+			String result;
+			for (int i = 0; i < union_types.size(); i++) {
+				if (i > 0) {
+					result += " | ";
+				}
+				result += union_types[i].to_string();
+			}
+			return result;
+		}
 		case BUILTIN:
 			if (builtin_type == Variant::NIL) {
 				return "null";
@@ -5407,6 +5530,8 @@ String GDScriptParser::DataType::to_property_info_hint_string() const {
 			return String(native_type).replace("::", ".");
 		case VARIANT:
 			return "Variant";
+		case UNION:
+			return "Variant";
 		case RESOLVING:
 		case UNRESOLVED:
 			break;
@@ -5425,6 +5550,10 @@ PropertyInfo GDScriptParser::DataType::to_property_info(const String &p_name) co
 	}
 
 	switch (kind) {
+		case UNION:
+			result.type = Variant::NIL;
+			result.usage |= PROPERTY_USAGE_NIL_IS_VARIANT;
+			return result;
 		case BUILTIN:
 			result.type = builtin_type;
 			if (builtin_type == Variant::ARRAY && has_container_element_type(0)) {
@@ -5529,6 +5658,24 @@ GDScriptParser::DataType GDScriptParser::DataType::get_typed_container_type() co
 }
 
 bool GDScriptParser::DataType::can_reference(const GDScriptParser::DataType &p_other) const {
+	if (is_union()) {
+		for (int i = 0; i < union_types.size(); i++) {
+			if (union_types[i].can_reference(p_other)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	if (p_other.is_union()) {
+		for (int i = 0; i < p_other.union_types.size(); i++) {
+			if (can_reference(p_other.union_types[i])) {
+				return true;
+			}
+		}
+		return false;
+	}
+
 	if (p_other.is_meta_type) {
 		return false;
 	} else if (builtin_type != p_other.builtin_type) {
@@ -6341,6 +6488,16 @@ void GDScriptParser::TreePrinter::print_ternary_op(TernaryOpNode *p_ternary_op) 
 }
 
 void GDScriptParser::TreePrinter::print_type(TypeNode *p_type) {
+	if (p_type->is_union()) {
+		for (int i = 0; i < p_type->union_types.size(); i++) {
+			if (i > 0) {
+				push_text(" | ");
+			}
+			print_type(p_type->union_types[i]);
+		}
+		return;
+	}
+
 	if (p_type->type_chain.is_empty()) {
 		push_text("Void");
 	} else {

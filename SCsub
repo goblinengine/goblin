@@ -63,4 +63,7 @@ for _mod_name, _goblin_path in GOBLIN_MODULE_OVERRIDES.items():
         env.module_list[_mod_name] = _os.path.abspath(_goblin_path).replace("\\", "/")
         print(f"Goblin: Overriding module '{_mod_name}' -> {env.module_list[_mod_name]}")
 
+# Core file overrides are handled in config.py via the add_library hook.
+# See goblin_add_library() in config.py.
+
 print("Goblin Engine: Complete rebranding applied")

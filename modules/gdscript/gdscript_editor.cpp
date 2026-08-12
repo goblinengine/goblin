@@ -1207,6 +1207,26 @@ static void _find_identifiers_in_suite(const GDScriptParser::SuiteNode *p_suite,
 
 static void _find_identifiers_in_base(const GDScriptCompletionIdentifier &p_base, bool p_only_functions, bool p_types_only, bool p_add_braces, HashMap<String, ScriptLanguage::CodeCompletionOption> &r_result, int p_recursion_depth);
 
+static bool _member_is_private(const GDScriptParser::ClassNode::Member &p_member) {
+	// Annotations are attached at parse time, so this is independent of whether the
+	// declaring class's interface has been resolved yet.
+	switch (p_member.type) {
+		case GDScriptParser::ClassNode::Member::VARIABLE:
+		case GDScriptParser::ClassNode::Member::FUNCTION:
+		case GDScriptParser::ClassNode::Member::CONSTANT:
+		case GDScriptParser::ClassNode::Member::CLASS: {
+			for (const GDScriptParser::AnnotationNode *annotation : p_member.get_source_node()->annotations) {
+				if (annotation->name == SNAME("@private")) {
+					return true;
+				}
+			}
+		} break;
+		default:
+			break;
+	}
+	return false;
+}
+
 static void _find_identifiers_in_class(const GDScriptParser::ClassNode *p_class, bool p_only_functions, bool p_types_only, bool p_static, bool p_parent_only, bool p_add_braces, HashMap<String, ScriptLanguage::CodeCompletionOption> &r_result, int p_recursion_depth) {
 	ERR_FAIL_COND(p_recursion_depth > COMPLETION_RECURSION_LIMIT);
 
@@ -1224,10 +1244,16 @@ static void _find_identifiers_in_class(const GDScriptParser::ClassNode *p_class,
 						if (p_types_only || p_only_functions || outer || (p_static && !member.variable->is_static)) {
 							continue;
 						}
+						if (p_recursion_depth > 0 && _member_is_private(member)) {
+							continue;
+						}
 						option = ScriptLanguage::CodeCompletionOption(member.variable->identifier->name, ScriptLanguage::CODE_COMPLETION_KIND_MEMBER, location);
 						break;
 					case GDScriptParser::ClassNode::Member::CONSTANT:
 						if ((p_types_only && !member.constant->datatype.is_meta_type) || p_only_functions) {
+							continue;
+						}
+						if (p_recursion_depth > 0 && _member_is_private(member)) {
 							continue;
 						}
 						if (r_result.has(member.constant->identifier->name)) {
@@ -1240,6 +1266,9 @@ static void _find_identifiers_in_class(const GDScriptParser::ClassNode *p_class,
 						break;
 					case GDScriptParser::ClassNode::Member::CLASS:
 						if (p_only_functions) {
+							continue;
+						}
+						if (p_recursion_depth > 0 && _member_is_private(member)) {
 							continue;
 						}
 						option = ScriptLanguage::CodeCompletionOption(member.m_class->identifier->name, ScriptLanguage::CODE_COMPLETION_KIND_CLASS, location);
@@ -1258,6 +1287,9 @@ static void _find_identifiers_in_class(const GDScriptParser::ClassNode *p_class,
 						break;
 					case GDScriptParser::ClassNode::Member::FUNCTION:
 						if (p_types_only || outer || (p_static && !member.function->is_static) || member.function->identifier->name.operator String().begins_with("@")) {
+							continue;
+						}
+						if (p_recursion_depth > 0 && _member_is_private(member)) {
 							continue;
 						}
 						option = ScriptLanguage::CodeCompletionOption(member.function->identifier->name, ScriptLanguage::CODE_COMPLETION_KIND_FUNCTION, location);
@@ -4288,7 +4320,8 @@ static Error _lookup_symbol_from_base(const GDScriptParser::DataType &p_base, co
 				return ERR_CANT_RESOLVE;
 			} break;
 			case GDScriptParser::DataType::RESOLVING:
-			case GDScriptParser::DataType::UNRESOLVED: {
+			case GDScriptParser::DataType::UNRESOLVED:
+			case GDScriptParser::DataType::UNION: {
 				return ERR_CANT_RESOLVE;
 			} break;
 		}

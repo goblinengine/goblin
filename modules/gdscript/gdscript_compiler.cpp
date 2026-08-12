@@ -98,6 +98,9 @@ GDScriptDataType GDScriptCompiler::_gdtype_from_datatype(const GDScriptParser::D
 		case GDScriptParser::DataType::VARIANT: {
 			result.kind = GDScriptDataType::VARIANT;
 		} break;
+		case GDScriptParser::DataType::UNION: {
+			result.kind = GDScriptDataType::VARIANT;
+		} break;
 		case GDScriptParser::DataType::BUILTIN: {
 			result.kind = GDScriptDataType::BUILTIN;
 			result.builtin_type = p_datatype.builtin_type;

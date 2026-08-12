@@ -26,8 +26,9 @@ Priorities: `P0` (critical), `P1` (high), `P2` (medium), `P3` (low).
 
 | ID | Item | Status | Priority | Effort | ADR/RFC | Justification |
 |----|------|--------|----------|--------|---------|---------------|
-| G-01 | Union types (`int \| String`, `Dictionary \| null`) | done | P1 | — | 0004 | Already in fork |
-| G-02 | `@private` annotation | done | P2 | — | — | Already in fork |
+| G-01 | Union types (`int \| String`, `Dictionary \| null`) | done | P1 | — | 0004 | In fork; regression tests added (union dedup/collapse, null typing) |
+| G-02 | `@private` annotation | done | P2 | — | — | Enforced for vars/funcs/consts/inner classes; same-script access policy; `@export` conflict error; regression tests added. Subclass name reuse deliberately NOT supported (costs an O(n) scan on instance creation + sparse member indices) |
+| G-16 | Regression tests for G-01..G-03 (`private_member_access`, `null_type_assignment`, `null_null_union`, etc.) | done | P1 | — | — | Added to mirror `tests/scripts/`; `.out` files written by hand — verify with `--gdscript-generate-tests` on a `tests=yes` build |
 | G-03 | String constructors (`String(int)`, `String(float)`, `String(bool)`) | done | P3 | — | — | Already in fork, via `core/variant` override |
 | G-04 | Safe navigation `?.` | todo | P1 | 2-3d | — | Replace hundreds of `if x != null:` guards |
 | G-05 | Null coalescing `??` | todo | P1 | 2-3d | — | Pairs with G-04 |

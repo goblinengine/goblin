@@ -101,6 +101,7 @@ public:
 	class DataType {
 	public:
 		Vector<DataType> container_element_types;
+		Vector<DataType> union_types;
 
 		enum Kind {
 			BUILTIN,
@@ -108,6 +109,7 @@ public:
 			SCRIPT,
 			CLASS, // GDScript.
 			ENUM, // Enumeration.
+			UNION, // Union of multiple possible types.
 			VARIANT, // Can be any type.
 			RESOLVING, // Currently resolving.
 			UNRESOLVED,
@@ -141,8 +143,41 @@ public:
 		_FORCE_INLINE_ bool is_set() const { return kind != RESOLVING && kind != UNRESOLVED; }
 		_FORCE_INLINE_ bool is_resolving() const { return kind == RESOLVING; }
 		_FORCE_INLINE_ bool has_no_type() const { return type_source == UNDETECTED; }
-		_FORCE_INLINE_ bool is_variant() const { return kind == VARIANT || kind == RESOLVING || kind == UNRESOLVED; }
+		_FORCE_INLINE_ bool is_variant() const {
+			if (kind == VARIANT || kind == RESOLVING || kind == UNRESOLVED) {
+				return true;
+			}
+			if (kind != UNION) {
+				return false;
+			}
+
+			Vector<const DataType *> pending;
+			pending.resize(union_types.size());
+			for (int i = 0; i < union_types.size(); i++) {
+				pending.write[i] = &union_types[i];
+			}
+
+			while (!pending.is_empty()) {
+				const int last = pending.size() - 1;
+				const DataType *dt = pending[last];
+				pending.resize(last);
+
+				if (dt->kind == VARIANT || dt->kind == RESOLVING || dt->kind == UNRESOLVED) {
+					return true;
+				}
+				if (dt->kind == UNION) {
+					const int old_size = pending.size();
+					pending.resize(old_size + dt->union_types.size());
+					for (int j = 0; j < dt->union_types.size(); j++) {
+						pending.write[old_size + j] = &dt->union_types[j];
+					}
+				}
+			}
+
+			return false;
+		}
 		_FORCE_INLINE_ bool is_hard_type() const { return type_source > INFERRED; }
+		_FORCE_INLINE_ bool is_union() const { return !union_types.is_empty(); }
 
 		String to_string() const;
 		_FORCE_INLINE_ String to_string_strict() const { return is_hard_type() ? to_string() : "Variant"; }
@@ -204,6 +239,44 @@ public:
 				return true; // Can be considered equal for parsing purposes.
 			}
 
+			if (is_union() || p_other.is_union()) {
+				if (is_union() && p_other.is_union()) {
+					if (union_types.size() != p_other.union_types.size()) {
+						return false;
+					}
+
+					for (int i = 0; i < union_types.size(); i++) {
+						bool found = false;
+						for (int j = 0; j < p_other.union_types.size(); j++) {
+							if (union_types[i] == p_other.union_types[j]) {
+								found = true;
+								break;
+							}
+						}
+						if (!found) {
+							return false;
+						}
+					}
+					return true;
+				}
+
+				if (is_union()) {
+					for (int i = 0; i < union_types.size(); i++) {
+						if (union_types[i] == p_other) {
+							return true;
+						}
+					}
+					return false;
+				}
+
+				for (int i = 0; i < p_other.union_types.size(); i++) {
+					if (*this == p_other.union_types[i]) {
+						return true;
+					}
+				}
+				return false;
+			}
+
 			if (kind != p_other.kind) {
 				return false;
 			}
@@ -220,6 +293,8 @@ public:
 					return script_type == p_other.script_type;
 				case CLASS:
 					return class_type == p_other.class_type || class_type->fqcn == p_other.class_type->fqcn;
+				case UNION:
+					return false; // Union types are compared before reaching this branch.
 				case RESOLVING:
 				case UNRESOLVED:
 					break;
@@ -249,6 +324,7 @@ public:
 			method_info = p_other.method_info;
 			enum_values = p_other.enum_values;
 			container_element_types = p_other.container_element_types;
+			union_types = p_other.union_types;
 		}
 
 		DataType() = default;
@@ -756,6 +832,7 @@ public:
 		bool extends_used = false;
 		bool onready_used = false;
 		bool is_abstract = false;
+		bool is_private = false;
 		bool has_static_data = false;
 		bool annotated_static_unload = false;
 		String extends_path;
@@ -814,6 +891,8 @@ public:
 		MemberDocData doc_data;
 #endif // TOOLS_ENABLED
 
+		bool is_private = false;
+
 		ConstantNode() {
 			type = CONSTANT;
 		}
@@ -865,6 +944,7 @@ public:
 		bool is_abstract = false;
 		bool is_static = false; // For lambdas it's determined in the analyzer.
 		bool is_coroutine = false;
+		bool is_private = false;
 		Variant rpc_config;
 		MethodInfo info;
 		LambdaNode *source_lambda = nullptr;
@@ -1214,10 +1294,17 @@ public:
 	struct TypeNode : public Node {
 		Vector<IdentifierNode *> type_chain;
 		Vector<TypeNode *> container_types;
+		Vector<TypeNode *> union_types;
 
 		TypeNode *get_container_type_or_null(int p_index) const {
 			return p_index >= 0 && p_index < container_types.size() ? container_types[p_index] : nullptr;
 		}
+
+		TypeNode *get_union_type_or_null(int p_index) const {
+			return p_index >= 0 && p_index < union_types.size() ? union_types[p_index] : nullptr;
+		}
+
+		bool is_union() const { return !union_types.is_empty(); }
 
 		TypeNode() {
 			type = TYPE;
@@ -1271,6 +1358,7 @@ public:
 
 		bool exported = false;
 		bool onready = false;
+		bool is_private = false;
 		PropertyInfo export_info;
 		int assignments = 0;
 		bool is_static = false;
@@ -1563,6 +1651,7 @@ private:
 	bool static_unload_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
 	bool abstract_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
 	bool onready_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
+	bool private_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
 	template <PropertyHint t_hint, Variant::Type t_type>
 	bool export_annotations(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
 	bool export_storage_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
@@ -1618,6 +1707,7 @@ private:
 	ExpressionNode *parse_type_test(ExpressionNode *p_previous_operand, bool p_can_assign);
 	ExpressionNode *parse_yield(ExpressionNode *p_previous_operand, bool p_can_assign);
 	ExpressionNode *parse_invalid_token(ExpressionNode *p_previous_operand, bool p_can_assign);
+	TypeNode *parse_type_single(bool p_allow_void = false);
 	TypeNode *parse_type(bool p_allow_void = false);
 
 #ifdef TOOLS_ENABLED
