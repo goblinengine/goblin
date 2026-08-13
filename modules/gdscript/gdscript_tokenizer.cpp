@@ -500,9 +500,9 @@ GDScriptTokenizer::Token GDScriptTokenizerText::annotation() {
 	KEYWORD("const", Token::TK_CONST) \
 	KEYWORD("continue", Token::CONTINUE) \
 	KEYWORD_GROUP('e') \
-	KEYWORD("elthen", Token::ELTHEN) \
 	KEYWORD("elif", Token::ELIF) \
 	KEYWORD("else", Token::ELSE) \
+	KEYWORD("elthen", Token::ELTHEN) \
 	KEYWORD("enum", Token::ENUM) \
 	KEYWORD("extends", Token::EXTENDS) \
 	KEYWORD_GROUP('f') \
@@ -1657,11 +1657,13 @@ void GDScriptTokenizerText::push_state() {
 	state.start_line = start_line;
 	state.start_column = start_column;
 	state.line_continuation = line_continuation;
+	state.multiline_mode = multiline_mode;
 	state.pending_newline = pending_newline;
 	state.last_token = last_token;
 	state.last_newline = last_newline;
 	state.pending_indents = pending_indents;
 	state.indent_stack = indent_stack;
+	state.indent_stack_stack = indent_stack_stack;
 	state.paren_stack = paren_stack;
 	state.position = position;
 	state.error_stack_size = error_stack.size();
@@ -1679,11 +1681,13 @@ void GDScriptTokenizerText::restore_state() {
 	start_line = state.start_line;
 	start_column = state.start_column;
 	line_continuation = state.line_continuation;
+	multiline_mode = state.multiline_mode;
 	pending_newline = state.pending_newline;
 	last_token = state.last_token;
 	last_newline = state.last_newline;
 	pending_indents = state.pending_indents;
 	indent_stack = state.indent_stack;
+	indent_stack_stack = state.indent_stack_stack;
 	paren_stack = state.paren_stack;
 	position = state.position;
 	while (error_stack.size() > state.error_stack_size) {

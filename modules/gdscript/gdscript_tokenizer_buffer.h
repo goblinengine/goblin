@@ -63,7 +63,9 @@ public:
 	struct StateSnapshot {
 		int current = 0;
 		uint32_t current_line = 1;
+		bool multiline_mode = false;
 		List<int> indent_stack;
+		List<List<int>> indent_stack_stack;
 		int pending_indents = 0;
 		bool last_token_was_newline = false;
 	};

@@ -452,8 +452,9 @@ class GDScriptByteCodeGenerator : public GDScriptCodeGenerator {
 	}
 
 	// Goblin: appends a recursive GDScriptDataType as raw instruction words.
-	// Decoded by _goblin_decode_datatype() in gdscript_vm.cpp. Must stay in sync.
-	void append_goblin_datatype(const GDScriptDataType &p_type);
+	// Decoded by GDScriptFunction::decode_datatype() in gdscript_function.cpp.
+	// Must stay in sync.
+	void append_datatype(const GDScriptDataType &p_type);
 
 	void patch_jump(int p_address) {
 		opcodes.write[p_address] = opcodes.size();

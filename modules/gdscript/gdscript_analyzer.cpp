@@ -4407,6 +4407,10 @@ void GDScriptAnalyzer::reduce_identifier_from_base(GDScriptParser::IdentifierNod
 		}
 
 		if (script_class->has_member(name)) {
+			// Resolve the member first (out-of-order enum values and constants are resolved
+			// on demand here), then fetch the member copy so it reflects the resolved state.
+			resolve_class_member(script_class, name, p_identifier);
+
 			GDScriptParser::ClassNode::Member member = script_class->get_member(name);
 
 			// @private check: members annotated with @private are only accessible from
@@ -4416,11 +4420,16 @@ void GDScriptAnalyzer::reduce_identifier_from_base(GDScriptParser::IdentifierNod
 				const bool _block_access = _member_is_private(member);
 				if (_block_access) {
 					push_error(vformat(R"(Cannot access private member "%s" of class "%s".)", name, script_class->fqcn.get_file()), p_identifier);
+					// Avoid a cascading "cannot find member" error from the caller: the
+					// member exists, it's just private, so give the identifier a datatype.
+					if (member.type == GDScriptParser::ClassNode::Member::CLASS) {
+						reduce_identifier_from_base_set_class(p_identifier, member.get_datatype());
+					} else {
+						p_identifier->set_datatype(member.get_datatype());
+					}
 					return;
 				}
 			}
-
-			resolve_class_member(script_class, name, p_identifier);
 
 			switch (member.type) {
 				case GDScriptParser::ClassNode::Member::CONSTANT: {
@@ -6252,7 +6261,21 @@ bool GDScriptAnalyzer::get_function_signature(GDScriptParser::Node *p_source, bo
 			}
 
 			resolve_class_member(base_class, function_name, p_source);
-			found_function = base_class->get_member(function_name).function;
+			GDScriptParser::ClassNode::Member member = base_class->get_member(function_name);
+
+			// @private check: private methods are only callable from the class that
+			// declares them, or from any class in the same script.
+			const GDScriptParser::ClassNode *accessing_class = parser->current_class;
+			if (accessing_class == nullptr || !_is_same_or_nested_class(base_class, accessing_class)) {
+				const bool _block_access = _member_is_private(member);
+				if (_block_access) {
+					push_error(vformat(R"(Cannot access private member "%s" of class "%s".)", function_name, base_class->fqcn.get_file()), p_source);
+					// The member exists, it's just private: report the signature anyway so
+					// the caller doesn't cascade a "cannot find member"/recovery error.
+				}
+			}
+
+			found_function = member.function;
 		}
 
 		resolve_class_inheritance(base_class, p_source);

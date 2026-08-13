@@ -143,7 +143,7 @@ public:
 
 	// Goblin: recursive runtime validation of a Variant against this datatype.
 	// Handles scalars (is_type), typed containers, and shaped dictionaries.
-	bool goblin_validate(const Variant &p_value) const;
+	bool validate(const Variant &p_value) const;
 
 	GDScriptDataType() = default;
 
@@ -519,10 +519,10 @@ public:
 	StringName get_global_name(int p_idx) const;
 
 	// Goblin: decodes a recursive GDScriptDataType serialized into the instruction
-	// stream by GDScriptByteCodeGenerator::append_goblin_datatype(). The layout must
+	// stream by GDScriptByteCodeGenerator::append_datatype(). The layout must
 	// stay in sync with that function. Used by the VM (OPCODE_CONSTRUCT_SHAPED_DICTIONARY)
 	// and the disassembler.
-	void goblin_decode_datatype(const int *p_code, int &r_pos, GDScriptDataType &r_type) const;
+	void decode_datatype(const int *p_code, int &r_pos, GDScriptDataType &r_type) const;
 
 	Variant call(GDScriptInstance *p_instance, const Variant **p_args, int p_argcount, Callable::CallError &r_err, CallState *p_state = nullptr);
 	void debug_get_stack_member_state(int p_line, List<Pair<StringName, int>> *r_stackvars) const;

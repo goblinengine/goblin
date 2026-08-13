@@ -47,6 +47,7 @@
 #include "core/string/string_builder.h"
 #include "scene/resources/packed_scene.h"
 #include "tests/test_macros.h"
+#include "tests/test_utils.h"
 
 namespace GDScriptTests {
 
@@ -119,6 +120,14 @@ void init_language(const String &p_base_path) {
 	if (err) {
 		print_line("Could not load project settings.");
 		// Keep going since some scripts still work without this.
+	}
+
+	// Force the resource path to the base directory. Other test suites (e.g. GLTF) may
+	// have already set the ProjectSettings singleton's resource path, and `setup()` bails
+	// out early when it is already set, leaving `res://` pointing at the wrong location.
+	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+	if (da.is_valid() && da->change_dir(p_base_path) == OK) {
+		TestProjectSettingsInternalsAccessor::resource_path() = da->get_current_dir().replace_char('\\', '/');
 	}
 
 	// Initialize the language for the test routine.

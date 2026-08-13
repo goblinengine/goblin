@@ -497,7 +497,9 @@ void GDScriptTokenizerBuffer::push_state() {
 	StateSnapshot &state = state_snapshot;
 	state.current = current;
 	state.current_line = current_line;
+	state.multiline_mode = multiline_mode;
 	state.indent_stack = indent_stack;
+	state.indent_stack_stack = indent_stack_stack;
 	state.pending_indents = pending_indents;
 	state.last_token_was_newline = last_token_was_newline;
 	has_state_snapshot = true;
@@ -508,7 +510,9 @@ void GDScriptTokenizerBuffer::restore_state() {
 	const StateSnapshot &state = state_snapshot;
 	current = state.current;
 	current_line = state.current_line;
+	multiline_mode = state.multiline_mode;
 	indent_stack = state.indent_stack;
+	indent_stack_stack = state.indent_stack_stack;
 	pending_indents = state.pending_indents;
 	last_token_was_newline = state.last_token_was_newline;
 	has_state_snapshot = false;

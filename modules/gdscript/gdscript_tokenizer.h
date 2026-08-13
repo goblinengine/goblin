@@ -282,11 +282,13 @@ class GDScriptTokenizerText : public GDScriptTokenizer {
 		int start_line = 1;
 		int start_column = 1;
 		bool line_continuation = false;
+		bool multiline_mode = false;
 		bool pending_newline = false;
 		Token last_token;
 		Token last_newline;
 		int pending_indents = 0;
 		List<int> indent_stack;
+		List<List<int>> indent_stack_stack;
 		List<char32_t> paren_stack;
 		int position = 0;
 		int error_stack_size = 0;

@@ -2667,10 +2667,12 @@ Vector<String> GDScriptLanguage::get_reserved_words() const {
 		// Operators.
 		"and",
 		"as",
+		"elthen",
 		"in",
 		"is",
 		"not",
 		"or",
+		"then",
 		// Special values (tokenizer treats them as literals, not as tokens).
 		"false",
 		"null",

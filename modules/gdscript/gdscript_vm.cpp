@@ -105,7 +105,7 @@ static String _get_var_type(const Variant *p_var) {
 }
 
 // Goblin: the recursive GDScriptDataType serialization is decoded by
-// GDScriptFunction::goblin_decode_datatype() (see gdscript_function.cpp).
+// GDScriptFunction::decode_datatype() (see gdscript_function.cpp).
 
 void GDScriptFunction::_profile_native_call(uint64_t p_t_taken, const String &p_func_name, const String &p_instance_class_name) {
 	HashMap<String, Profile::NativeProfile>::Iterator inner_prof = profile.native_calls.find(p_func_name);
@@ -1914,10 +1914,10 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				// Goblin: decode the recursive shape descriptor.
 				GDScriptDataType shape;
 				int descriptor_pos = ip + 2;
-				goblin_decode_datatype(_code_ptr, descriptor_pos, shape);
+				decode_datatype(_code_ptr, descriptor_pos, shape);
 
 #ifdef DEBUG_ENABLED
-				String goblin_error;
+				String invalid_value_error;
 #endif
 
 				Dictionary dict;
@@ -1965,20 +1965,20 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 						dict[*k] = *v;
 					}
 #ifdef DEBUG_ENABLED
-					// Validate each entry against its shape (a safety net; the analyzer
-					// already rejects statically-known wrong types). Note: OPCODE_BREAK is
-					// a plain `break` on MSVC, so it must not be used inside this loop.
-					if (goblin_error.is_empty()) {
-						if (entry_type.has_type() && !entry_type.goblin_validate(*v)) {
-							goblin_error = vformat(R"(Invalid value of type "%s" for shaped dictionary key "%s".)", _get_var_type(v), String(*k));
-						}
+				// Validate each entry against its shape (a safety net; the analyzer
+				// already rejects statically-known wrong types). Note: OPCODE_BREAK is
+				// a plain `break` on MSVC, so it must not be used inside this loop.
+				if (invalid_value_error.is_empty()) {
+					if (entry_type.has_type() && !entry_type.validate(*v)) {
+						invalid_value_error = vformat(R"(Invalid value of type "%s" for shaped dictionary key "%s".)", _get_var_type(v), String(*k));
 					}
+				}
 #endif
 				}
 
 #ifdef DEBUG_ENABLED
-				if (!goblin_error.is_empty()) {
-					err_text = goblin_error;
+				if (!invalid_value_error.is_empty()) {
+					err_text = invalid_value_error;
 					OPCODE_BREAK;
 				}
 #endif

@@ -17,7 +17,7 @@ class Outer:
 class Nested:
 	class Deep:
 		func probe(o: Outer) -> int:
-			return o.secret + o.SECRET_CONST + o.secret_func() + o.make_inner().secret
+			return o.secret + o.SECRET_CONST + o.secret_func() + o.secret
 
 		func touch_inner(o: Outer) -> Outer.SecretInner:
 			return o.SecretInner.new()

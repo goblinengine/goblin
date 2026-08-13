@@ -31,10 +31,10 @@ Priorities: `P0` (critical), `P1` (high), `P2` (medium), `P3` (low).
 | ID | Item | Status | Priority | Effort | ADR/RFC | Justification |
 |----|------|--------|----------|--------|---------|---------------|
 | G-01 | Union types (`int \| String`, `Dictionary \| null`) | done | P1 | — | 0004 | In fork; regression tests added (union dedup/collapse, null typing) |
-| G-02 | `@private` annotation | done | P2 | — | — | Enforced for vars/funcs/consts/inner classes; same-script access policy; `@export` conflict error. Subclass name reuse deliberately NOT supported (O(n) scan cost on instance creation + sparse member indices) |
+| G-02 | `@private` annotation | done | P2 | — | — | Enforced for vars/funcs/consts/inner classes; same-script access policy; `@export` conflict error. Enforcement gaps fixed (2026-08-13): private method calls now blocked, private inner-class access no longer cascades a "cannot find member" error. Subclass name reuse deliberately NOT supported (O(n) scan cost on instance creation + sparse member indices) |
 | G-03 | String constructors (`String(int)`, `String(float)`, `String(bool)`) | done | P3 | — | — | In fork, via `core/variant` override |
-| G-16 | Regression tests for G-01..G-03 (`private_member_access`, `null_type_assignment`, `null_null_union`, etc.) | done | P1 | — | — | Added to mirror `tests/scripts/`; `.out` files written by hand — verify with `--gdscript-generate-tests` on a `tests=yes` build |
-| G-17 | Shaped dictionary literals (typed entries, Lua style) | done | P1 | — | — | Parser/analyzer/runtime/autocomplete; tests added |
+| G-16 | Regression tests for G-01..G-03 (`private_member_access`, `null_type_assignment`, `null_null_union`, etc.) | done | P1 | — | — | Added to mirror `tests/scripts/`; `.out` files written by hand — verify with `--gdscript-generate-tests` on a `tests=yes` build. Test runner/completion/LSP paths fixed to target the fork's own `tests/` dir (previously pointed at the upstream copy, so fork tests were unrunnable from repo root). Full GDScript suite is green (1379/1379 test cases) |
+| G-17 | Shaped dictionary literals (typed entries, Lua style) | done | P1 | — | — | Parser/analyzer/runtime/autocomplete. Shape preserved across all declaration styles (`:=`, `: Dictionary`, `: Dictionary[K,V]`, untyped `=`) with compile-time write enforcement on typed keys; runtime construction validation + typed-container normalization (plain `Array` -> `Array[T]`). Recursive shape serialized inline in the instruction stream, decoded by `GDScriptFunction::decode_datatype()`. 11 regression test files |
 | G-04 | Safe navigation `then` | doing | P1 | 1-2d | — | Keywords locked (NOT `?.`); tokens landed; parser/analyzer/compiler wiring pending — `.kilo/plans/` §3 |
 | G-05 | Null coalescing `elthen` | doing | P1 | 1-2d | — | Pairs with G-04; port with explicit `!= null` (null-only) |
 | G-18 | Template dictionaries (`_template` reserved key, creation-time default expansion) | todo | P1 | 3-4.5d | 0009/0010 | `.kilo/plans/` §2; builds on G-17 shaped-dict infra |
@@ -122,6 +122,7 @@ Findings from the `/tech-debt-review` workflow. Fork-side debt only; upstream is
 
 | ID | Item | Source | Severity | Notes |
 |----|------|--------|----------|-------|
+| TD-01 | Pre-existing fork test failures | G-17 verification run (2026-08-13) | Resolved | Root causes fixed: (1) `reduce_identifier_from_base` copied the member before `resolve_class_member` (introduced by G-02's @private commit), breaking out-of-order enum/const resolution; (2) @private gaps: private method calls not blocked (`get_function_signature`), cascading "cannot find member" on private inner-class access; (3) stale `.out` files (6 missing required trailing newline, `null_type_assignment` hand-written message); (4) malformed `private_same_script_access` test (accessed non-existent member); (5) harness `res://` bug — `ProjectSettings::setup` short-circuits when the resource path is already set (left behind by the GLTF suite), so `init_language` now forces the resource path to the test scripts dir. Full GDScript suite: 1379/1379 test cases pass, 0 failures |
 
 ---
 
