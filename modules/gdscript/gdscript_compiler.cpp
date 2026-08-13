@@ -573,10 +573,10 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 				elements.push_back(element);
 			}
 
-			if (dict_type.has_container_element_types()) {
-				gen->write_construct_typed_dictionary(result, dict_type.get_container_element_type_or_variant(0), dict_type.get_container_element_type_or_variant(1), elements);
-			} else if (dict_type.has_dictionary_shape()) {
+			if (dict_type.has_dictionary_shape()) {
 				gen->write_construct_shaped_dictionary(result, dict_type, elements);
+			} else if (dict_type.has_container_element_types()) {
+				gen->write_construct_typed_dictionary(result, dict_type.get_container_element_type_or_variant(0), dict_type.get_container_element_type_or_variant(1), elements);
 			} else {
 				gen->write_construct_dictionary(result, elements);
 			}

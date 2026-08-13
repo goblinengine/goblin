@@ -1921,6 +1921,16 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 #endif
 
 				Dictionary dict;
+				const bool is_typed_dict = shape.has_container_element_types();
+				if (is_typed_dict) {
+					// Goblin: for `: Dictionary[K, V]` declarations the shape also carries
+					// the flat container types — construct the dictionary typed so the
+					// runtime value matches the declared type, while still applying the
+					// per-entry shape normalization below.
+					const GDScriptDataType &shape_key_type = shape.get_container_element_type_or_variant(0);
+					const GDScriptDataType &shape_value_type = shape.get_container_element_type_or_variant(1);
+					dict.set_typed(shape_key_type.builtin_type, shape_key_type.native_type, shape_key_type.script_type, shape_value_type.builtin_type, shape_value_type.native_type, shape_value_type.script_type);
+				}
 				dict.reserve(argc);
 				for (int i = 0; i < argc; i++) {
 					GET_INSTRUCTION_ARG(k, i * 2 + 0);
@@ -1930,6 +1940,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 					// static shape (e.g. a plain array value for an `Array[T]` entry becomes
 					// a typed array, like a typed-dictionary construction would produce).
 					const GDScriptDataType entry_type = shape.get_dictionary_shape_value_type_or_variant(StringName(*k));
+					Variant entry_value = *v;
 					if (entry_type.kind == GDScriptDataType::BUILTIN && entry_type.builtin_type == Variant::ARRAY && entry_type.has_container_element_type(0) && v->get_type() == Variant::ARRAY) {
 						const GDScriptDataType &element_type = entry_type.get_container_element_type(0);
 						Array *src_array = VariantInternal::get_array(v);
@@ -1941,9 +1952,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 								// Use .set instead of operator[] to handle type conversion / validation.
 								typed_array.set(j, src_array->operator[](j));
 							}
-							dict[*k] = typed_array;
-						} else {
-							dict[*k] = *v;
+							entry_value = typed_array;
 						}
 					} else if (entry_type.kind == GDScriptDataType::BUILTIN && entry_type.builtin_type == Variant::DICTIONARY && entry_type.has_container_element_types() && v->get_type() == Variant::DICTIONARY) {
 						const GDScriptDataType &key_type = entry_type.get_container_element_type_or_variant(0);
@@ -1957,12 +1966,8 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 								// Use .set instead of operator[] to handle type conversion / validation.
 								typed_dict.set(*dk, src_dict->operator[](*dk));
 							}
-							dict[*k] = typed_dict;
-						} else {
-							dict[*k] = *v;
+							entry_value = typed_dict;
 						}
-					} else {
-						dict[*k] = *v;
 					}
 #ifdef DEBUG_ENABLED
 				// Validate each entry against its shape (a safety net; the analyzer
@@ -1974,6 +1979,13 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 					}
 				}
 #endif
+					if (is_typed_dict) {
+						// Use .set instead of operator[] so the declared flat key/value
+						// types are validated in all builds (same as CONSTRUCT_TYPED_DICTIONARY).
+						dict.set(*k, entry_value);
+					} else {
+						dict[*k] = entry_value;
+					}
 				}
 
 #ifdef DEBUG_ENABLED

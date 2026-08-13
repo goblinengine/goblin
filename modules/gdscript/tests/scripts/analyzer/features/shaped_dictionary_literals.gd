@@ -53,6 +53,15 @@ func test():
 	typed_variant.other = "anything" # Unknown keys stay Variant.
 	Utils.check(typed_variant.other == "anything")
 
+	# Typed-container declarations refine per-key like the other styles.
+	var tdeep: Dictionary[StringName, Variant] = { nums: Array[int] = [1, 2] }
+	var tnums: Array[int] = tdeep.nums
+	Utils.check(tnums == [1, 2])
+
+	var tscalar: Dictionary[String, int] = { "hp": int = 7 }
+	var thp: int = tscalar.hp
+	Utils.check(thp == 7)
+
 	# Unknown keys fall back to Variant.
 	var unknown: Variant = a.get("not_there")
 	Utils.check(unknown == null)

@@ -65,4 +65,22 @@ func test():
 	Utils.check(typed_variant.get_typed_key_builtin() == TYPE_STRING_NAME)
 	Utils.check(typed_variant.get_typed_value_builtin() == TYPE_NIL)
 
+	# Typed-container declarations keep the per-key shape AND the runtime container
+	# typing: plain containers are normalized, the dictionary is typed as declared.
+	# (Nested typed collections in declarations themselves are an upstream parser
+	# limitation, so the deep entry is covered via a flat `Variant` declaration.)
+	var plain_nums = [1, 2, 3] # Untyped array at runtime.
+	var typed_deep: Dictionary[StringName, Variant] = { nums: Array[int] = plain_nums }
+	Utils.check(typed_deep.nums == [1, 2, 3])
+	Utils.check(typed_deep.nums.get_typed_builtin() == TYPE_INT)
+	Utils.check(typed_deep.get_typed_key_builtin() == TYPE_STRING_NAME)
+	Utils.check(typed_deep.get_typed_value_builtin() == TYPE_NIL)
+
+	# Scalar typed keys are enforced by the flat dictionary types as well.
+	var typed_scalar: Dictionary[String, int] = { "hp": int = 10, "mp": int = 3 }
+	Utils.check(typed_scalar.hp == 10)
+	Utils.check(typed_scalar.mp == 3)
+	Utils.check(typed_scalar.get_typed_key_builtin() == TYPE_STRING)
+	Utils.check(typed_scalar.get_typed_value_builtin() == TYPE_INT)
+
 	print('ok')
