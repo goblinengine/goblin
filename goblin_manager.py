@@ -7,7 +7,6 @@ Utility script to help manage Goblin Engine branding files and test builds
 import os
 import sys
 import subprocess
-import shutil
 from pathlib import Path
 
 SCRIPT_DIR = Path(__file__).parent.absolute()
@@ -184,24 +183,6 @@ Permission is hereby granted, free of charge...
         print("\nAll branding files already exist")
 
 
-def clean_build():
-    """Clean build artifacts"""
-    print_header("Cleaning Build Artifacts")
-    
-    os.chdir(GODOT_ROOT)
-    
-    print("Running: scons --clean")
-    result = subprocess.run(["scons", "--clean"])
-    
-    # Also remove .scons_cache
-    cache_dir = GODOT_ROOT / ".scons_cache"
-    if cache_dir.exists():
-        print(f"Removing {cache_dir}")
-        shutil.rmtree(cache_dir)
-    
-    print("\n✓ Clean complete")
-
-
 def show_help():
     """Display help information"""
     print("""
@@ -215,7 +196,6 @@ Commands:
     compare     Compare Goblin icons with Godot defaults
     template    Create branding file templates
     build       Run a test build with Goblin branding
-    clean       Clean build artifacts
     all         Run check, icons, and compare
     help        Show this help message
 
@@ -251,9 +231,6 @@ def main():
         else:
             print("\n⚠ Missing required branding files!")
             print("Run: python goblin_manager.py template")
-    
-    elif command == "clean":
-        clean_build()
     
     elif command == "all":
         check_branding_files()

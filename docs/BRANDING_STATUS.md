@@ -1,5 +1,7 @@
 # Goblin Branding - What Gets Renamed
 
+> Status note (2026-08-13): partially superseded. The fork patches About-dialog strings at runtime via `editor/goblin_about.cpp` (translation overrides), not via .obj patching. A compile-time override of `editor_about.cpp` is backlog B-04. This file remains as reference for what is renamed where.
+
 ## ✅ Automatically Renamed (via GODOT_VERSION_NAME define)
 
 These use the `GODOT_VERSION_NAME` define which is set to "Goblin Engine":

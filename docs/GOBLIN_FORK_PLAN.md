@@ -32,7 +32,7 @@ A deliberately customized, lightweight fork of Godot Engine tailored specificall
 
 5. **ADR-Governed Architecture.** All structural decisions — GDScript language extensions, core engine modifications, module architecture, renderer changes — go through Architecture Decision Records (ADRs) modeled on the Goblin Custom Engine's governance. No feature lands without a locked ADR. The ADR must specify: what changes, why it's justified against a concrete DB pain point, what files are touched, what the merge conflict surface is, and what tests gate acceptance.
 
-6. **Cherry-Pick GDScript Features, Don't Fork Wholesale.** The existing `gdscript2` module has partial breakage and untracked complexity across multiple unmerged branches. Instead of merging it wholesale, start from clean upstream GDScript and port individual features one at a time: union types first, then `?.`/`??`, then performance optimizations. Each feature lands as its own tested, reviewed change.
+6. **Cherry-Pick GDScript Features, Don't Fork Wholesale.** The existing `gdscript2` module has partial breakage and untracked complexity across multiple unmerged branches. Instead of merging it wholesale, start from clean upstream GDScript and port individual features one at a time: union types first, then `then`/`elthen`, then performance optimizations. Each feature lands as its own tested, reviewed change.
 
 7. **Minimal Override Surface.** Every overridden source file is a merge-conflict liability. Prefer additive overrides (new files that ADD functionality to a module) over replacement overrides (files that completely replace upstream). When replacement is necessary, document the exact divergence and track which upstream releases touch the overridden file.
 
@@ -105,8 +105,8 @@ Each ADR must address:
 **Implemented on HEAD (7 commits):**
 - Union types (`int | String`, `Dictionary | null`)
 - `swap(a, b)` built-in function
-- Safe navigation `?.` (keyword `then`) 
-- Null coalescing `??` (keyword `elthen`)
+- Safe navigation (keyword `then`) 
+- Null coalescing (keyword `elthen`)
 - Inline caching for property access (monomorphic, 4 opcodes)
 - Fast String cast optimization
 
@@ -330,10 +330,10 @@ This leverages Godot's existing `module_check_dependencies()` in `methods.py` �
 - Replaces `Variant` branching in physics shape-size code
 - Port approach: extract the union type changes from gdscript2's parser/analyzer/compiler diffs. Add union type test suite (50+ patterns). Run against DB script corpus.
 
-**Feature 0b — Safe Navigation `?.` and Null Coalescing `??`**
+**Feature 0b — Safe Navigation `then` and Null Coalescing `elthen`**
 - Replace hundreds of `if x != null:` guards across the codebase
-- Port approach: extract the THAN/ELTHEN tokenizer changes + binary op node changes from gdscript2
-- Rename keywords from `then`/`elthen` to `?.`/`??` syntax for readability
+- Port approach: extract the THEN/ELTHEN tokenizer changes + binary op node changes from gdscript2
+- Keywords are `then`/`elthen` (locked decision, 2026-08-13; `?.`/`??` NOT planned). Port with explicit `!= null` conditions (null-only) instead of gdscript2's ternary truthiness reuse — see `.kilo/plans/` §3.
 
 **Feature 0c — Inline Caching for Property Access**
 - Monomorphic property cache (4 opcodes: SET/GET named/member)
@@ -542,7 +542,6 @@ The custom engine at `D:\DEV\Goblin` (raylib + daslang, v0.37.0) has several arc
 | Task | Effort | Risk | ADR |
 |------|--------|------|-----|
 | Implement source override system in `goblin/config.py` | 2-3 days | Low — additive change to config.py | 0001 |
-| Create `goblin_source_overrides.py` with initial empty map | 1 hour | None | 0001 |
 | **Replace retry loops with compile-time overrides** (`editor_about.cpp`) | 1-2 days | Low — proves source override end-to-end | 0007 |
 | Cherry-pick union types from gdscript2 into clean GDScript base | 3-5 days | Medium — extract parser/analyzer/compiler diffs, write 50-pattern test suite | 0004 |
 | Run DB project against goblin build with union types | 1 day | Gate: all DB scripts compile and all 342 tests pass | 0004 |
@@ -555,7 +554,7 @@ The custom engine at `D:\DEV\Goblin` (raylib + daslang, v0.37.0) has several arc
 |------|--------|------|-----|
 | Implement module disable list in config.py | 1 day | Low — uses existing Godot mechanism | 0003 |
 | Verify trimmed build runs DB without errors | 1-2 days | Low — all trims verified against DB | 0003 |
-| Cherry-pick safe navigation `?.` and null coalescing `??` | 2-3 days | Medium — tokenizer/parser changes | 0005 |
+| Cherry-pick safe navigation `then` and null coalescing `elthen` | 2-3 days | Medium — tokenizer/parser changes | 0005 |
 | Cherry-pick inline caching for property access | 2-3 days | Medium — VM changes, validate with profiling | — |
 | Cherry-pick fast String cast | 1 day | Low — single VM change | — |
 | Cherry-pick opcode fusing (high-impact fused opcodes first) | 3-5 days | Medium — integration testing | — |
@@ -622,7 +621,7 @@ Every phase has concrete test gates. No feature merges without passing its gate.
 - Module trim: disabled module list produces a compilable build
 
 **Phase 1 Go/No-Go:**
-- `?.` / `??`: all DB scripts compile, null-guard patterns verify correctly
+- `then` / `elthen`: all DB scripts compile, null-guard patterns verify correctly
 - Inline caching: profile shows measurable speedup in physics/AI hot paths without regressions
 - Opcode fusing: no behavioral change in combat/stealth/navigation
 - Trimmed build: DB editor launches, level loads, navigation builds, all unit tests pass
@@ -705,27 +704,22 @@ func test_graph_build_produces_identical_results():
 
 ```
 modules/goblin/
-├── config.py                      # [MODIFY] Add source override hook + module disable list
-├── goblin_source_overrides.py     # [NEW] Declarative override map
-├── goblin_module_trims.py         # [NEW] Module disable list with documentation
-├── overrides/                     # [NEW] Replacement source tree
-│   ├── gdscript/                  # Forked GDScript module files (from gdscript2)
-│   │   ├── gdscript_compiler.cpp  # With struct/generics changes
-│   │   ├── gdscript_parser.cpp    # With struct/generics changes
-│   │   ├── gdscript_analyzer.cpp  # With struct/generics changes
-│   │   ├── gdscript_vm.cpp        # With performance optimizations
-│   │   └── ... (all modified files)
-│   ├── editor/
-│   │   └── editor_about.cpp       # Goblin-branded About dialog (no retry loops)
-│   └── scene/
-│       └── 3d/
-│           └── lightmap_gi.cpp    # Frustum culling fix + runtime bake API
-├── editor/
-│   ├── goblin_about.cpp           # [SIMPLIFY] Remove retry loops (replaced by source override)
-│   └── goblin_export.cpp          # [SIMPLIFY] Same
-└── docs/
-    └── GOBLIN_FORK_PLAN.md        # This document
+├── config.py                      # [MODIFIED] configure() hooks: builders, goblin_add_library(), module trim
+├── SCsub                          # [MODIFIED] GOBLIN_MODULE_OVERRIDES (whole-module swap)
+├── goblin_builders.py             # [MODIFIED] Branding builders
+├── register_types.cpp/h           # [MODIFIED] Module registration
+├── core/                          # Mirror for core file overrides
+│   ├── variant/variant_construct.{cpp,h}   # [NEW] String ctors
+│   └── version_override.py + AUTHORS/DONORS/COPYRIGHT/LICENSE  # [NEW] Branding
+├── modules/gdscript/              # [NEW] GDScript fork (whole-module override)
+├── editor/                        # goblin_about.cpp/h, goblin_export.cpp/h (runtime patches)
+├── main/                          # splash, splash_editor, app icon
+├── platform/windows/              # goblin.rc
+├── tools/                         # sync_godot_icons.py
+└── docs/                          # This document, backlog, ADRs, CODE_MAP
 ```
+
+Planned (backlog B-04): compile-time override of `editor/editor_about.cpp` to replace the About-dialog retry loops. The originally proposed `goblin_source_overrides.py` / `overrides/` tree was rejected (see §4).
 
 ## Appendix B: DB Project Pain Point → Fork Solution Map
 

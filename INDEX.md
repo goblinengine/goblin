@@ -1,6 +1,6 @@
 # Goblin Engine — Index
 
-Goblin Engine is a deliberately customized, lightweight fork of Godot Engine, tailored for the Dungeon Battler (DB) immersive-sim and its successors. All changes live inside this `modules/goblin/` directory; upstream Godot source files are never modified.
+Goblin Engine is a deliberately customized, lightweight fork of Godot Engine, tailored for immersive-sim / systems-heavy FPS RPG development. All changes live inside this `modules/goblin/` directory; upstream Godot source files are never modified.
 
 ## Documentation
 
@@ -8,10 +8,11 @@ The canonical docs live in [docs/](docs/). Start at [docs/README.md](docs/README
 
 | Document | Purpose |
 |----------|---------|
-| [docs/vision.md](docs/vision.md) | What the fork is, goals, and non-goals |
+| [docs/vision.md](docs/vision.md) | Vision pointer — canonical charter in `.kilo/rules/vision.md` |
 | [docs/backlog.md](docs/backlog.md) | Single source of truth for pending, in-progress, and proposed work |
 | [docs/GOBLIN_FORK_PLAN.md](docs/GOBLIN_FORK_PLAN.md) | Phased roadmap, pain-point → solution map, risk assessment |
 | [docs/gdscript_features.md](docs/gdscript_features.md) | GDScript fork features and divergence surface |
+| [docs/CODE_MAP.md](docs/CODE_MAP.md) | Navigation map: where files live, what each layer does, where new code goes |
 | [docs/adr/](docs/adr/) | Architecture Decision Records (accepted + proposed) |
 | [docs/proposal/](docs/proposal/) | RFCs for exploratory designs |
 
@@ -25,7 +26,8 @@ modules/goblin/
 ├── register_types.cpp/h         # Module registration
 │
 ├── core/                        # Mirrors upstream core/ for file overrides
-│   └── variant/                 #   variant_construct.cpp/h (String ctors)
+│   ├── variant/                 #   variant_construct.cpp/h (String ctors)
+│   └── version_override.py + branding files (AUTHORS/DONORS/COPYRIGHT/LICENSE)
 │
 ├── modules/                     # Mirrors upstream modules/ for whole-module overrides
 │   └── gdscript/                #   The GDScript fork (compiled instead of upstream)
