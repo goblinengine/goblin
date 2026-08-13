@@ -23,7 +23,7 @@ Purpose: eliminate `typeof()` + `as` branching on values that may be one of a bo
 Syntax: `@private var x`, `@private func f()`, `@private const K`, `@private class Inner`
 
 - Parser registers the annotation; sets `is_private` on `VariableNode` / `FunctionNode` / `ConstantNode` / `ClassNode`.
-- Analyzer blocks external access (`Cannot access private member "X" of class "Y"`).
+- Analyzer blocks external access (`Cannot access private member "X" of class "Y"`), including calls to private methods; a blocked access reports one clean error (no cascading "cannot find member").
 - Access policy: private members are visible to the declaring class and to **any class in the same script** (nested classes, any depth, including siblings). Other scripts are blocked.
 - Autocomplete filters private members of other classes (`p_recursion_depth > 0` check in `_find_identifiers_in_class`).
 - `@private` cannot be combined with any `@export*` annotation (error in both orders).
@@ -52,8 +52,8 @@ var tpl := {
 ```
 
 - Parser: typed entries in `{}` literals; recursive shape = key set + entry types (`GDScriptDataType` shape payload in `gdscript_function.h`).
-- Analyzer: shape inference; attribute access (`dict.key`) and constant-index access (`dict["key"]`) refine to the entry type; autocomplete recurses into shapes (`gdscript_editor.cpp`).
-- Runtime: `OPCODE_CONSTRUCT_SHAPED_DICTIONARY` constructs the shaped dict; typed-write validation; the recursive datatype travels as raw instruction words (`append_goblin_datatype()`, `gdscript_byte_codegen.h`), decoded in `gdscript_vm.cpp` / `gdscript_function.cpp`.
+- Analyzer: shape inference; the shape is preserved across all declaration styles (`:=`, `: Dictionary`, `: Dictionary[K,V]`, and untyped `=`), and writes to typed keys are compile-time errors; attribute access (`dict.key`) and constant-index access (`dict["key"]`) refine to the entry type; autocomplete recurses into shapes (`gdscript_editor.cpp`).
+- Runtime: `OPCODE_CONSTRUCT_SHAPED_DICTIONARY` validates every literal value against its declared entry type (debug safety net) and normalizes typed containers (plain `Array` → typed `Array[T]`); the recursive datatype travels as raw instruction words (`append_datatype()`, `gdscript_byte_codegen.h`), decoded by `GDScriptFunction::decode_datatype()` (`gdscript_function.{h,cpp}`). Runtime validation applies at construction only — later writes are enforced at compile time, not re-checked at runtime.
 - Style rules: typed entries are Lua style only; mixing with Python-style untyped literals errors (tests: `shaped_dictionary_style_mixing_*`, `shaped_dictionary_typed_in_python`).
 - NOT implemented (planned): template dictionaries (`_template` reserved key, creation-time default expansion) — see `.kilo/plans/` §2.
 

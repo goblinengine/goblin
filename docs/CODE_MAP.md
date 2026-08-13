@@ -73,7 +73,12 @@ Diff vs upstream: `git diff --no-index --stat modules/gdscript modules/goblin/mo
 
 ## Tests
 
-- Fork tests: `modules/goblin/modules/gdscript/tests/` (mirror of upstream suite + new cases under `parser/`, `analyzer/`, `runtime/`). Run via upstream GDScript test runner.
+- Fork tests: `modules/goblin/modules/gdscript/tests/` (mirror of upstream suite + new cases under `parser/`, `analyzer/`, `runtime/`). The test harness (`gdscript_test_runner_suite.h`, `test_completion.h`, `test_lsp.h`) targets the fork's own tests dir.
+- Run: build with `tests=yes` (`scons platform=windows target=editor module_mono_enabled=no accesskit=no angle=no tests=yes -j4`), then `bin/goblin.windows.editor.x86_64.exe --headless --test --test-case "[Modules][GDScript]*"`.
+- Regenerate expected outputs from current behavior: `bin/goblin.windows.editor.x86_64.exe --headless --gdscript-generate-tests` (writes `.out` files — use with care; it encodes whatever the engine currently does).
+- Gotchas:
+  - `.out` files must end with a trailing newline: `GDScriptTest::check_output()` compares against `strip_edges(output) + "\n"`.
+  - `init_language()` forces `ProjectSettings`' resource path to the test scripts dir so `res://`-relative reads (LSP/completion suites) work even after other suites (e.g. GLTF) leave the singleton's resource path set.
 - Gate: DB corpus compile + 342 unit tests + level load. Never claim a change verified without a build.
 
 ## Landmines / drift (verified today)
