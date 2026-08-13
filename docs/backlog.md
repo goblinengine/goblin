@@ -23,6 +23,8 @@ Priorities: `P0` (critical), `P1` (high), `P2` (medium), `P3` (low).
 | D-09 | Sync `gdscript_features.md` with code state | done | P0 | — | Added shaped dicts (implemented) + then/elthen (partial); `?.`/`??` removed |
 | D-10 | Vision single-sourced | done | P0 | — | `.kilo/rules/vision.md` canonical (genre family, Godot compat, decision hierarchy); `docs/vision.md` = pointer |
 | D-11 | Backlog cleanup: rejected section, plan-file tickets merged, recent work logged | done | P0 | — | This file |
+| D-12 | Record locked `then`/`elthen` semantics + debug-only shaped validation | done | P1 | — | — | Done 2026-08-13: semantics locked (`then` null-only, `elthen` truthy — deliberate); "tokenizer only" claims corrected in `gdscript_features.md`, `CODE_MAP.md` (incl. landmine 3), `GOBLIN_FORK_PLAN.md`, plan §3.2 (superseded note); DEBUG-only validation rationale documented. Remaining: TD-02 tests + G-04/G-05 corpus gate |
+| D-12 | Sync `then`/`elthen` state in docs: implementation present, not "tokenizer only" | doing | P1 | — | — | MAJOR (2026-08-13 review): full parser/analyzer/compiler wiring verified in code, but `gdscript_features.md` §then/elthen ("operators do not compile yet"), CODE_MAP landmine 3 ("tokens present, rest missing"), and backlog G-04/G-05 status all claim otherwise. Update all three; remove landmine 3 |
 
 ---
 
@@ -35,8 +37,9 @@ Priorities: `P0` (critical), `P1` (high), `P2` (medium), `P3` (low).
 | G-03 | String constructors (`String(int)`, `String(float)`, `String(bool)`) | done | P3 | — | — | In fork, via `core/variant` override |
 | G-16 | Regression tests for G-01..G-03 (`private_member_access`, `null_type_assignment`, `null_null_union`, etc.) | done | P1 | — | — | Added to mirror `tests/scripts/`; `.out` files written by hand — verify with `--gdscript-generate-tests` on a `tests=yes` build. Test runner/completion/LSP paths fixed to target the fork's own `tests/` dir (previously pointed at the upstream copy, so fork tests were unrunnable from repo root). Full GDScript suite is green (1379/1379 test cases) |
 | G-17 | Shaped dictionary literals (typed entries, Lua style) | done | P1 | — | — | Parser/analyzer/runtime/autocomplete. Shape preserved across all declaration styles (`:=`, `: Dictionary`, `: Dictionary[K,V]`, untyped `=`) with compile-time write enforcement on typed keys; runtime construction validation + typed-container normalization (plain `Array` -> `Array[T]`). Recursive shape serialized inline in the instruction stream, decoded by `GDScriptFunction::decode_datatype()`. 11 regression test files |
-| G-04 | Safe navigation `then` | doing | P1 | 1-2d | — | Keywords locked (NOT `?.`); tokens landed; parser/analyzer/compiler wiring pending — `.kilo/plans/` §3 |
-| G-05 | Null coalescing `elthen` | doing | P1 | 1-2d | — | Pairs with G-04; port with explicit `!= null` (null-only) |
+| G-04 | Safe navigation `then` | doing | P1 | 1-2d | — | Keywords locked (NOT `?.`); full parser/analyzer/compiler wiring present (verified 2026-08-13 review). Semantics locked: null-only `a != null ? b : a`, chainable. No tests yet — TD-02 |
+| G-05 | Null coalescing `elthen` | doing | P1 | 1-2d | — | Pairs with G-04; wiring present. Semantics locked: TRUTHY `a ? a : b` (deliberate, 2026-08-13; `0 elthen 5` → `5`) — not the earlier null-only plan note. No tests yet — TD-02 |
+| G-20 | `then`/`elthen` test suite + doc sync | doing | P1 | 1d | — | Superseded by D-12 (docs) + TD-02 (tests). Semantics locked as implemented — no code change planned |
 | G-18 | Template dictionaries (`_template` reserved key, creation-time default expansion) | todo | P1 | 3-4.5d | 0009/0010 | `.kilo/plans/` §2; builds on G-17 shaped-dict infra |
 | G-19 | Callable shorthand (`fn(3)` -> `fn.call(3)`, dict member callables) | todo | P2 | 1-2d | 0011 | `.kilo/plans/` §2.5 |
 | G-07 | Structs / value types | todo | P1 | 4-6w | — | Biggest gap. Dict-heavy entity model, 60+ `duplicate(true)`. De-risk with 50 parser-only test cases first |
@@ -123,6 +126,7 @@ Findings from the `/tech-debt-review` workflow. Fork-side debt only; upstream is
 | ID | Item | Source | Severity | Notes |
 |----|------|--------|----------|-------|
 | TD-01 | Pre-existing fork test failures | G-17 verification run (2026-08-13) | Resolved | Root causes fixed: (1) `reduce_identifier_from_base` copied the member before `resolve_class_member` (introduced by G-02's @private commit), breaking out-of-order enum/const resolution; (2) @private gaps: private method calls not blocked (`get_function_signature`), cascading "cannot find member" on private inner-class access; (3) stale `.out` files (6 missing required trailing newline, `null_type_assignment` hand-written message); (4) malformed `private_same_script_access` test (accessed non-existent member); (5) harness `res://` bug — `ProjectSettings::setup` short-circuits when the resource path is already set (left behind by the GLTF suite), so `init_language` now forces the resource path to the test scripts dir. Full GDScript suite: 1379/1379 test cases pass, 0 failures |
+| TD-02 | Missing `then`/`elthen` test suite | Feature review 2026-08-13 | Open | ~25 cases per plan §3.5: basic `then`/`elthen`, constant folding, type inference, chaining, null-vs-falsy distinction (`0 elthen 5` → `5` must be pinned), interplay with union types, error cases. Required to close G-04/G-05 |
 
 ---
 

@@ -59,13 +59,18 @@ var tpl := {
 
 Purpose: typed dictionaries with zero runtime lookups for data-driven entity templates — the language-layer answer to DB's dict-heavy entity model.
 
-### `then` / `elthen` (safe navigation / null coalescing) — PARTIAL
+### `then` / `elthen` (safe navigation / null coalescing)
 
 Keywords `then` and `elthen` are the fork's syntax. `?.` / `??` are NOT planned.
 
-State (verified): tokenizer only — `Token::THEN` / `Token::ELTHEN` (`gdscript_tokenizer.h:65-66`), token names + keywords (`gdscript_tokenizer.cpp:60-61, 503, 533`). Parser, analyzer, and compiler wiring are NOT present; the operators do not compile yet.
+State (verified): fully implemented — tokenizer (`Token::THEN`/`Token::ELTHEN`, `gdscript_tokenizer.h:65-66`), parser (`PREC_NULLISH` precedence, `OP_SAFE_NAVIGATE`/`OP_NULL_COALESCE`, `gdscript_parser.{h,cpp}`), analyzer (short-circuit typing + constant folding, `gdscript_analyzer.cpp` `reduce_binary_op`), compiler (ternary-based codegen, `gdscript_compiler.cpp`). No VM changes.
 
-Planned semantics (recovered from gdscript2, `.kilo/plans/` §3): binary operators at `PREC_NULLISH`, both null-only (`a then b` → `a != null ? b : null`, `a elthen b` → `a != null ? a : b`). gdscript2's runtime reused ternary truthiness (a wart: `0 then b` → `b`); the fork ports them with explicit `!= null` conditions.
+Semantics locked 2026-08-13 (deliberate; differs from the earlier null-only recommendation in `.kilo/plans/` §3.2, which described gdscript2's runtime truthiness as a wart):
+
+- `a then b` → `a != null ? b : a` — **null-only** safe navigation; chainable (`a then b then c`).
+- `a elthen b` → `a ? a : b` — **truthiness** coalescing: `0 elthen 5` → `5`, `"" elthen "x"` → `"x"`, `false elthen 1` → `1`.
+- Caveat: `elthen`'s static result type is the left operand's type whenever it is non-nil, but a falsy left yields the right operand's value at runtime — the static type can be broader than the actual value (`var x: int = 0 elthen "s"` compiles, evaluates to `"s"`).
+- Tests: pending — see TD-02 in `backlog.md`.
 
 ## Divergence Surface
 
@@ -85,4 +90,4 @@ When porting to a new stable release, review these files for merge conflicts:
 
 ## Planned Features
 
-See [backlog.md](backlog.md) §1. Next priorities: `then`/`elthen` wiring (G-04/G-05), structs (G-07), typed dictionaries (G-08), template dictionaries (`.kilo/plans/` §2).
+See [backlog.md](backlog.md) §1. Next priorities: `then`/`elthen` tests (TD-02), structs (G-07), typed dictionaries (G-08), template dictionaries (`.kilo/plans/` §2).

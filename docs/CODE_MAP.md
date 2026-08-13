@@ -40,7 +40,7 @@ Diff vs upstream: `git diff --no-index --stat modules/gdscript modules/goblin/mo
 
 | Stage | File | Fork work |
 |---|---|---|
-| Tokenizer | gdscript_tokenizer.{h,cpp} | `then`/`elthen` tokens - **PARTIAL**: enum + keywords only, parser not wired (see Landmines) |
+| Tokenizer | gdscript_tokenizer.{h,cpp} | `then`/`elthen` tokens + keywords (full feature: parser/analyzer/compiler wired — see Features table) |
 | Tokenizer buffer | gdscript_tokenizer_buffer.{h,cpp} | Save/restore support (parser lookahead) |
 | Parser | gdscript_parser.{h,cpp} | `DataType::UNION` kind, `@private` annotation, shaped dict literals (`key: Type = value`), datatype shape |
 | Analyzer | gdscript_analyzer.cpp | Union resolve/compat, private-access blocking, shape inference + entry-type refinement |
@@ -59,7 +59,7 @@ Diff vs upstream: `git diff --no-index --stat modules/gdscript modules/goblin/mo
 | `@private` | parser + analyzer | Same-script access allowed; no `@export` combo; name still occupies slot in subclasses |
 | String ctors | `core/variant/variant_construct.{cpp,h}` | `String(int/float/bool)`, `1 as String` -> `"1"` |
 | Shaped dictionaries | parser/analyzer/compiler/vm/editor | Typed entries, recursive shape, `OPCODE_CONSTRUCT_SHAPED_DICTIONARY`, access refinement |
-| `then`/`elthen` | tokenizer only | **NOT implemented** - tokens exist, rest missing |
+| `then`/`elthen` | tokenizer + parser + analyzer + compiler | `then` null-only (`a != null ? b : a`), `elthen` truthy (`a ? a : b`) — locked 2026-08-13; no VM changes; tests pending (TD-02) |
 
 ## Where new code goes
 
@@ -85,7 +85,7 @@ Diff vs upstream: `git diff --no-index --stat modules/gdscript modules/goblin/mo
 
 1. `goblin_manager.py` `build` subcommand targets `linuxbsd` - wrong for this project (Windows). Never reintroduce a `clean` command (`scons --clean` violates hard rule 1).
 2. `gdscript.h` layout must stay identical to upstream: `main/main.cpp` + `editor/doc/editor_help.cpp` include it outside the module (ABI).
-3. `then`/`elthen`: tokens present, rest missing - do not claim the feature works.
+3. `then`/`elthen` semantics: `then` null-only, `elthen` truthy — locked 2026-08-13, do not "fix" to null-only.
 
 ## Fast lookup
 

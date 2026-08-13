@@ -333,7 +333,7 @@ This leverages Godot's existing `module_check_dependencies()` in `methods.py` �
 **Feature 0b — Safe Navigation `then` and Null Coalescing `elthen`**
 - Replace hundreds of `if x != null:` guards across the codebase
 - Port approach: extract the THEN/ELTHEN tokenizer changes + binary op node changes from gdscript2
-- Keywords are `then`/`elthen` (locked decision, 2026-08-13; `?.`/`??` NOT planned). Port with explicit `!= null` conditions (null-only) instead of gdscript2's ternary truthiness reuse — see `.kilo/plans/` §3.
+- Keywords are `then`/`elthen` (locked decision, 2026-08-13; `?.`/`??` NOT planned). Semantics locked 2026-08-13: `then` is null-only (`a != null ? b : a`), `elthen` is deliberately truthy (`a ? a : b`) — the earlier null-only port note is superseded; do not change the code. See `gdscript_features.md` §then/elthen and `.kilo/plans/` §3.2 (superseded note).
 
 **Feature 0c — Inline Caching for Property Access**
 - Monomorphic property cache (4 opcodes: SET/GET named/member)
