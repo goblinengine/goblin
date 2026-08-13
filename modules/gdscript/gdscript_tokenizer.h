@@ -62,6 +62,8 @@ public:
 			// Logical
 			AND,
 			OR,
+			THEN,
+			ELTHEN,
 			NOT,
 			AMPERSAND_AMPERSAND,
 			PIPE_PIPE,

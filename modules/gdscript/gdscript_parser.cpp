@@ -3065,6 +3065,14 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_binary_operator(Expression
 			operation->operation = BinaryOpNode::OP_LOGIC_OR;
 			operation->variant_op = Variant::OP_OR;
 			break;
+		case GDScriptTokenizer::Token::THEN:
+			operation->operation = BinaryOpNode::OP_SAFE_NAVIGATE;
+			operation->variant_op = Variant::OP_MAX;
+			break;
+		case GDScriptTokenizer::Token::ELTHEN:
+			operation->operation = BinaryOpNode::OP_NULL_COALESCE;
+			operation->variant_op = Variant::OP_MAX;
+			break;
 		case GDScriptTokenizer::Token::TK_IN:
 			operation->operation = BinaryOpNode::OP_CONTENT_TEST;
 			operation->variant_op = Variant::OP_IN;
@@ -4307,6 +4315,8 @@ GDScriptParser::ParseRule *GDScriptParser::get_rule(GDScriptTokenizer::Token::Ty
 		// Logical
 		{ nullptr,                                          &GDScriptParser::parse_binary_operator,      	PREC_LOGIC_AND }, // AND,
 		{ nullptr,                                          &GDScriptParser::parse_binary_operator,      	PREC_LOGIC_OR }, // OR,
+		{ nullptr,                                          &GDScriptParser::parse_binary_operator,      	PREC_NULLISH }, // THEN,
+		{ nullptr,                                          &GDScriptParser::parse_binary_operator,      	PREC_NULLISH }, // ELTHEN,
 		{ &GDScriptParser::parse_unary_operator,         	&GDScriptParser::parse_binary_not_in_operator,	PREC_CONTENT_TEST }, // NOT,
 		{ nullptr,                                          &GDScriptParser::parse_binary_operator,			PREC_LOGIC_AND }, // AMPERSAND_AMPERSAND,
 		{ nullptr,                                          &GDScriptParser::parse_binary_operator,			PREC_LOGIC_OR }, // PIPE_PIPE,

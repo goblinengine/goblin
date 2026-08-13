@@ -57,6 +57,8 @@ static const char *token_names[] = {
 	// Logical
 	"and", // AND,
 	"or", // OR,
+	"then", // THEN,
+	"elthen", // ELTHEN,
 	"not", // NOT,
 	"&&", // AMPERSAND_AMPERSAND,
 	"||", // PIPE_PIPE,
@@ -498,6 +500,7 @@ GDScriptTokenizer::Token GDScriptTokenizerText::annotation() {
 	KEYWORD("const", Token::TK_CONST) \
 	KEYWORD("continue", Token::CONTINUE) \
 	KEYWORD_GROUP('e') \
+	KEYWORD("elthen", Token::ELTHEN) \
 	KEYWORD("elif", Token::ELIF) \
 	KEYWORD("else", Token::ELSE) \
 	KEYWORD("enum", Token::ENUM) \
@@ -527,6 +530,7 @@ GDScriptTokenizer::Token GDScriptTokenizerText::annotation() {
 	KEYWORD("static", Token::STATIC) \
 	KEYWORD("super", Token::SUPER) \
 	KEYWORD_GROUP('t') \
+	KEYWORD("then", Token::THEN) \
 	KEYWORD("trait", Token::TRAIT) \
 	KEYWORD_GROUP('v') \
 	KEYWORD("var", Token::VAR) \
