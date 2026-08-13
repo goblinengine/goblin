@@ -206,6 +206,12 @@ GDScriptDataType GDScriptCompiler::_gdtype_from_datatype(const GDScriptParser::D
 		result.set_container_element_type(i, _gdtype_from_datatype(p_datatype.get_container_element_type_or_variant(i), p_owner, false));
 	}
 
+	// Goblin: shaped dictionary schema.
+	for (int i = 0; i < p_datatype.dictionary_shape_keys.size(); i++) {
+		result.dictionary_shape_keys.push_back(p_datatype.dictionary_shape_keys[i]);
+		result.dictionary_shape_value_types.push_back(_gdtype_from_datatype(p_datatype.dictionary_shape_value_types[i], p_owner, false));
+	}
+
 	return result;
 }
 
@@ -569,6 +575,8 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 
 			if (dict_type.has_container_element_types()) {
 				gen->write_construct_typed_dictionary(result, dict_type.get_container_element_type_or_variant(0), dict_type.get_container_element_type_or_variant(1), elements);
+			} else if (dict_type.has_dictionary_shape()) {
+				gen->write_construct_shaped_dictionary(result, dict_type, elements);
 			} else {
 				gen->write_construct_dictionary(result, elements);
 			}

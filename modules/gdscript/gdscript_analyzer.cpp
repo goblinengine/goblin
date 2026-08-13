@@ -2169,8 +2169,21 @@ void GDScriptAnalyzer::resolve_assignable(GDScriptParser::AssignableNode *p_assi
 			}
 		} else if (p_assignable->initializer->type == GDScriptParser::Node::DICTIONARY) {
 			GDScriptParser::DictionaryNode *dictionary = static_cast<GDScriptParser::DictionaryNode *>(p_assignable->initializer);
+			// Goblin: capture the shape before update_dictionary_literal_element_type()
+			// replaces the literal's datatype for typed contexts.
+			const GDScriptParser::DataType literal_datatype = dictionary->get_datatype();
 			if (has_specified_type && specified_type.has_container_element_types()) {
 				update_dictionary_literal_element_type(dictionary, specified_type.get_container_element_type_or_variant(0), specified_type.get_container_element_type_or_variant(1));
+			}
+			// Goblin: a "Dictionary" annotation (bare or homogeneous, e.g.
+			// Dictionary[StringName, Variant]) is a compatible supertype of a shaped
+			// dictionary literal; the per-key shape refines the variable type instead of
+			// being lost.
+			if (has_specified_type && specified_type.kind == GDScriptParser::DataType::BUILTIN && specified_type.builtin_type == Variant::DICTIONARY &&
+					literal_datatype.kind == GDScriptParser::DataType::BUILTIN && literal_datatype.builtin_type == Variant::DICTIONARY && literal_datatype.has_dictionary_shape()) {
+				specified_type.dictionary_shape_keys = literal_datatype.dictionary_shape_keys;
+				specified_type.dictionary_shape_value_types = literal_datatype.dictionary_shape_value_types;
+				type = specified_type;
 			}
 		}
 
@@ -3966,6 +3979,13 @@ void GDScriptAnalyzer::reduce_cast(GDScriptParser::CastNode *p_cast) {
 void GDScriptAnalyzer::reduce_dictionary(GDScriptParser::DictionaryNode *p_dictionary) {
 	HashMap<Variant, GDScriptParser::ExpressionNode *, HashMapHasherDefault, StringLikeVariantComparator> elements;
 
+	bool has_typed_entries = false;
+	GDScriptParser::DataType dict_type;
+	dict_type.type_source = GDScriptParser::DataType::ANNOTATED_EXPLICIT;
+	dict_type.kind = GDScriptParser::DataType::BUILTIN;
+	dict_type.builtin_type = Variant::DICTIONARY;
+	dict_type.is_constant = true;
+
 	for (int i = 0; i < p_dictionary->elements.size(); i++) {
 		const GDScriptParser::DictionaryNode::Pair &element = p_dictionary->elements[i];
 		if (p_dictionary->style == GDScriptParser::DictionaryNode::PYTHON_DICT) {
@@ -3980,14 +4000,54 @@ void GDScriptAnalyzer::reduce_dictionary(GDScriptParser::DictionaryNode *p_dicti
 				elements[element.key->reduced_value] = element.value;
 			}
 		}
+
+		// Goblin: typed entry (`key: Type = value`).
+		if (element.type != nullptr) {
+			has_typed_entries = true;
+			GDScriptParser::DataType entry_type = type_from_metatype(resolve_datatype(element.type));
+			entry_type.is_constant = false; // Entries are mutable regardless of the annotation.
+			entry_type.is_read_only = false;
+
+			// Validate the value against the annotation.
+			const GDScriptParser::DataType &value_type = element.value->get_datatype();
+			if (!value_type.has_no_type() && value_type.is_hard_type() && !is_type_compatible(entry_type, value_type, true, element.value)) {
+				push_error(vformat(R"(Cannot assign a value of type "%s" to a dictionary key typed "%s".)", value_type.to_string(), entry_type.to_string()), element.value);
+			}
+
+			// Sub-dictionaries are typed by their annotation, but their shape comes from
+			// the nested literal value (recursive inference).
+			if (entry_type.kind == GDScriptParser::DataType::BUILTIN && entry_type.builtin_type == Variant::DICTIONARY && !entry_type.has_dictionary_shape()) {
+				if (value_type.kind == GDScriptParser::DataType::BUILTIN && value_type.builtin_type == Variant::DICTIONARY && value_type.has_dictionary_shape()) {
+					entry_type.dictionary_shape_keys = value_type.dictionary_shape_keys;
+					entry_type.dictionary_shape_value_types = value_type.dictionary_shape_value_types;
+				}
+			}
+
+			if (element.key->is_constant && element.key->reduced_value.get_type() == Variant::STRING_NAME) {
+				dict_type.set_dictionary_shape_entry(element.key->reduced_value, entry_type);
+			}
+		}
 	}
 
-	// It's dictionary in any case.
-	GDScriptParser::DataType dict_type;
-	dict_type.type_source = GDScriptParser::DataType::ANNOTATED_EXPLICIT;
-	dict_type.kind = GDScriptParser::DataType::BUILTIN;
-	dict_type.builtin_type = Variant::DICTIONARY;
-	dict_type.is_constant = true;
+	// Goblin: build the shape for untyped entries too, so the whole schema is known.
+	// Untyped entries are `Variant`, except nested shaped dictionary literals, which
+	// contribute their own shape.
+	if (has_typed_entries) {
+		for (int i = 0; i < p_dictionary->elements.size(); i++) {
+			const GDScriptParser::DictionaryNode::Pair &element = p_dictionary->elements[i];
+			if (element.type != nullptr || !element.key->is_constant || element.key->reduced_value.get_type() != Variant::STRING_NAME) {
+				continue;
+			}
+			const GDScriptParser::DataType &value_type = element.value->get_datatype();
+			GDScriptParser::DataType entry_type = GDScriptParser::DataType::get_variant_type();
+			if (value_type.kind == GDScriptParser::DataType::BUILTIN && value_type.builtin_type == Variant::DICTIONARY && value_type.has_dictionary_shape()) {
+				entry_type = value_type;
+				entry_type.is_constant = false;
+				entry_type.is_read_only = false;
+			}
+			dict_type.set_dictionary_shape_entry(element.key->reduced_value, entry_type);
+		}
+	}
 
 	p_dictionary->set_datatype(dict_type);
 }
@@ -5008,12 +5068,34 @@ void GDScriptAnalyzer::reduce_subscript(GDScriptParser::SubscriptNode *p_subscri
 					p_subscript->is_constant = true;
 					p_subscript->reduced_value = value;
 					result_type = type_from_variant(value, p_subscript);
+					// Goblin: refine the type of shaped dictionary entries.
+					if (base_type.kind == GDScriptParser::DataType::BUILTIN && base_type.builtin_type == Variant::DICTIONARY && base_type.has_dictionary_shape_key(p_subscript->attribute->name)) {
+						result_type = base_type.get_dictionary_shape_value_type(p_subscript->attribute->name);
+						result_type.type_source = base_type.type_source;
+					}
 				}
 			}
 		}
 
 		if (valid) {
 			// Do nothing.
+		} else if (base_type.kind == GDScriptParser::DataType::BUILTIN && base_type.builtin_type == Variant::DICTIONARY && base_type.has_dictionary_shape()) {
+			// Goblin: attribute access on a shaped dictionary refines to the entry type.
+			// This works for hard types (`var x := { a: int = 1 }`, `var x: Dictionary = ...`)
+			// and soft ones (`var x = { a: int = 1 }`) alike; known keys refine, unknown
+			// keys fall back to the flat value type (or Variant).
+			valid = true;
+			if (base_type.has_dictionary_shape_key(p_subscript->attribute->name)) {
+				result_type = base_type.get_dictionary_shape_value_type(p_subscript->attribute->name);
+			} else if (base_type.has_container_element_type(1)) {
+				// Unknown keys fall back to the flat value type of a homogeneous annotation.
+				result_type = base_type.get_container_element_type(1);
+			} else {
+				result_type = GDScriptParser::DataType::get_variant_type();
+			}
+			if (base_type.is_hard_type()) {
+				result_type.type_source = base_type.type_source;
+			}
 		} else if (base_type.is_variant() || !base_type.is_hard_type()) {
 			valid = !base_type.is_pseudo_type || p_can_be_pseudo_type;
 			result_type.kind = GDScriptParser::DataType::VARIANT;
@@ -5303,6 +5385,18 @@ void GDScriptAnalyzer::reduce_subscript(GDScriptParser::SubscriptNode *p_subscri
 						} else {
 							result_type.kind = GDScriptParser::DataType::VARIANT;
 							result_type.type_source = GDScriptParser::DataType::UNDETECTED;
+						}
+						// Goblin: constant index on a shaped dictionary refines to the entry type.
+						if (base_type.has_dictionary_shape() && p_subscript->index->is_constant) {
+							Variant::Type key_variant_type = p_subscript->index->reduced_value.get_type();
+							if (key_variant_type == Variant::STRING || key_variant_type == Variant::STRING_NAME) {
+								result_type = base_type.get_dictionary_shape_value_type(StringName(p_subscript->index->reduced_value));
+								if (base_type.is_hard_type()) {
+									// Keep the entry's own type source on soft bases (e.g. untyped
+									// `var dict = { a: int = 1 }`) so writes are still enforced.
+									result_type.type_source = base_type.type_source;
+								}
+							}
 						}
 						break;
 					// Here for completeness.

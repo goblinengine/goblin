@@ -87,7 +87,7 @@ namespace GDScriptTests {
 // Cannot reset `ProjectSettings` (singleton) -> Cannot load another workspace and resources in there.
 // -> Reuse GDScript test project. LSP specific scripts are then placed inside `lsp` folder.
 //    Access via `res://lsp/my_script.gd`.
-const String root = "modules/gdscript/tests/scripts/";
+const String root = "modules/goblin/modules/gdscript/tests/scripts/";
 
 /*
  * After use:

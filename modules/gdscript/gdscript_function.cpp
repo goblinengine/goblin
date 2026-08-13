@@ -34,6 +34,92 @@
 
 #include "core/object/class_db.h"
 
+bool GDScriptDataType::goblin_validate(const Variant &p_value) const {
+	switch (kind) {
+		case VARIANT:
+			return true;
+		case BUILTIN: {
+			if (builtin_type == Variant::ARRAY && p_value.get_type() == Variant::ARRAY && has_container_element_type(0)) {
+				const GDScriptDataType &element_type = get_container_element_type(0);
+				Array array = p_value;
+				for (int i = 0; i < array.size(); i++) {
+					if (!element_type.goblin_validate(array[i])) {
+						return false;
+					}
+				}
+				return true;
+			}
+			if (builtin_type == Variant::DICTIONARY && p_value.get_type() == Variant::DICTIONARY) {
+				Dictionary dictionary = p_value;
+				if (has_dictionary_shape()) {
+					// Shaped dictionary: validate known keys against their entry type.
+					// Unknown keys are validated against the flat value type, if any.
+					for (const Variant *key = dictionary.next(nullptr); key != nullptr; key = dictionary.next(key)) {
+						const GDScriptDataType entry_type = get_dictionary_shape_value_type_or_variant(*key);
+						if (entry_type.has_type()) {
+							if (!entry_type.goblin_validate(dictionary[*key])) {
+								return false;
+							}
+						} else if (has_container_element_type(1)) {
+							if (!get_container_element_type(1).goblin_validate(dictionary[*key])) {
+								return false;
+							}
+						}
+					}
+					return true;
+				}
+				if (has_container_element_types()) {
+					const GDScriptDataType &key_type = get_container_element_type_or_variant(0);
+					const GDScriptDataType &value_type = get_container_element_type_or_variant(1);
+					for (const Variant *key = dictionary.next(nullptr); key != nullptr; key = dictionary.next(key)) {
+						if (key_type.has_type() && !key_type.goblin_validate(*key)) {
+							return false;
+						}
+						if (value_type.has_type() && !value_type.goblin_validate(dictionary[*key])) {
+							return false;
+						}
+					}
+					return true;
+				}
+				return true;
+			}
+			return is_type(p_value, true);
+		}
+		case NATIVE:
+		case SCRIPT:
+		case GDSCRIPT:
+			return is_type(p_value, true);
+	}
+	return true;
+}
+
+void GDScriptFunction::goblin_decode_datatype(const int *p_code, int &r_pos, GDScriptDataType &r_type) const {
+	r_type.kind = (GDScriptDataType::Kind)p_code[r_pos++];
+	r_type.builtin_type = (Variant::Type)p_code[r_pos++];
+	r_type.native_type = get_global_name(p_code[r_pos++]);
+	uint32_t script_addr = p_code[r_pos++];
+	if (((script_addr & ADDR_TYPE_MASK) >> ADDR_BITS) == ADDR_TYPE_CONSTANT) {
+		const Variant &script_const = get_constant(script_addr & ADDR_MASK);
+		if (script_const.get_type() == Variant::OBJECT) {
+			r_type.script_type = Object::cast_to<Script>(script_const.get_validated_object());
+		}
+	}
+	uint32_t container_count = p_code[r_pos++];
+	for (uint32_t i = 0; i < container_count; i++) {
+		GDScriptDataType element_type;
+		goblin_decode_datatype(p_code, r_pos, element_type);
+		r_type.container_element_types.push_back(element_type);
+	}
+	uint32_t shape_count = p_code[r_pos++];
+	for (uint32_t i = 0; i < shape_count; i++) {
+		StringName key = get_global_name(p_code[r_pos++]);
+		GDScriptDataType value_type;
+		goblin_decode_datatype(p_code, r_pos, value_type);
+		r_type.dictionary_shape_keys.push_back(key);
+		r_type.dictionary_shape_value_types.push_back(value_type);
+	}
+}
+
 bool GDScriptDataType::is_type(const Variant &p_variant, bool p_allow_implicit_conversion) const {
 	switch (kind) {
 		case VARIANT: {

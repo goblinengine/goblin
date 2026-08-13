@@ -1646,3 +1646,54 @@ GDScriptTokenizerText::GDScriptTokenizerText() {
 	make_keyword_list();
 #endif // DEBUG_ENABLED
 }
+
+void GDScriptTokenizerText::push_state() {
+	ERR_FAIL_COND_MSG(has_state_snapshot, "GDScript tokenizer bug: nested state snapshots are not supported.");
+	StateSnapshot &state = state_snapshot;
+	state._current = _current;
+	state.line = line;
+	state.column = column;
+	state._start = _start;
+	state.start_line = start_line;
+	state.start_column = start_column;
+	state.line_continuation = line_continuation;
+	state.pending_newline = pending_newline;
+	state.last_token = last_token;
+	state.last_newline = last_newline;
+	state.pending_indents = pending_indents;
+	state.indent_stack = indent_stack;
+	state.paren_stack = paren_stack;
+	state.position = position;
+	state.error_stack_size = error_stack.size();
+	state.continuation_lines = continuation_lines;
+	has_state_snapshot = true;
+}
+
+void GDScriptTokenizerText::restore_state() {
+	ERR_FAIL_COND_MSG(!has_state_snapshot, "GDScript tokenizer bug: restoring without a state snapshot.");
+	const StateSnapshot &state = state_snapshot;
+	_current = state._current;
+	line = state.line;
+	column = state.column;
+	_start = state._start;
+	start_line = state.start_line;
+	start_column = state.start_column;
+	line_continuation = state.line_continuation;
+	pending_newline = state.pending_newline;
+	last_token = state.last_token;
+	last_newline = state.last_newline;
+	pending_indents = state.pending_indents;
+	indent_stack = state.indent_stack;
+	paren_stack = state.paren_stack;
+	position = state.position;
+	while (error_stack.size() > state.error_stack_size) {
+		error_stack.pop_back();
+	}
+	continuation_lines = state.continuation_lines;
+	has_state_snapshot = false;
+}
+
+void GDScriptTokenizerText::discard_state() {
+	ERR_FAIL_COND_MSG(!has_state_snapshot, "GDScript tokenizer bug: discarding without a state snapshot.");
+	has_state_snapshot = false;
+}

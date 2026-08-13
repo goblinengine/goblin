@@ -3650,6 +3650,22 @@ static void _find_call_arguments(GDScriptParser::CompletionContext &p_context, c
 					_find_identifiers(completion_context, false, !_guess_expecting_callable(completion_context), options, 0);
 				}
 			} else if (res) {
+				// Goblin: offer shaped dictionary keys as completion options.
+				if (base.type.kind == GDScriptParser::DataType::BUILTIN && base.type.builtin_type == Variant::DICTIONARY && base.type.has_dictionary_shape()) {
+					for (int i = 0; i < base.type.dictionary_shape_keys.size(); i++) {
+						const StringName key = base.type.dictionary_shape_keys[i];
+						ScriptLanguage::CodeCompletionOption option;
+						if (subscript->is_attribute) {
+							option.insert_text = key;
+							option.display = key;
+						} else {
+							option = _calculate_string_insertion(existing_index, key);
+						}
+						option.kind = ScriptLanguage::CODE_COMPLETION_KIND_MEMBER;
+						option.location = ScriptLanguage::LOCATION_LOCAL;
+						options.insert(option.display, option);
+					}
+				}
 				if (!subscript->is_attribute) {
 					// Quote the options if they are not accessed as attribute.
 

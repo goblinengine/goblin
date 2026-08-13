@@ -451,6 +451,10 @@ class GDScriptByteCodeGenerator : public GDScriptCodeGenerator {
 		opcodes.push_back(get_lambda_function_pos(p_lambda_function));
 	}
 
+	// Goblin: appends a recursive GDScriptDataType as raw instruction words.
+	// Decoded by _goblin_decode_datatype() in gdscript_vm.cpp. Must stay in sync.
+	void append_goblin_datatype(const GDScriptDataType &p_type);
+
 	void patch_jump(int p_address) {
 		opcodes.write[p_address] = opcodes.size();
 	}
@@ -534,6 +538,7 @@ public:
 	virtual void write_construct_typed_array(const Address &p_target, const GDScriptDataType &p_element_type, const Vector<Address> &p_arguments) override;
 	virtual void write_construct_dictionary(const Address &p_target, const Vector<Address> &p_arguments) override;
 	virtual void write_construct_typed_dictionary(const Address &p_target, const GDScriptDataType &p_key_type, const GDScriptDataType &p_value_type, const Vector<Address> &p_arguments) override;
+	virtual void write_construct_shaped_dictionary(const Address &p_target, const GDScriptDataType &p_shape, const Vector<Address> &p_arguments) override; // Goblin.
 	virtual void write_await(const Address &p_target, const Address &p_operand) override;
 	virtual void write_if(const Address &p_condition) override;
 	virtual void write_else() override;

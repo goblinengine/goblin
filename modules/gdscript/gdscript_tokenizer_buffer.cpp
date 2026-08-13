@@ -491,3 +491,30 @@ GDScriptTokenizer::Token GDScriptTokenizerBuffer::scan() {
 	Token token = tokens[current++];
 	return token;
 }
+
+void GDScriptTokenizerBuffer::push_state() {
+	ERR_FAIL_COND_MSG(has_state_snapshot, "GDScript tokenizer bug: nested state snapshots are not supported.");
+	StateSnapshot &state = state_snapshot;
+	state.current = current;
+	state.current_line = current_line;
+	state.indent_stack = indent_stack;
+	state.pending_indents = pending_indents;
+	state.last_token_was_newline = last_token_was_newline;
+	has_state_snapshot = true;
+}
+
+void GDScriptTokenizerBuffer::restore_state() {
+	ERR_FAIL_COND_MSG(!has_state_snapshot, "GDScript tokenizer bug: restoring without a state snapshot.");
+	const StateSnapshot &state = state_snapshot;
+	current = state.current;
+	current_line = state.current_line;
+	indent_stack = state.indent_stack;
+	pending_indents = state.pending_indents;
+	last_token_was_newline = state.last_token_was_newline;
+	has_state_snapshot = false;
+}
+
+void GDScriptTokenizerBuffer::discard_state() {
+	ERR_FAIL_COND_MSG(!has_state_snapshot, "GDScript tokenizer bug: discarding without a state snapshot.");
+	has_state_snapshot = false;
+}

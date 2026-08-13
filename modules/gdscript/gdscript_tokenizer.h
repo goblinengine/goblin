@@ -223,6 +223,13 @@ public:
 	virtual void pop_expression_indented_block() = 0; // For lambdas, or blocks inside expressions.
 	virtual bool is_text() = 0;
 
+	// Goblin: speculative parsing support (e.g. typed dictionary entries).
+	// push_state() snapshots the scan position; restore_state() rewinds to it;
+	// discard_state() pops the snapshot without rewinding. Not nested.
+	virtual void push_state() = 0;
+	virtual void restore_state() = 0;
+	virtual void discard_state() = 0;
+
 	virtual Token scan() = 0;
 
 	virtual ~GDScriptTokenizer() {}
@@ -265,6 +272,28 @@ class GDScriptTokenizerText : public GDScriptTokenizer {
 #ifdef TOOLS_ENABLED
 	HashMap<int, CommentData> comments;
 #endif // TOOLS_ENABLED
+
+	// Goblin: tokenizer state snapshot for speculative parsing.
+	struct StateSnapshot {
+		const char32_t *_current = nullptr;
+		int line = 1;
+		int column = 1;
+		const char32_t *_start = nullptr;
+		int start_line = 1;
+		int start_column = 1;
+		bool line_continuation = false;
+		bool pending_newline = false;
+		Token last_token;
+		Token last_newline;
+		int pending_indents = 0;
+		List<int> indent_stack;
+		List<char32_t> paren_stack;
+		int position = 0;
+		int error_stack_size = 0;
+		Vector<int> continuation_lines;
+	};
+	bool has_state_snapshot = false;
+	StateSnapshot state_snapshot;
 
 	_FORCE_INLINE_ bool _is_at_end() { return position >= length; }
 	_FORCE_INLINE_ char32_t _peek(int p_offset = 0) { return position + p_offset >= 0 && position + p_offset < length ? _current[p_offset] : '\0'; }
@@ -315,6 +344,10 @@ public:
 	virtual void push_expression_indented_block() override; // For lambdas, or blocks inside expressions.
 	virtual void pop_expression_indented_block() override; // For lambdas, or blocks inside expressions.
 	virtual bool is_text() override { return true; }
+
+	virtual void push_state() override;
+	virtual void restore_state() override;
+	virtual void discard_state() override;
 
 #ifdef TOOLS_ENABLED
 	virtual const HashMap<int, CommentData> &get_comments() const override {

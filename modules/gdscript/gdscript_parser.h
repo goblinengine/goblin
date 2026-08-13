@@ -102,6 +102,10 @@ public:
 	public:
 		Vector<DataType> container_element_types;
 		Vector<DataType> union_types;
+		// Goblin: shaped dictionary schema. Parallel vectors; a shape entry maps a
+		// StringName key to a full DataType (which may itself carry a shape).
+		Vector<StringName> dictionary_shape_keys;
+		Vector<DataType> dictionary_shape_value_types;
 
 		enum Kind {
 			BUILTIN,
@@ -224,6 +228,41 @@ public:
 			return !container_element_types.is_empty();
 		}
 
+		_FORCE_INLINE_ bool has_dictionary_shape() const {
+			return !dictionary_shape_keys.is_empty();
+		}
+
+		_FORCE_INLINE_ int get_dictionary_shape_entry_index(const StringName &p_key) const {
+			for (int i = 0; i < dictionary_shape_keys.size(); i++) {
+				if (dictionary_shape_keys[i] == p_key) {
+					return i;
+				}
+			}
+			return -1;
+		}
+
+		_FORCE_INLINE_ bool has_dictionary_shape_key(const StringName &p_key) const {
+			return get_dictionary_shape_entry_index(p_key) >= 0;
+		}
+
+		_FORCE_INLINE_ DataType get_dictionary_shape_value_type(const StringName &p_key) const {
+			int index = get_dictionary_shape_entry_index(p_key);
+			if (index < 0) {
+				return get_variant_type();
+			}
+			return dictionary_shape_value_types[index];
+		}
+
+		_FORCE_INLINE_ void set_dictionary_shape_entry(const StringName &p_key, const DataType &p_value_type) {
+			int index = get_dictionary_shape_entry_index(p_key);
+			if (index < 0) {
+				dictionary_shape_keys.push_back(p_key);
+				dictionary_shape_value_types.push_back(p_value_type);
+			} else {
+				dictionary_shape_value_types.write[index] = p_value_type;
+			}
+		}
+
 		bool is_typed_container_type() const;
 
 		GDScriptParser::DataType get_typed_container_type() const;
@@ -325,6 +364,8 @@ public:
 			enum_values = p_other.enum_values;
 			container_element_types = p_other.container_element_types;
 			union_types = p_other.union_types;
+			dictionary_shape_keys = p_other.dictionary_shape_keys;
+			dictionary_shape_value_types = p_other.dictionary_shape_value_types;
 		}
 
 		DataType() = default;
@@ -910,6 +951,7 @@ public:
 		struct Pair {
 			ExpressionNode *key = nullptr;
 			ExpressionNode *value = nullptr;
+			TypeNode *type = nullptr; // Goblin: typed entry annotation (`key: Type = value`), null if untyped.
 		};
 		Vector<Pair> elements;
 
@@ -1486,6 +1528,17 @@ private:
 	GDScriptTokenizer::Token previous;
 	GDScriptTokenizer::Token current;
 
+	// Goblin: token lookahead for speculative parsing (e.g. typed dictionary entries).
+	// start_lookahead() snapshots the parser and tokenizer state; commit keeps the
+	// consumed tokens; rollback restores the cursor and discards parser errors.
+	GDScriptTokenizer::Token _saved_previous;
+	GDScriptTokenizer::Token _saved_current;
+	bool _lookahead_active = false;
+	int _saved_errors_size = 0;
+	CompletionContext _saved_completion_context;
+	int _saved_completion_call_stack_size = 0;
+	int _saved_nodes_in_progress_size = 0;
+
 	ClassNode *current_class = nullptr;
 	FunctionNode *current_function = nullptr;
 	LambdaNode *current_lambda = nullptr;
@@ -1712,6 +1765,11 @@ private:
 	ExpressionNode *parse_invalid_token(ExpressionNode *p_previous_operand, bool p_can_assign);
 	TypeNode *parse_type_single(bool p_allow_void = false);
 	TypeNode *parse_type(bool p_allow_void = false);
+
+	// Goblin: speculative parsing support for typed dictionary entries.
+	void start_lookahead();
+	void commit_lookahead();
+	void rollback_lookahead();
 
 #ifdef TOOLS_ENABLED
 	int max_script_doc_line = INT_MAX;

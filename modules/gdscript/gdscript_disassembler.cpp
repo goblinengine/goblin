@@ -98,6 +98,15 @@ static String _disassemble_address(const GDScript *p_script, const GDScriptFunct
 	return "<err>";
 }
 
+static String _goblin_datatype_name(const GDScriptDataType &p_type) {
+	if (p_type.script_type != nullptr) {
+		return "script(" + GDScript::debug_get_script_name(p_type.script_type) + ")";
+	} else if (p_type.native_type != StringName()) {
+		return p_type.native_type;
+	}
+	return Variant::get_type_name(p_type.builtin_type);
+}
+
 void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 #define DADDR(m_ip) (_disassemble_address(_script, *this, _code_ptr[ip + m_ip]))
 
@@ -675,6 +684,42 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 				text += "}";
 
 				incr += 9 + argc * 2;
+			} break;
+			case OPCODE_CONSTRUCT_SHAPED_DICTIONARY: {
+				int instr_var_args = _code_ptr[++ip];
+				int argc = _code_ptr[ip + 1 + instr_var_args];
+
+				int descriptor_pos = ip + 2 + instr_var_args;
+				GDScriptDataType shape;
+				goblin_decode_datatype(_code_ptr, descriptor_pos, shape);
+
+				text += "make_shaped_dict ";
+				text += DADDR(1 + argc * 2);
+				text += " = {";
+
+				for (int i = 0; i < argc; i++) {
+					if (i > 0) {
+						text += ", ";
+					}
+					text += DADDR(1 + i * 2 + 0);
+					text += ": ";
+					text += DADDR(1 + i * 2 + 1);
+				}
+
+				text += "}";
+
+				if (shape.has_dictionary_shape()) {
+					text += " shape(";
+					for (int i = 0; i < shape.dictionary_shape_keys.size(); i++) {
+						if (i > 0) {
+							text += ", ";
+						}
+						text += String(shape.dictionary_shape_keys[i]) + ": " + _goblin_datatype_name(shape.dictionary_shape_value_types[i]);
+					}
+					text += ")";
+				}
+
+				incr += descriptor_pos - ip;
 			} break;
 			case OPCODE_CALL:
 			case OPCODE_CALL_RETURN:

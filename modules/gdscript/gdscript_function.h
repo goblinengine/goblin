@@ -46,6 +46,9 @@ class GDScript;
 class GDScriptDataType {
 public:
 	Vector<GDScriptDataType> container_element_types;
+	// Goblin: shaped dictionary schema (parallel vectors, same as the parser-side DataType).
+	Vector<StringName> dictionary_shape_keys;
+	Vector<GDScriptDataType> dictionary_shape_value_types;
 
 	enum Kind {
 		VARIANT, // Can be any type.
@@ -117,6 +120,31 @@ public:
 		return !container_element_types.is_empty();
 	}
 
+	_FORCE_INLINE_ bool has_dictionary_shape() const {
+		return !dictionary_shape_keys.is_empty();
+	}
+
+	_FORCE_INLINE_ int get_dictionary_shape_entry_index(const StringName &p_key) const {
+		for (int i = 0; i < dictionary_shape_keys.size(); i++) {
+			if (dictionary_shape_keys[i] == p_key) {
+				return i;
+			}
+		}
+		return -1;
+	}
+
+	_FORCE_INLINE_ GDScriptDataType get_dictionary_shape_value_type_or_variant(const StringName &p_key) const {
+		int index = get_dictionary_shape_entry_index(p_key);
+		if (index < 0) {
+			return GDScriptDataType();
+		}
+		return dictionary_shape_value_types[index];
+	}
+
+	// Goblin: recursive runtime validation of a Variant against this datatype.
+	// Handles scalars (is_type), typed containers, and shaped dictionaries.
+	bool goblin_validate(const Variant &p_value) const;
+
 	GDScriptDataType() = default;
 
 	bool operator==(const GDScriptDataType &p_other) const {
@@ -138,6 +166,8 @@ public:
 		script_type = p_other.script_type;
 		script_type_ref = p_other.script_type_ref;
 		container_element_types = p_other.container_element_types;
+		dictionary_shape_keys = p_other.dictionary_shape_keys;
+		dictionary_shape_value_types = p_other.dictionary_shape_value_types;
 	}
 
 	GDScriptDataType(const GDScriptDataType &p_other) {
@@ -189,6 +219,7 @@ public:
 		OPCODE_CONSTRUCT_TYPED_ARRAY,
 		OPCODE_CONSTRUCT_DICTIONARY,
 		OPCODE_CONSTRUCT_TYPED_DICTIONARY,
+		OPCODE_CONSTRUCT_SHAPED_DICTIONARY, // Goblin: shaped dictionary literals.
 		OPCODE_CALL,
 		OPCODE_CALL_RETURN,
 		OPCODE_CALL_ASYNC,
@@ -486,6 +517,12 @@ public:
 
 	Variant get_constant(int p_idx) const;
 	StringName get_global_name(int p_idx) const;
+
+	// Goblin: decodes a recursive GDScriptDataType serialized into the instruction
+	// stream by GDScriptByteCodeGenerator::append_goblin_datatype(). The layout must
+	// stay in sync with that function. Used by the VM (OPCODE_CONSTRUCT_SHAPED_DICTIONARY)
+	// and the disassembler.
+	void goblin_decode_datatype(const int *p_code, int &r_pos, GDScriptDataType &r_type) const;
 
 	Variant call(GDScriptInstance *p_instance, const Variant **p_args, int p_argcount, Callable::CallError &r_err, CallState *p_state = nullptr);
 	void debug_get_stack_member_state(int p_line, List<Pair<StringName, int>> *r_stackvars) const;

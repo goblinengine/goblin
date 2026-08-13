@@ -104,6 +104,9 @@ static String _get_var_type(const Variant *p_var) {
 	return basestr;
 }
 
+// Goblin: the recursive GDScriptDataType serialization is decoded by
+// GDScriptFunction::goblin_decode_datatype() (see gdscript_function.cpp).
+
 void GDScriptFunction::_profile_native_call(uint64_t p_t_taken, const String &p_func_name, const String &p_instance_class_name) {
 	HashMap<String, Profile::NativeProfile>::Iterator inner_prof = profile.native_calls.find(p_func_name);
 	if (inner_prof) {
@@ -293,6 +296,7 @@ void (*type_init_function_table[])(Variant *) = {
 		&&OPCODE_CONSTRUCT_TYPED_ARRAY, \
 		&&OPCODE_CONSTRUCT_DICTIONARY, \
 		&&OPCODE_CONSTRUCT_TYPED_DICTIONARY, \
+		&&OPCODE_CONSTRUCT_SHAPED_DICTIONARY, \
 		&&OPCODE_CALL, \
 		&&OPCODE_CALL_RETURN, \
 		&&OPCODE_CALL_ASYNC, \
@@ -1895,6 +1899,97 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				*dst = dict;
 
 				ip += 6;
+			}
+			DISPATCH_OPCODE;
+
+			OPCODE(OPCODE_CONSTRUCT_SHAPED_DICTIONARY) {
+				LOAD_INSTRUCTION_ARGS
+				CHECK_SPACE(2 + instr_arg_count);
+
+				ip += instr_arg_count;
+
+				int argc = _code_ptr[ip + 1];
+				GD_ERR_BREAK(argc < 0);
+
+				// Goblin: decode the recursive shape descriptor.
+				GDScriptDataType shape;
+				int descriptor_pos = ip + 2;
+				goblin_decode_datatype(_code_ptr, descriptor_pos, shape);
+
+#ifdef DEBUG_ENABLED
+				String goblin_error;
+#endif
+
+				Dictionary dict;
+				dict.reserve(argc);
+				for (int i = 0; i < argc; i++) {
+					GET_INSTRUCTION_ARG(k, i * 2 + 0);
+					GET_INSTRUCTION_ARG(v, i * 2 + 1);
+
+					// Goblin: normalize typed containers so the runtime value matches the
+					// static shape (e.g. a plain array value for an `Array[T]` entry becomes
+					// a typed array, like a typed-dictionary construction would produce).
+					const GDScriptDataType entry_type = shape.get_dictionary_shape_value_type_or_variant(StringName(*k));
+					if (entry_type.kind == GDScriptDataType::BUILTIN && entry_type.builtin_type == Variant::ARRAY && entry_type.has_container_element_type(0) && v->get_type() == Variant::ARRAY) {
+						const GDScriptDataType &element_type = entry_type.get_container_element_type(0);
+						Array *src_array = VariantInternal::get_array(v);
+						if (src_array->get_typed_builtin() != (uint32_t)element_type.builtin_type || src_array->get_typed_class_name() != element_type.native_type || src_array->get_typed_script() != Variant((Object *)element_type.script_type)) {
+							Array typed_array;
+							typed_array.set_typed(element_type.builtin_type, element_type.native_type, element_type.script_type);
+							typed_array.resize(src_array->size());
+							for (int j = 0; j < src_array->size(); j++) {
+								// Use .set instead of operator[] to handle type conversion / validation.
+								typed_array.set(j, src_array->operator[](j));
+							}
+							dict[*k] = typed_array;
+						} else {
+							dict[*k] = *v;
+						}
+					} else if (entry_type.kind == GDScriptDataType::BUILTIN && entry_type.builtin_type == Variant::DICTIONARY && entry_type.has_container_element_types() && v->get_type() == Variant::DICTIONARY) {
+						const GDScriptDataType &key_type = entry_type.get_container_element_type_or_variant(0);
+						const GDScriptDataType &value_type = entry_type.get_container_element_type_or_variant(1);
+						Dictionary *src_dict = VariantInternal::get_dictionary(v);
+						if (src_dict->get_typed_key_builtin() != (uint32_t)key_type.builtin_type || src_dict->get_typed_key_class_name() != key_type.native_type || src_dict->get_typed_key_script() != Variant((Object *)key_type.script_type) ||
+								src_dict->get_typed_value_builtin() != (uint32_t)value_type.builtin_type || src_dict->get_typed_value_class_name() != value_type.native_type || src_dict->get_typed_value_script() != Variant((Object *)value_type.script_type)) {
+							Dictionary typed_dict;
+							typed_dict.set_typed(key_type.builtin_type, key_type.native_type, key_type.script_type, value_type.builtin_type, value_type.native_type, value_type.script_type);
+							for (const Variant *dk = src_dict->next(nullptr); dk != nullptr; dk = src_dict->next(dk)) {
+								// Use .set instead of operator[] to handle type conversion / validation.
+								typed_dict.set(*dk, src_dict->operator[](*dk));
+							}
+							dict[*k] = typed_dict;
+						} else {
+							dict[*k] = *v;
+						}
+					} else {
+						dict[*k] = *v;
+					}
+#ifdef DEBUG_ENABLED
+					// Validate each entry against its shape (a safety net; the analyzer
+					// already rejects statically-known wrong types). Note: OPCODE_BREAK is
+					// a plain `break` on MSVC, so it must not be used inside this loop.
+					if (goblin_error.is_empty()) {
+						if (entry_type.has_type() && !entry_type.goblin_validate(*v)) {
+							goblin_error = vformat(R"(Invalid value of type "%s" for shaped dictionary key "%s".)", _get_var_type(v), String(*k));
+						}
+					}
+#endif
+				}
+
+#ifdef DEBUG_ENABLED
+				if (!goblin_error.is_empty()) {
+					err_text = goblin_error;
+					OPCODE_BREAK;
+				}
+#endif
+
+				GET_INSTRUCTION_ARG(dst, argc * 2);
+
+				*dst = Variant(); // Clear potential previous typed dictionary.
+
+				*dst = dict;
+
+				ip = descriptor_pos;
 			}
 			DISPATCH_OPCODE;
 

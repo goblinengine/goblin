@@ -59,6 +59,17 @@ public:
 	int pending_indents = 0;
 	bool last_token_was_newline = false;
 
+	// Goblin: state snapshot for speculative parsing.
+	struct StateSnapshot {
+		int current = 0;
+		uint32_t current_line = 1;
+		List<int> indent_stack;
+		int pending_indents = 0;
+		bool last_token_was_newline = false;
+	};
+	bool has_state_snapshot = false;
+	StateSnapshot state_snapshot;
+
 #ifdef TOOLS_ENABLED
 	HashMap<int, CommentData> dummy;
 #endif // TOOLS_ENABLED
@@ -78,6 +89,10 @@ public:
 	virtual void push_expression_indented_block() override; // For lambdas, or blocks inside expressions.
 	virtual void pop_expression_indented_block() override; // For lambdas, or blocks inside expressions.
 	virtual bool is_text() override { return false; }
+
+	virtual void push_state() override;
+	virtual void restore_state() override;
+	virtual void discard_state() override;
 
 #ifdef TOOLS_ENABLED
 	virtual const HashMap<int, CommentData> &get_comments() const override {

@@ -424,7 +424,7 @@ void GDScriptTestRunner::handle_cmdline() {
 			if (E->next()) {
 				path = E->next()->get();
 			} else {
-				path = "modules/gdscript/tests/scripts";
+				path = "modules/goblin/modules/gdscript/tests/scripts";
 			}
 
 			GDScriptTestRunner runner(path, false, cmdline_args.find("--print-filenames") != nullptr);

@@ -590,6 +590,42 @@ GDScriptTokenizer::Token GDScriptParser::advance() {
 	return previous;
 }
 
+void GDScriptParser::start_lookahead() {
+	ERR_FAIL_COND_MSG(_lookahead_active, "GDScript parser bug: nested lookahead is not supported.");
+	_lookahead_active = true;
+	_saved_previous = previous;
+	_saved_current = current;
+	_saved_errors_size = errors.size();
+	_saved_completion_context = completion_context;
+	_saved_completion_call_stack_size = completion_call_stack.size();
+	_saved_nodes_in_progress_size = nodes_in_progress.size();
+	tokenizer->push_state();
+}
+
+void GDScriptParser::commit_lookahead() {
+	ERR_FAIL_COND_MSG(!_lookahead_active, "GDScript parser bug: committing inactive lookahead.");
+	_lookahead_active = false;
+	tokenizer->discard_state();
+}
+
+void GDScriptParser::rollback_lookahead() {
+	ERR_FAIL_COND_MSG(!_lookahead_active, "GDScript parser bug: rolling back inactive lookahead.");
+	_lookahead_active = false;
+	previous = _saved_previous;
+	current = _saved_current;
+	tokenizer->restore_state();
+	while (errors.size() > _saved_errors_size) {
+		errors.pop_back();
+	}
+	completion_context = _saved_completion_context;
+	while (completion_call_stack.size() > _saved_completion_call_stack_size) {
+		completion_call_stack.pop_back();
+	}
+	while (nodes_in_progress.size() > _saved_nodes_in_progress_size) {
+		nodes_in_progress.pop_back();
+	}
+}
+
 bool GDScriptParser::match(GDScriptTokenizer::Token::Type p_token_type) {
 	if (!check(p_token_type)) {
 		return false;
@@ -2849,27 +2885,37 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_identifier(ExpressionNode 
 			case SuiteNode::Local::CONSTANT:
 				identifier->source = IdentifierNode::LOCAL_CONSTANT;
 				identifier->constant_source = declaration.constant;
-				declaration.constant->usages++;
+				if (!_lookahead_active) {
+					declaration.constant->usages++;
+				}
 				break;
 			case SuiteNode::Local::VARIABLE:
 				identifier->source = IdentifierNode::LOCAL_VARIABLE;
 				identifier->variable_source = declaration.variable;
-				declaration.variable->usages++;
+				if (!_lookahead_active) {
+					declaration.variable->usages++;
+				}
 				break;
 			case SuiteNode::Local::PARAMETER:
 				identifier->source = IdentifierNode::FUNCTION_PARAMETER;
 				identifier->parameter_source = declaration.parameter;
-				declaration.parameter->usages++;
+				if (!_lookahead_active) {
+					declaration.parameter->usages++;
+				}
 				break;
 			case SuiteNode::Local::FOR_VARIABLE:
 				identifier->source = IdentifierNode::LOCAL_ITERATOR;
 				identifier->bind_source = declaration.bind;
-				declaration.bind->usages++;
+				if (!_lookahead_active) {
+					declaration.bind->usages++;
+				}
 				break;
 			case SuiteNode::Local::PATTERN_BIND:
 				identifier->source = IdentifierNode::LOCAL_BIND;
 				identifier->bind_source = declaration.bind;
-				declaration.bind->usages++;
+				if (!_lookahead_active) {
+					declaration.bind->usages++;
+				}
 				break;
 			case SuiteNode::Local::UNDEFINED:
 				ERR_FAIL_V_MSG(nullptr, "Undefined local found.");
@@ -3306,11 +3352,27 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_dictionary(ExpressionNode 
 				push_error(R"(Expected expression as dictionary key.)");
 			}
 
+			TypeNode *annotation = nullptr;
+
 			if (!decided_style) {
 				switch (current.type) {
-					case GDScriptTokenizer::Token::COLON:
-						dictionary->style = DictionaryNode::PYTHON_DICT;
-						break;
+					case GDScriptTokenizer::Token::COLON: {
+						// Goblin: could be a Python-style entry (`key: value`) or a typed
+						// Lua-style entry (`key: Type = value`). Speculate a type annotation.
+						start_lookahead();
+						advance(); // Consume ":".
+
+						annotation = parse_type();
+
+						if (annotation != nullptr && current.type == GDScriptTokenizer::Token::EQUAL) {
+							commit_lookahead();
+							dictionary->style = DictionaryNode::LUA_TABLE;
+						} else {
+							rollback_lookahead();
+							annotation = nullptr;
+							dictionary->style = DictionaryNode::PYTHON_DICT;
+						}
+					} break;
 					case GDScriptTokenizer::Token::EQUAL:
 						dictionary->style = DictionaryNode::LUA_TABLE;
 						break;
@@ -3329,11 +3391,26 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_dictionary(ExpressionNode 
 					if (key != nullptr && key->type == Node::LITERAL && static_cast<LiteralNode *>(key)->value.get_type() != Variant::STRING) {
 						push_error(R"(Expected identifier or string as Lua-style dictionary key (e.g "{ key = value }").)");
 					}
-					if (!match(GDScriptTokenizer::Token::EQUAL)) {
-						if (match(GDScriptTokenizer::Token::COLON)) {
-							push_error(R"(Expected "=" after dictionary key. Mixing dictionary styles is not allowed.)");
-							advance(); // Consume wrong separator anyway.
-						} else {
+					{
+						bool consumed_separator = false;
+						if (check(GDScriptTokenizer::Token::COLON)) {
+							// Goblin: typed entry (`key: Type = value`).
+							start_lookahead();
+							advance(); // Consume ":".
+
+							annotation = parse_type();
+
+							if (annotation == nullptr || current.type != GDScriptTokenizer::Token::EQUAL) {
+								rollback_lookahead();
+								annotation = nullptr;
+								push_error(R"(Expected "=" after dictionary key. Mixing dictionary styles is not allowed.)");
+								advance(); // Consume wrong separator anyway.
+								consumed_separator = true;
+							} else {
+								commit_lookahead();
+							}
+						}
+						if (!consumed_separator && !match(GDScriptTokenizer::Token::EQUAL)) {
 							push_error(R"(Expected "=" after dictionary key.)");
 						}
 					}
@@ -3354,6 +3431,18 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_dictionary(ExpressionNode 
 						} else {
 							push_error(R"(Expected ":" after dictionary key.)");
 						}
+					} else {
+						// Goblin: detect Lua-style typed entries to give a specific error.
+						start_lookahead();
+						annotation = parse_type();
+						if (annotation != nullptr && current.type == GDScriptTokenizer::Token::EQUAL) {
+							commit_lookahead();
+							push_error(R"(Typed dictionary entries (e.g. "key: Type = value") are only allowed in Lua-style dictionaries (e.g. "{ key = value }").)");
+							advance(); // Consume "=" to continue recovering.
+						} else {
+							rollback_lookahead();
+							annotation = nullptr;
+						}
 					}
 					break;
 			}
@@ -3365,7 +3454,7 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_dictionary(ExpressionNode 
 			}
 
 			if (key != nullptr && value != nullptr) {
-				dictionary->elements.push_back({ key, value });
+				dictionary->elements.push_back({ key, value, annotation });
 			}
 
 			// Do phrase level recovery by inserting an imaginary expression for missing keys or values.
@@ -3374,12 +3463,12 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_dictionary(ExpressionNode 
 				LiteralNode *dummy = alloc_recovery_node<LiteralNode>();
 				dummy->value = Variant();
 
-				dictionary->elements.push_back({ key, dummy });
+				dictionary->elements.push_back({ key, dummy, annotation });
 			} else if (key == nullptr && value != nullptr) {
 				LiteralNode *dummy = alloc_recovery_node<LiteralNode>();
 				dummy->value = Variant();
 
-				dictionary->elements.push_back({ dummy, value });
+				dictionary->elements.push_back({ dummy, value, annotation });
 			}
 
 		} while (match(GDScriptTokenizer::Token::COMMA) && !is_at_end());
@@ -6082,7 +6171,11 @@ void GDScriptParser::TreePrinter::print_dictionary(DictionaryNode *p_dictionary)
 	increase_indent();
 	for (int i = 0; i < p_dictionary->elements.size(); i++) {
 		print_expression(p_dictionary->elements[i].key);
-		if (p_dictionary->style == DictionaryNode::PYTHON_DICT) {
+		if (p_dictionary->elements[i].type != nullptr) {
+			push_text(" : ");
+			print_type(p_dictionary->elements[i].type);
+			push_text(" = ");
+		} else if (p_dictionary->style == DictionaryNode::PYTHON_DICT) {
 			push_text(" : ");
 		} else {
 			push_text(" = ");

@@ -1504,6 +1504,34 @@ void GDScriptByteCodeGenerator::write_construct_typed_dictionary(const Address &
 	ct.cleanup();
 }
 
+void GDScriptByteCodeGenerator::append_goblin_datatype(const GDScriptDataType &p_type) {
+	append((int)p_type.kind);
+	append((int)p_type.builtin_type);
+	append(p_type.native_type);
+	append(get_constant_pos(p_type.script_type) | (GDScriptFunction::ADDR_TYPE_CONSTANT << GDScriptFunction::ADDR_BITS));
+	append((int)p_type.container_element_types.size());
+	for (int i = 0; i < p_type.container_element_types.size(); i++) {
+		append_goblin_datatype(p_type.container_element_types[i]);
+	}
+	append((int)p_type.dictionary_shape_keys.size());
+	for (int i = 0; i < p_type.dictionary_shape_keys.size(); i++) {
+		append(p_type.dictionary_shape_keys[i]);
+		append_goblin_datatype(p_type.dictionary_shape_value_types[i]);
+	}
+}
+
+void GDScriptByteCodeGenerator::write_construct_shaped_dictionary(const Address &p_target, const GDScriptDataType &p_shape, const Vector<Address> &p_arguments) {
+	append_opcode_and_argcount(GDScriptFunction::OPCODE_CONSTRUCT_SHAPED_DICTIONARY, 1 + p_arguments.size());
+	for (int i = 0; i < p_arguments.size(); i++) {
+		append(p_arguments[i]);
+	}
+	CallTarget ct = get_call_target(p_target);
+	append(ct.target);
+	append(p_arguments.size() / 2); // This is number of key-value pairs, so only half of actual arguments.
+	append_goblin_datatype(p_shape);
+	ct.cleanup();
+}
+
 void GDScriptByteCodeGenerator::write_await(const Address &p_target, const Address &p_operand) {
 	append_opcode(GDScriptFunction::OPCODE_AWAIT);
 	append(p_operand);

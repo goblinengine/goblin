@@ -263,10 +263,9 @@ TEST_SUITE("[Modules][GDScript][Completion]") {
 	TEST_CASE("[Editor] Check suggestion list") {
 		// Set all editor settings that code completion relies on.
 		EditorSettings::get_singleton()->set_setting("text_editor/completion/use_single_quotes", false);
-		init_language("modules/gdscript/tests/scripts");
-
-		setup_global_classes("modules/gdscript/tests/scripts/completion");
-		test_directory("modules/gdscript/tests/scripts/completion");
+		init_language("modules/goblin/modules/gdscript/tests/scripts");
+		setup_global_classes("modules/goblin/modules/gdscript/tests/scripts/completion");
+		test_directory("modules/goblin/modules/gdscript/tests/scripts/completion");
 
 		finish_language();
 	}
