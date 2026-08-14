@@ -1,6 +1,6 @@
 # Lightmapper CPU — Implementation Breakdown & Analysis
 
-Companion to [lightmapper-cpu-rfc.md](lightmapper-cpu-rfc.md). Deep-dive of `modules/lightmapper_rd/`
+Companion to [lightmapper-cpu-rfc.md](../rfc/lightmapper-cpu-rfc.md). Deep-dive of `modules/lightmapper_rd/`
 (2175-line `lightmapper_rd.cpp` + 1348-line `lm_compute.glsl` + `lm_raster.glsl` + `lm_blendseams.glsl`)
 with a stage-by-stage port map to CPU, data structures, threading, performance, and risks.
 All file/line references verified against the fork (2026-08-14).
@@ -362,12 +362,16 @@ and the editor). No `lightmap_gi.h` change needed → no direct core edit.
    lightmapper_rd's register_types.cpp:50-64).
 2. Port S1, S2 (structures + grid), S3 (raster), S4 (unocclude), S5 (direct), S10 (dilate),
    S12 (output). Grid tracer (S2/S4/S5 share it).
-3. Goblin override: `scene/3d/lightmap_gi.cpp` mirror (in-memory bake, skip
-   `_save_and_reimport_atlas_textures`, build Texture2DArray directly) + runtime unwrap
-   callback + trim `lightmapper_rd`.
-4. `LightmapBaker` wrapper class: node path + unwrap + signals/progress.
-5. Gate: room bakes at runtime on GL compat; no leaks; injection renders; GDScript
-   `LightmapBaker.bake(root, data)` works end-to-end.
+3. Goblin overrides: `scene/3d/lightmap_gi.cpp` mirror (in-memory bake, skip
+   `_save_and_reimport_atlas_textures`, build Texture2DArray directly; warnings restructure
+   §9b.3b) + `editor/scene/3d/lightmap_gi_editor_plugin.cpp` mirror (bake-button gate
+   §9b.3a) + runtime unwrap callback.
+4. Trim changes (with permission, ADR 0003 evidence): disable `lightmapper_rd`; re-enable
+   `tinyexr` (editor EXR save, §9b.3c).
+5. `LightmapBaker` wrapper class: node path + unwrap + signals/progress.
+6. Gate: room bakes at runtime on GL compat; no leaks; injection renders; GDScript
+   `LightmapBaker.bake(root, data)` works end-to-end; editor bake button enabled + bake
+   completes with the CPU baker (smoke test).
 
 **Phase 2 — indirect + probes + SH + shadowmask + env + supersampling:**
 S6 (bounce), S7 (probes), S8 (pack L1), SH accumulation in S5/S6, shadowmask, supersampling
@@ -379,7 +383,7 @@ harness vs RD (editor build) with tolerance.
 
 ---
 
-## 8. Risks
+## 9. Risks
 
 - **S3 raster fidelity** (edge pixels, smoothing) is the highest-visual-risk port — the
   extension baker's rasterizer is a good base but lacks the wireframe pass + smoothing.
@@ -390,9 +394,90 @@ harness vs RD (editor build) with tolerance.
 - **Float vs double builds** — explicit `float` in the module (section 2).
 - **Memory at 2048²+** — section 5.
 
----
+## 9b. Unverified points — verification results (2026-08-14)
 
-## 9. Verification gates (per phase)
+1. **GLES3 `bake_render_uv2` emission channel at runtime — VERIFIED.**
+   - Channel order matches `RSE::BAKE_CHANNEL_*` (ALBEDO=0, NORMAL=1, ORM=2, EMISSION=3;
+   rendering_server_enums.h:810-813; `_render_uv2` glDrawBuffers, rasterizer_scene_gles3.cpp:4134-4140).
+   - `scene.glsl` writes `emission_output_buffer.rgb` at location 3 (line 2770); emission
+   comes from material emission (srgb→linear, line 2399).
+   - Emission target: RGBA16F when float textures supported, RGBA8 fallback
+   (rasterizer_scene_gles3.cpp:4363-4370); readback converts to RGBAH (4466-4470) — matches
+   `lightmap_gi.cpp:1172` expecting RGBAH.
+   - **Zero editor dependencies** — pure GL + texture readback, no TOOLS/EditorPaths.
+   - `_render_uv2` renders `PASS_MODE_MATERIAL` with lights disabled + 9 UV offsets (dilation
+   of border texels) + final full pass (4157-4180) — albedo/emission edges are pre-filled,
+   which the CPU baker's own S3 does not need to replicate (it bakes attributes itself).
+2. **Probe capture-data path in non-editor builds — VERIFIED.**
+   - Post-bake probe processing (lightmap_gi.cpp:1544-1685): Delaunay3D tetrahedralization,
+   BSP plane dedup, `gi_data->set_capture_data` → RS probe capture calls. Pure core math +
+   RenderingServer — no TOOLS/editor-only APIs. `Delaunay3D` is core/math. Runs in any build.
+3. **Editor bake panel with `lightmapper_rd` disabled — ISSUES FOUND (3 files).**
+   a. **Bake button disabled**: `editor/scene/3d/lightmap_gi_editor_plugin.cpp:197-211` —
+   the `#else` branch (no `MODULE_LIGHTMAPPER_RD_ENABLED`) calls `bake->set_disabled(true)`
+   with tooltip "the `lightmapper_rd` module was disabled at compile-time". Needs a second
+   editor override: gate on
+   `#if defined(MODULE_LIGHTMAPPER_RD_ENABLED) || defined(MODULE_LIGHTMAPPER_CPU_ENABLED)`;
+   RD GPU check (`can_create_rendering_device`) applies only when RD is the baker.
+   b. **Misleading node warning**: `get_configuration_warnings()` (lightmap_gi.cpp:2001-2018)
+   — same restructure in the lightmap_gi.cpp override: no warning when the CPU module exists;
+   shadowmask warning preserved; "cannot be baked" only when neither module exists.
+   c. **Editor bake save is broken in the fork TODAY (pre-existing, verified)**: the editor
+   save flow (`_save_and_reimport_atlas_textures`) writes lightmaps as `.exr`
+   (lightmap_gi.cpp:894); `Image::save_exr` returns `ERR_UNAVAILABLE` without
+   `save_exr_func` (image.cpp:2824-2829), registered only by `modules/tinyexr`
+   (register_types.cpp:46) — and **tinyexr is in the fork's trim list**. So even with
+   `lightmapper_rd` enabled, editor bakes fail at the save step today. Decision: re-enable
+   `tinyexr` (remove from `DISABLE_MODULES`, evidence: the editor lightmap bake requires the
+   EXR writer; ADR 0003 evidence standard) — restores the upstream editor flow 1:1 with the
+   CPU baker; runtime path is unaffected (in-memory, no EXR).
+
+**Scope update (phase 1):** +1 editor override (`lightmap_gi_editor_plugin.cpp` via
+`_GOBLIN_FILE_OVERRIDES` "editor" dict — B-04 precedent), warnings restructure in the
+existing lightmap_gi.cpp override, `tinyexr` trim reversal (with permission, per ADR 0003).
+
+## 9c. C-01 — LightmapGI frustum culling (#71585) — root cause verified (2026-08-14)
+
+**Symptom (upstream, Vulkan/RD):** lightmaps vanish from meshes once the LightmapGI
+node's origin leaves the camera frustum.
+
+**Root cause (verified in this fork):**
+- `LightmapGI::get_aabb()` returns an **empty `AABB()`** (lightmap_gi.cpp:1820-1822).
+  LightmapGI is a `VisualInstance3D`, so it is a cullable instance with a zero-size
+  AABB at its origin.
+- Cull gate (renderer_scene_cull.cpp:2930): an instance is culled unless
+  `IN_FRUSTUM(...)` passes **or** `FLAG_IGNORE_ALL_CULLING` is set. `INSTANCE_LIGHTMAP`
+  instances failing the gate are dropped from `cull_result.lightmaps` (2971-2972).
+- **RD**: `render_scene` consumes the list per frame
+  (`render_data.lightmaps = &p_lightmaps`, renderer_scene_render_rd.cpp:1454) → the
+  lightmap's textures/data are not bound → lightmaps disappear. This is the #71585 path.
+- **GLES3**: `p_lightmaps` is **never used** (signature only, rasterizer_scene_gles3.cpp:2388)
+  — lightmap binding is per-geometry-instance (`inst->lightmap_instance` → lightmap data,
+  3580-3617), set once by `instance_geometry_set_lightmap`. Culling of the node does not
+  affect it. If DB sees the symptom on GL compat, the repro must be checked at P1 — the
+  classic mechanism is RD-only.
+
+**Upstream status:** issue open since 2023-01-17, no fix, no linked PR (2026-08-14).
+Policy: our fix stays; if upstream lands one, swap theirs in (user direction).
+
+**Fix (in the existing lightmap_gi.cpp override):** the node has no visual representation
+and culling serves no correctness purpose (geometry instances select their lightmap via
+their own RID reference; multiple LightmapGI nodes are fine — all instances in the list,
+per-instance references pick the right one).
+```cpp
+// POST_ENTER_TREE (lightmap_gi.cpp:1705):
+RS::get_singleton()->instance_set_ignore_culling(get_instance(), true);
+```
+`instance_set_ignore_culling` (rendering_server.cpp:3232, renderer_scene_cull.cpp:1156)
+sets `FLAG_IGNORE_ALL_CULLING` → the gate at 2930 always admits the instance. Works for
+all renderers; harmless on GLES3; no renderer changes. Upstream-acceptable shape.
+Bonus: the RS method is GDScript-bindable, so DB's existing workaround could even be
+replaced by one call today.
+
+**Effect on DB:** the ~17 level.gd workaround functions for lightmap injection can be
+deleted once C-01 + C-02 land (DB-side cleanup).
+
+## 10. Verification gates (per phase)
 
 - Unit tests (module `tests/`): synthetic room — analytic direct falloff, shadow boundary,
   **zero leak across opaque wall** (S5), bounce energy decay (S6), determinism (two bakes,

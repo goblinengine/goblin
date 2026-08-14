@@ -102,7 +102,7 @@ Class name: `LightmapperCPU` (upstream conventions; parallel to `LightmapperRD`)
 
 ### Engine changes (minimal)
 
-1. **One file override**: `scene/3d/lightmap_gi.cpp` mirror in
+1. **One file override (core)**: `scene/3d/lightmap_gi.cpp` mirror in
    `modules/goblin/` via `goblin_add_library()` (new `"scene"` library entry in
    `_GOBLIN_FILE_OVERRIDES`, modules/goblin/config.py). Change: **in-memory bake
    mode** — when there is no save path (`p_image_data_path` empty and
@@ -111,21 +111,27 @@ Class name: `LightmapperCPU` (upstream conventions; parallel to `LightmapperRD`)
    EXR writer) and build the `Texture2DArray` from
    `lightmapper->get_bake_texture(i)` directly → `set_lightmap_textures` +
    users. Everything else in `bake()` (gather, prep, probe gen, assignment,
-   injection) is unchanged and already runtime-safe.
-2. **Runtime unwrap**: the module sets the `array_mesh_lightmap_unwrap_callback`
+   injection) is unchanged and already runtime-safe. Same override also
+   restructures `get_configuration_warnings()`: no "cannot be baked" warning
+   when `MODULE_LIGHTMAPPER_CPU_ENABLED` (verified 2026-08-14 — see plan §9b.3b).
+2. **One file override (editor)**: `editor/scene/3d/lightmap_gi_editor_plugin.cpp`
+   mirror (B-04 precedent — "editor" library dict): bake-button gate becomes
+   `MODULE_LIGHTMAPPER_RD_ENABLED || MODULE_LIGHTMAPPER_CPU_ENABLED`; the RD GPU
+   check applies only when RD is the baker (verified: button currently hard-disabled
+   without `lightmapper_rd`, plan §9b.3a).
+3. **Trim changes** (with permission, ADR 0003 evidence): disable `lightmapper_rd`
+   (evidence: DB bakes at runtime; one baker everywhere; removes RD + OIDN from the
+   pipeline). Re-enable `tinyexr` (evidence: editor lightmap bake writes `.exr`;
+   `save_exr` is `ERR_UNAVAILABLE` without it — verified; editor bake is broken in
+   the fork today, plan §9b.3c).
+4. **Runtime unwrap**: the module sets the `array_mesh_lightmap_unwrap_callback`
    extern (`scene/resources/mesh.cpp:2071`) using xatlas vendored at
    `thirdparty/xatlas` (present). Guard: skip when `MODULE_XATLAS_UNWRAP_ENABLED`
    (editor builds already get the callback from that module; runtime builds get
    it from us). `xatlas_unwrap` stays editor-gated and untouched.
-3. **Disable `lightmapper_rd`**: add to `DISABLE_MODULES` in
-   `modules/goblin/config.py`. Evidence: DB bakes only at runtime; the editor
-   bakes via the CPU module (same API); one baker everywhere = identical results
-   editor/runtime, one bug surface; removes RD dependency + OIDN exe from the
-   lightmap pipeline. Files stay upstream for rebase; re-enable = one line +
-   build. Build-flag change — needs the usual permission, part of this RFC.
-4. **GDExtension retirement**: DB migrates from `LightmapBaker` to
-   `LightmapGI.bake()` (DB-side work; kills the `class_exists` guard — closes
-   C-02). `LightmapBaker` class eventually removed from the extension.
+5. **GDExtension retirement**: DB migrates from `LightmapBaker` to
+   the engine-native `LightmapBaker` (module) — same call sites, no
+   `class_exists` guard (closes C-02); extension class eventually removed.
 
 ### GDScript API surface (runtime, programmatic)
 
@@ -168,8 +174,13 @@ compute shader; OIDN is an editor-only external exe. Therefore:
 
 ### C-01 dependency
 
-The frustum-culling fix (backlog C-01, #71585) remains required — injection
-correctness is independent of baking and affects both bakers.
+Frustum-culling fix (backlog C-01, #71585) lands in the same lightmap_gi.cpp override:
+root cause verified — empty `get_aabb()` (lightmap_gi.cpp:1820) + the cull gate dropping
+`INSTANCE_LIGHTMAP` from the per-frame list (renderer_scene_cull.cpp:2930/2971); RD binds
+from that list per frame (renderer_scene_render_rd.cpp:1454), GLES3 does not. Fix:
+`RS::instance_set_ignore_culling(get_instance(), true)` in POST_ENTER_TREE (one line,
+renderer-agnostic; upstream issue open since 2023-01, no fix — details in plan §9c).
+Injection correctness is independent of baking and required for both bakers.
 
 ## Phases + gates
 
@@ -199,9 +210,13 @@ DB level load.
    mipmaps via `Image::generate_mipmaps`) via the lightmap_gi.cpp override, so **baked
    textured area lights work on compat**. LTC evaluation ported (analytic, no LUT).
    Scope: phase 3.
-4. **Editor UX** — unchanged: the editor bake panel keeps calling the regular C++
-   `bake()` (now routed to the CPU baker once `lightmapper_rd` is disabled). Smoke test at
-   P1. Descriptor API is GDScript-only (never editor-facing).
+4. **Editor UX** — resolved 2026-08-14 (plan §9b.3): editor flow keeps calling the
+   regular C++ `bake()` (now routed to the CPU baker). Two required follow-ups found by
+   verification: (a) bake-button gate + node warning both hard-gated on
+   `MODULE_LIGHTMAPPER_RD_ENABLED` → second editor override +
+   warnings restructure (RFC "Engine changes" 1-2); (b) editor `.exr` save is broken in
+   the fork today (`tinyexr` trimmed) → re-enable `tinyexr` (RFC "Engine changes" 3).
+   Descriptor API is GDScript-only (never editor-facing).
 5. **Descriptor API** — DB uses both `bake()` (scene root) and
    `bake_descriptors_with_lights()` (Dictionary input). Both ship in the `LightmapBaker`
    wrapper (descriptor path ≈150 lines reusing engine infra).

@@ -484,6 +484,10 @@ These are surgical modifications to Godot core files that cannot be achieved thr
 
 **Recommendation:** Stay on GL Compatibility through DB 1.0. Re-evaluate Forward+ for the next game. The lightmap baking system already works around the 16-light limit acceptably. The shader work for Forward+ migration is straightforward (mostly render_mode header changes) but carries regression risk that's not worth taking before 1.0.
 
+### GLES3 3D Scaling: CUT Upscalers
+
+CUT1/2/3 fragment-only upscalers for `scaling_3d_mode` on the Compatibility renderer (clean-room, ADR 0009; backlog C-12/C-13). Closes the "no compute upscaler" gap for GLES3; pixel-art-optimal. See [cut-upscalers.md](cut-upscalers.md).
+
 ---
 
 ## 9. Goblin Custom Engine Ideas to Port

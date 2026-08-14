@@ -41,6 +41,9 @@ Promote an RFC to an ADR when direction and boundary are both stable enough to f
 8. [0008-standalone-additive-modules.md](0008-standalone-additive-modules.md)
    Additive feature modules (zero overrides) live at the repo root in `modules/<name>/` as standalone Godot modules with standard module anatomy and full lifecycle (`MODULE_<NAME>_ENABLED`, `DISABLE_MODULES`, own registration/docs/icons/tests); `modules/goblin/` stays override/branding-only. MIDI lives at `modules/midi/`.
 
+9. [0009-clean-room-cut-upscalers.md](0009-clean-room-cut-upscalers.md)
+   Clean-room GPL boundary for the CUT upscalers + first header direct-edit precedent (`rendering_server_enums.h`, unreachable by swap).
+
 ## Not Yet ADRs
 
 The following remain at RFC level intentionally:

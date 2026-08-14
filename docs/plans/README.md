@@ -21,3 +21,4 @@ Lifecycle: RFC (explore) → plan (execute) → ADR (lock). All three are kept p
 | Plan | Area | Status |
 |------|------|--------|
 | [lightmapper-cpu-plan.md](lightmapper-cpu-plan.md) | Core rendering | 2026-08-14. Stage-by-stage port map of `lightmapper_rd` → CPU, data structures, threading, perf model, risks. Companion to the [lightmapper-cpu-rfc](../rfc/lightmapper-cpu-rfc.md) |
+| [cut-upscalers-plan](../../../../.kilo/plans/1786732900249-cut-upscalers-plan.md) | Core rendering | 2026-08-14. Locked spec: CUT1/2/3 GLES3 3D-scaling modes, clean-room, mirror+swap set + header edit; phases/gates/config keys |
