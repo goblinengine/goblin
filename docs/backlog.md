@@ -1,6 +1,6 @@
 ﻿# Backlog
 
-Single source of truth for ALL work on Goblin Engine: planned, in-progress, completed, and rejected. Update this file whenever work is planned, started, or completed. Do not let a task live only in a prompt or chat. Detailed specs live in `.kilo/plans/`; this file tracks status.
+Single source of truth for ALL work on Goblin Engine: planned, in-progress, completed, and rejected. Update this file whenever work is planned, started, or completed. Do not let a task live only in a prompt or chat. Detailed specs live in `modules/goblin/docs/plans/`; this file tracks status.
 
 Status legend: `todo` (planned), `doing` (in progress), `done` (complete), `blocked` (waiting), `rejected` (decided against).
 
@@ -14,17 +14,19 @@ Priorities: `P0` (critical), `P1` (high), `P2` (medium), `P3` (low).
 |----|------|--------|----------|---------|-------|
 | D-01 | Rewrite `INDEX.md` (module root) to reflect the fork, not branding-only | done | P0 | â€” | Rewritten as fork-focused index |
 | D-02 | Rewrite `STRUCTURE.md` to document actual override mechanisms | done | P0 | â€” | Rewritten to document the three override mechanisms |
-| D-03 | Update `GOBLIN_FORK_PLAN.md` Â§4 to match implemented override mechanisms | done | P0 | â€” | Now documents `GOBLIN_MODULE_OVERRIDES` + `goblin_add_library()` |
+| D-03 | Update `ROADMAP.md` Â§4 to match implemented override mechanisms | done | P0 | â€” | Now documents `GOBLIN_MODULE_OVERRIDES` + `goblin_add_library()` |
 | D-04 | Write `gdscript_features.md` documenting fork language additions | done | P0 | â€” | Full feature doc: unions, @private, String ctors, shaped dicts, then/elthen state |
 | D-05 | Create ADRs for accepted decisions | done | P0 | â€” | 0001-0003, 0007 accepted, 0004-0006 proposed |
 | D-06 | Keep `LIGHTMAP_INVESTIGATION.md` as reference for lightmap core changes | done | P3 | â€” | Decision: it informs C-01/C-02, so it stays in the fork |
 | D-07 | Verify editor texture import works with compression modules disabled | todo | P1 | 0003 | `basis_universal`/`ktx`/`astcenc`/`etcpak` trimmed unconditionally â€” needs editor build test |
 | D-08 | Create `CODE_MAP.md` (navigation map) | done | P0 | â€” | Read before implementing, update after; wired into `.kilo/rules/rules.md` |
 | D-09 | Sync `gdscript_features.md` with code state | done | P0 | â€” | Added shaped dicts (implemented) + then/elthen (partial); `?.`/`??` removed |
-| D-10 | Vision single-sourced | done | P0 | â€” | `.kilo/rules/vision.md` canonical (genre family, Godot compat, decision hierarchy); `docs/vision.md` = pointer |
+| D-10 | Vision single-sourced | done | P0 | â€” | `.kilo/rules/master_prompt.md` canonical (genre family, Godot compat, decision hierarchy); `docs/vision.md` = pointer |
 | D-11 | Backlog cleanup: rejected section, plan-file tickets merged, recent work logged | done | P0 | â€” | This file |
-| D-12 | Record locked `then`/`elthen` semantics + debug-only shaped validation | done | P1 | â€” | â€” | Done 2026-08-13: semantics locked (`then` null-only, `elthen` truthy â€” deliberate); "tokenizer only" claims corrected in `gdscript_features.md`, `CODE_MAP.md` (incl. landmine 3), `GOBLIN_FORK_PLAN.md`, plan Â§3.2 (superseded note); DEBUG-only validation rationale documented. Remaining: TD-02 tests + G-04/G-05 corpus gate |
+| D-12 | Record locked `then`/`elthen` semantics + debug-only shaped validation | done | P1 | â€” | â€” | Done 2026-08-13: semantics locked (`then` null-only, `elthen` truthy â€” deliberate); "tokenizer only" claims corrected in `gdscript_features.md`, `CODE_MAP.md` (incl. landmine 3), `ROADMAP.md`, plan Â§3.2 (superseded note); DEBUG-only validation rationale documented. Remaining: TD-02 tests + G-04/G-05 corpus gate |
 | D-12 | Sync `then`/`elthen` state in docs: implementation present, not "tokenizer only" | doing | P1 | â€” | â€” | MAJOR (2026-08-13 review): full parser/analyzer/compiler wiring verified in code, but `gdscript_features.md` Â§then/elthen ("operators do not compile yet"), CODE_MAP landmine 3 ("tokens present, rest missing"), and backlog G-04/G-05 status all claim otherwise. Update all three; remove landmine 3 |
+| D-13 | Architect auto-creates plan + RFC artifacts when planning starts | done | P1 | â€” | `.kilo/agents/architect.md` "Plan Artifacts (automatic)": triggers (explicit plan/breakdown/"how to implement" ask OR spec reached implementation depth), always writes `modules/goblin/docs/plans/<slug>-plan.md`, conditional RFC in `modules/goblin/docs/rfc/` when exploratory, registers row here, dedups against existing plans; developer flow step 1 points at newest matching plan |
+| D-14 | Rename `.kilo/rules/vision.md` -> `master_prompt.md`; living charter wired | done | P1 | â€” | Master prompt = living document (maintainer: architect; updated when locked decisions change a principle/hierarchy/non-negotiable — architect Job + rules.md checklist). `docs/vision.md` stays as engine-side pointer. `docs/proposal/` -> `docs/rfc/`; `GOBLIN_FORK_PLAN.md` -> `ROADMAP.md` (strategic layer above rfc/plans/adr) |
 
 ---
 
@@ -40,8 +42,8 @@ Priorities: `P0` (critical), `P1` (high), `P2` (medium), `P3` (low).
 | G-04 | Safe navigation `then` | doing | P1 | 1-2d | â€” | Keywords locked (NOT `?.`); full parser/analyzer/compiler wiring present (verified 2026-08-13 review). Semantics locked: null-only `a != null ? b : a`, chainable. No tests yet â€” TD-02 |
 | G-05 | Null coalescing `elthen` | doing | P1 | 1-2d | â€” | Pairs with G-04; wiring present. Semantics locked: TRUTHY `a ? a : b` (deliberate, 2026-08-13; `0 elthen 5` â†’ `5`) â€” not the earlier null-only plan note. No tests yet â€” TD-02 |
 | G-20 | `then`/`elthen` test suite + doc sync | doing | P1 | 1d | â€” | Superseded by D-12 (docs) + TD-02 (tests). Semantics locked as implemented â€” no code change planned |
-| G-18 | Template dictionaries (`_template` reserved key, creation-time default expansion) | todo | P1 | 3-4.5d | 0009/0010 | `.kilo/plans/` Â§2; builds on G-17 shaped-dict infra |
-| G-19 | Callable shorthand (`fn(3)` -> `fn.call(3)`, dict member callables) | todo | P2 | 1-2d | 0011 | `.kilo/plans/` Â§2.5 |
+| G-18 | Template dictionaries (`_template` reserved key, creation-time default expansion) | todo | P1 | 3-4.5d | 0009/0010 | `modules/goblin/docs/rfc/native-game-features-rfc.md` Â§2; builds on G-17 shaped-dict infra |
+| G-19 | Callable shorthand (`fn(3)` -> `fn.call(3)`, dict member callables) | todo | P2 | 1-2d | 0011 | `modules/goblin/docs/rfc/native-game-features-rfc.md` Â§2.5 |
 | G-07 | Structs / value types | todo | P1 | 4-6w | â€” | Biggest gap. Dict-heavy entity model, 60+ `duplicate(true)`. De-risk with 50 parser-only test cases first |
 | G-08 | Typed dictionaries `Dictionary[K, V]` | todo | P1 | 1-2w | â€” | Kills ~30 `typeof()`+`as` checks in navigation; rides on G-17 infra |
 | G-09 | Built-in `PriorityQueue` | todo | P2 | 2-3d | â€” | Navigation Dijkstra is O(NÂ²) with no heap |
@@ -60,7 +62,7 @@ Priorities: `P0` (critical), `P1` (high), `P2` (medium), `P3` (low).
 | ID | Item | Status | Priority | Effort | ADR/RFC | Justification |
 |----|------|--------|----------|--------|---------|---------------|
 | C-01 | Fix LightmapGI frustum culling (#71585) | todo | P0 | 1-2d | â€” | Critical bug; runtime lightmap pipeline partially works around it |
-| C-02 | Runtime LightmapBaker as public API | todo | P1 | 2-3d | 0006 | Eliminates `ClassDB.class_exists("LightmapBaker")` guard |
+| C-02 | Runtime LightmapBaker as public API | todo | P1 | 2-3d | 0006 | Direction superseded 2026-08-14: not "promote extension baker" but engine `lightmapper_cpu` module via `Lightmapper::create_cpu` (see `docs/rfc/lightmapper-cpu-rfc.md` + implementation plan). Kills the `ClassDB.class_exists("LightmapBaker")` guard; extension baker retired after DB migrates. Verified gap: `LightmapGI::bake()` bind is commented out upstream (lightmap_gi.cpp:2121) — GDScript surface ships as module `LightmapBaker` wrapper (node + descriptor paths, progress signals) |
 | C-03 | MIDI in `AudioStreamPlayer3D` | done | P1 | â€” | â€” | Delivered by C-07: `MidiStream` is an `AudioStream`, so 3D spatialized MIDI works in any stream player with zero extra nodes. The old "manual node construction" need came from the GDExtension's pre-stream player design; obsolete since the extension's own "midi player -> midi stream" refactor. No separate code needed |
 | C-04 | `Vector3i` keys for AStar3D | todo | P2 | 1-2d | â€” | Kills `"%d\|%d\|%d"` string keys in nav hot path |
 | C-05 | Generic spatial field / probe grid (light + audio + effects) | todo | P2 | 2-3w | â€” | Replaces viewport-based `LightSensor`; one field infrastructure, many consumers (see M-07) |
@@ -83,7 +85,7 @@ Priorities: `P0` (critical), `P1` (high), `P2` (medium), `P3` (low).
 | B-08 | `goblin_manager.py` `build` subcommand targets linuxbsd | todo | P3 | â€” | â€” | Wrong for this project (Windows). Fix or remove the subcommand |
 | B-09 | Generalize `goblin_add_library()` to a `{basename: path}` dict | todo | P1 | 2-4h | 0001 | Hook is hardwired to `variant_construct` (single basename, single path). Required before the second core file swap (C-01, C-06, ...). ADR 0001 flags it |
 | B-10 | Mirror drift check in `goblin_manager.py` | todo | P3 | 1-2h | â€” | Lists every goblin mirror + diff-stat vs upstream; makes silent mirror staleness visible on demand (the one maintenance hazard of the override model) |
-| B-04 | Retry-loop replacement (compile-time overrides for `editor_about.cpp` + exports + PM + editor_node) | done | P1 | 1-2d | 0007 | Done 2026-08-13: runtime singletons (`GoblinBranding`, `GoblinExportTweaks`) deleted; 120-attempt SceneTree polling + `node_added` tree scans gone. 4-file compile-time override set via library-scoped dict in `goblin_add_library()`: `editor_about.cpp` (Goblin literals, Donors tab removed), `project_export.cpp` (debug-template-aware "Export With Debug" option, warning filter, literal fixes), `project_manager.cpp` (Donate button removed), `editor_node.cpp` (Support Godot Development item/shortcut/case removed). Translation overrides relocated to `branding_translations.cpp` (kept as fallback). `Godot.svg`/`TitleBarLogo.svg` icon overrides. See `.kilo/plans/1786657934359-compile-time-ui-overrides.md` + ADR 0007 |
+| B-04 | Retry-loop replacement (compile-time overrides for `editor_about.cpp` + exports + PM + editor_node) | done | P1 | 1-2d | 0007 | Done 2026-08-13: runtime singletons (`GoblinBranding`, `GoblinExportTweaks`) deleted; 120-attempt SceneTree polling + `node_added` tree scans gone. 4-file compile-time override set via library-scoped dict in `goblin_add_library()`: `editor_about.cpp` (Goblin literals, Donors tab removed), `project_export.cpp` (debug-template-aware "Export With Debug" option, warning filter, literal fixes), `project_manager.cpp` (Donate button removed), `editor_node.cpp` (Support Godot Development item/shortcut/case removed). Translation overrides relocated to `branding_translations.cpp` (kept as fallback). `Godot.svg`/`TitleBarLogo.svg` icon overrides. See ADR 0007 |
 | B-09 | Generalize `goblin_add_library()` hook (core-only if-chain â†’ library-scoped dict) | done | P1 | â€” | â€” | Landed with B-04/ADR 0007: `_GOBLIN_FILE_OVERRIDES = {lib: {stem: path}}` covering `core` + `editor` |
 | B-10 | Mirror-drift tooling / discipline for editor overrides | todo | P2 | â€” | â€” | Diff mirrors against upstream on rebase (`git diff --no-index --stat editor/<f> modules/goblin/editor/overrides/<f>`); `project_export.h` mirror + `editor_node.cpp` are the highest-churn surfaces (ADR 0007) |
 | B-11 | Composed-string branding gaps (exact-key overrides never matched) | todo | P3 | â€” | â€” | `"%s - Godot Engine"` window titles (editor_dock_manager.cpp:286, script_editor_plugin.cpp:4213, game_view_plugin.cpp:1751), `"Godot Version"` (export_template_manager.cpp:1606), `"Godot Feature Profile"` (editor_feature_profile.cpp). Decide later whether to override those files |
@@ -123,11 +125,11 @@ Priorities: `P0` (critical), `P1` (high), `P2` (medium), `P3` (low).
 | Item | Why |
 |------|-----|
 | `?.` / `??` syntax | Keywords `then`/`elthen` locked (2026-08-13). See G-04/G-05 |
-| `then` truthiness semantics (gdscript2 runtime) | Null-only decided at port â€” explicit `!= null` conditions (`.kilo/plans/` Â§3.2) |
+| `then` truthiness semantics (gdscript2 runtime) | Null-only decided at port â€” explicit `!= null` conditions (`modules/goblin/docs/rfc/native-game-features-rfc.md` Â§3.2) |
 | Native `CustomTree` cadence scheduler | Remnant; not necessary |
 | `GoblinDataTable` native fallback class | Replaced by template dictionaries (G-18) |
 | Replace `core/variant/dictionary.{h,cpp}` | Header override unsupported + max rebase surface; language layer covers it (G-17/G-18) |
-| Expose editor `LightmapperRD` at runtime | Editor-only GPU module + forbidden build-flag changes; GL-compat templates lack RenderingDevice |
+| Expose editor `LightmapperRD` at runtime | Editor-only GPU module + forbidden build-flag changes; GL-compat templates lack RenderingDevice. Replaced by the `lightmapper_cpu` RFC (CPU implementation, same contract) |
 | GDScript `extends Dictionary` / user Variant types | Variant + ClassDB surgery; G-17/G-18 cover the need at language level |
 | Renderer-side light sampling on GL Compatibility | No exposed cluster seams; CPU field (C-05/M-07) substitutes |
 | Native upscaler nodes | DB's GL-compat canvas shaders already do this |
@@ -152,8 +154,8 @@ Findings from the `/tech-debt-review` workflow. Fork-side debt only; upstream is
 
 ## Dependency Notes
 
-- **G-04/G-05** follow `.kilo/plans/` Â§3 (recovered gdscript2 port map; 5 files, no VM changes).
-- **G-18/G-19** follow `.kilo/plans/` Â§2 (spec + phases + test gates).
+- **G-04/G-05** follow `modules/goblin/docs/rfc/native-game-features-rfc.md` Â§3 (recovered gdscript2 port map; 5 files, no VM changes).
+- **G-18/G-19** follow `modules/goblin/docs/rfc/native-game-features-rfc.md` Â§2 (spec + phases + test gates).
 - **G-07 (structs)** blocks or de-risks G-08 (typed dicts) and M-04 (component families).
 - **G-10/G-11** are ported from the gdscript2 module's branches â€” cherry-pick one at a time, never wholesale.
 - **C-01** is the highest-priority core fix; it is a known upstream bug and the fix is upstream-acceptable.

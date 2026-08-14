@@ -1,4 +1,4 @@
-# Proposal (RFC) Index
+# RFC Index
 
 Exploratory design documents for Goblin Engine (the Godot fork). These hold designs that are directionally approved but not yet frozen into ADRs.
 
@@ -11,9 +11,16 @@ Use an RFC when:
 
 Promote an RFC to an ADR (in [../adr/](../adr/)) when direction and boundary are both stable enough to freeze.
 
-## Active Proposals
+## Active RFCs
 
-None yet. Candidate RFCs, from the backlog:
+| RFC | Area | Status |
+|-----|------|--------|
+| [lightmapper-cpu-rfc.md](lightmapper-cpu-rfc.md) | Core rendering | Proposed 2026-08-14; awaiting architect review. Runtime CPU lightmapper via `Lightmapper::create_cpu`; supersedes ADR 0006 direction |
+| [native-game-features-rfc.md](native-game-features-rfc.md) | GDScript language | Proposed 2026-08-13 — consolidated: expanded dictionary (typed entries, template dictionaries, callable members) + recovered `then`/`elthen`; secondary candidates and rejected ideas. Not yet approved as an implementation plan |
+
+Implementation breakdowns for approved directions live in [../plans/](../plans/) (e.g. `lightmapper-cpu-plan.md` — stage-by-stage port map of `lightmapper_rd` → CPU, data structures, threading, perf model, risks; companion to the RFC).
+
+## Candidate RFCs
 
 | Candidate | Area | Notes |
 |-----------|------|-------|

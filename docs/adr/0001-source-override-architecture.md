@@ -40,5 +40,5 @@ Negative:
 
 ## Related Documents
 
-- [GOBLIN_FORK_PLAN.md](../GOBLIN_FORK_PLAN.md)
+- [ROADMAP.md](../ROADMAP.md)
 - [.kilo/rules/rules.md](../../../.kilo/rules/rules.md)

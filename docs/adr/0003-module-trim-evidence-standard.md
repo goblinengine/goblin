@@ -32,5 +32,5 @@ Negative:
 
 ## Related Documents
 
-- [GOBLIN_FORK_PLAN.md](../GOBLIN_FORK_PLAN.md) — §5 Module Trim Plan
+- [ROADMAP.md](../ROADMAP.md) — §5 Module Trim Plan
 - [backlog.md](../backlog.md) — D-07

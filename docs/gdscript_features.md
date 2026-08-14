@@ -55,7 +55,7 @@ var tpl := {
 - Analyzer: shape inference; the shape is preserved across all declaration styles (`:=`, `: Dictionary`, `: Dictionary[K,V]`, and untyped `=`), and writes to typed keys are compile-time errors; attribute access (`dict.key`) and constant-index access (`dict["key"]`) refine to the entry type; unknown keys fall back to the flat value type (or `Variant`) — deliberate, so shaped dicts stay extensible like plain dictionaries; autocomplete recurses into shapes (`gdscript_editor.cpp`).
 - Runtime: `OPCODE_CONSTRUCT_SHAPED_DICTIONARY` validates every literal value against its declared entry type (debug safety net) and normalizes typed containers (plain `Array` → typed `Array[T]`); the recursive datatype travels as raw instruction words (`append_datatype()`, `gdscript_byte_codegen.h`), decoded by `GDScriptFunction::decode_datatype()` (`gdscript_function.{h,cpp}`). Runtime validation applies at construction only — later writes are enforced at compile time, not re-checked at runtime. For `: Dictionary[K,V]` declarations the constructed dictionary is typed as declared (`set_typed` + per-entry `set()`, so flat key/value types are enforced in all builds), while entries still normalize to the per-key shape.
 - Style rules: typed entries are Lua style only; mixing with Python-style untyped literals errors (tests: `shaped_dictionary_style_mixing_*`, `shaped_dictionary_typed_in_python`).
-- NOT implemented (planned): template dictionaries (`_template` reserved key, creation-time default expansion) — see `.kilo/plans/` §2.
+- NOT implemented (planned): template dictionaries (`_template` reserved key, creation-time default expansion) — see `modules/goblin/docs/rfc/native-game-features-rfc.md` §2.
 
 Purpose: typed dictionaries with zero runtime lookups for data-driven entity templates — the language-layer answer to DB's dict-heavy entity model.
 
@@ -65,7 +65,7 @@ Keywords `then` and `elthen` are the fork's syntax. `?.` / `??` are NOT planned.
 
 State (verified): fully implemented — tokenizer (`Token::THEN`/`Token::ELTHEN`, `gdscript_tokenizer.h:65-66`), parser (`PREC_NULLISH` precedence, `OP_SAFE_NAVIGATE`/`OP_NULL_COALESCE`, `gdscript_parser.{h,cpp}`), analyzer (short-circuit typing + constant folding, `gdscript_analyzer.cpp` `reduce_binary_op`), compiler (ternary-based codegen, `gdscript_compiler.cpp`). No VM changes.
 
-Semantics locked 2026-08-13 (deliberate; differs from the earlier null-only recommendation in `.kilo/plans/` §3.2, which described gdscript2's runtime truthiness as a wart):
+Semantics locked 2026-08-13 (deliberate; differs from the earlier null-only recommendation in `modules/goblin/docs/rfc/native-game-features-rfc.md` §3.2, which described gdscript2's runtime truthiness as a wart):
 
 - `a then b` → `a != null ? b : a` — **null-only** safe navigation; chainable (`a then b then c`).
 - `a elthen b` → `a ? a : b` — **truthiness** coalescing: `0 elthen 5` → `5`, `"" elthen "x"` → `"x"`, `false elthen 1` → `1`.
@@ -90,4 +90,4 @@ When porting to a new stable release, review these files for merge conflicts:
 
 ## Planned Features
 
-See [backlog.md](backlog.md) §1. Next priorities: `then`/`elthen` tests (TD-02), structs (G-07), typed dictionaries (G-08), template dictionaries (`.kilo/plans/` §2).
+See [backlog.md](backlog.md) §1. Next priorities: `then`/`elthen` tests (TD-02), structs (G-07), typed dictionaries (G-08), template dictionaries (`modules/goblin/docs/rfc/native-game-features-rfc.md` §2).

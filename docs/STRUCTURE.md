@@ -51,7 +51,7 @@ modules/goblin/
 │
 ├── platform/windows/            # Platform-specific overrides (goblin.rc)
 ├── tools/                       # sync_godot_icons.py and other utilities
-└── docs/                        # All documentation (adr/, proposal/, backlog, vision, plan)
+└── docs/                        # All documentation (adr/, rfc/, plans/, backlog, vision, ROADMAP)
 ```
 
 ## The Three Override Mechanisms

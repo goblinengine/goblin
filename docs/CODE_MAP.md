@@ -2,7 +2,7 @@
 
 Navigation map for `modules/goblin/`. Read before implementing; update after changes.
 
-Companion docs: `docs/gdscript_features.md` (feature semantics), `docs/GOBLIN_FORK_PLAN.md` (roadmap), `docs/backlog.md` (work tracking), `.kilo/rules/` (constraints + vision).
+Companion docs: `docs/gdscript_features.md` (feature semantics), `docs/ROADMAP.md` (roadmap), `docs/backlog.md` (work tracking), `.kilo/rules/` (constraints + vision).
 
 ## Layout
 

@@ -9,7 +9,7 @@ Use an **ADR** when:
 - the decision is expensive to reverse later
 - the decision is no longer mainly exploratory
 
-Use an **RFC** (see [../proposal/](../proposal/)) when:
+Use an **RFC** (see [../rfc/](../rfc/)) when:
 - the design is still exploratory
 - the implementation shape is not yet proven enough to freeze
 - multiple credible options still need evaluation
@@ -31,7 +31,7 @@ Promote an RFC to an ADR when direction and boundary are both stable enough to f
 
 4. `0004-gdscript-union-types` — union types in the GDScript fork.
 5. `0005-gdscript-safe-navigation-null-coalescing` — `then` / `elthen` operators (keywords locked; `?.`/`??` rejected).
-6. `0006-runtime-lightmap-api-surface` — promote `LightmapBaker` to public API.
+6. `0006-runtime-lightmap-api-surface` — superseded in direction (2026-08-14) by [lightmapper-cpu-rfc](../rfc/lightmapper-cpu-rfc.md): engine CPU `Lightmapper` via `Lightmapper::create_cpu` instead of promoting the extension `LightmapBaker`.
 
 ## Accepted ADRs (continued)
 

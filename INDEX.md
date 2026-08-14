@@ -8,13 +8,14 @@ The canonical docs live in [docs/](docs/). Start at [docs/README.md](docs/README
 
 | Document | Purpose |
 |----------|---------|
-| [docs/vision.md](docs/vision.md) | Vision pointer — canonical charter in `.kilo/rules/vision.md` |
+| [docs/vision.md](docs/vision.md) | Vision pointer — canonical charter in `.kilo/rules/master_prompt.md` |
 | [docs/backlog.md](docs/backlog.md) | Single source of truth for pending, in-progress, and proposed work |
-| [docs/GOBLIN_FORK_PLAN.md](docs/GOBLIN_FORK_PLAN.md) | Phased roadmap, pain-point → solution map, risk assessment |
+| [docs/ROADMAP.md](docs/ROADMAP.md) | Phased roadmap, pain-point → solution map, risk assessment |
 | [docs/gdscript_features.md](docs/gdscript_features.md) | GDScript fork features and divergence surface |
 | [docs/CODE_MAP.md](docs/CODE_MAP.md) | Navigation map: where files live, what each layer does, where new code goes |
 | [docs/adr/](docs/adr/) | Architecture Decision Records (accepted + proposed) |
-| [docs/proposal/](docs/proposal/) | RFCs for exploratory designs |
+| [docs/rfc/](docs/rfc/) | RFCs for exploratory designs |
+| [docs/plans/](docs/plans/) | Implementation breakdowns: locked semantics, phases, files, effort, test gates |
 
 ## Module Layout
 

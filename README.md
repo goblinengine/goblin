@@ -37,7 +37,7 @@ modules/goblin/
 - `docs/README.md` — documentation index (start here).
 - `docs/CODE_MAP.md` — navigation map: where files live, where new code goes.
 - `docs/backlog.md` — single source of truth for all work (planned / doing / done / rejected).
-- `docs/GOBLIN_FORK_PLAN.md` — roadmap, pain-point map, risk assessment.
+- `docs/ROADMAP.md` — roadmap, pain-point map, risk assessment.
 - `docs/gdscript_features.md` — GDScript fork features and divergence from upstream.
 - `docs/adr/` — architecture decision records.
 

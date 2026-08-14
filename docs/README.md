@@ -4,18 +4,22 @@ Goblin Engine is a deliberately customized, lightweight fork of Godot Engine. Al
 
 ## Start Here
 
-1. **[vision.md](vision.md)** — vision pointer. Canonical charter: `.kilo/rules/vision.md`.
+1. **[vision.md](vision.md)** — vision pointer. Canonical charter: `.kilo/rules/master_prompt.md`.
 2. **[backlog.md](backlog.md)** — the single source of truth for all work: planned, in-progress, done, rejected.
-3. **[GOBLIN_FORK_PLAN.md](GOBLIN_FORK_PLAN.md)** — phased roadmap, pain-point → solution map, risk assessment.
+3. **[ROADMAP.md](ROADMAP.md)** — phased roadmap, pain-point → solution map, risk assessment.
 4. **[CODE_MAP.md](CODE_MAP.md)** — navigation map: where files live, what each layer does, where new code goes.
 
 ## Architecture Decisions
 
 - **[adr/](adr/)** — accepted and proposed Architecture Decision Records. Locked decisions that guide all implementation.
 
-## Design Proposals
+## RFCs
 
-- **[proposal/](proposal/)** — RFCs for exploratory designs before they are promoted to ADRs.
+- **[rfc/](rfc/)** — exploratory design documents (RFCs) before they are promoted to ADRs.
+
+## Implementation Plans
+
+- **[plans/](plans/)** — implementation breakdowns: locked semantics, phases, files, effort, test gates. What the developer follows to build a feature.
 
 ## Reference
 
@@ -27,5 +31,5 @@ Goblin Engine is a deliberately customized, lightweight fork of Godot Engine. Al
 ## Conventions
 
 - ADRs lock stable, expensive-to-reverse decisions. See [adr/README.md](adr/README.md).
-- RFCs hold exploratory designs before ADR promotion. See [proposal/README.md](proposal/README.md).
+- RFCs hold exploratory designs before ADR promotion. See [rfc/README.md](rfc/README.md).
 - The backlog is updated whenever work is planned, started, or completed. No task lives only in a prompt or chat.

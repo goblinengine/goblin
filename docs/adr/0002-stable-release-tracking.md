@@ -32,4 +32,4 @@ Negative:
 
 ## Related Documents
 
-- [GOBLIN_FORK_PLAN.md](../GOBLIN_FORK_PLAN.md) — Core Principle 4
+- [ROADMAP.md](../ROADMAP.md) — Core Principle 4

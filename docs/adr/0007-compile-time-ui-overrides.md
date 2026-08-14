@@ -60,7 +60,6 @@ Negative / accepted risks:
 
 ## Related Documents
 
-- [GOBLIN_FORK_PLAN.md](../GOBLIN_FORK_PLAN.md) — §3 limitations, §4 architecture, "Eliminating the Retry Loops"
+- [ROADMAP.md](../ROADMAP.md) — §3 limitations, §4 architecture, "Eliminating the Retry Loops"
 - [backlog.md](../backlog.md) — B-04, B-09, B-10, B-11
 - [CODE_MAP.md](../CODE_MAP.md) — override hook, editor overrides
-- Locked implementation spec: `.kilo/plans/1786657934359-compile-time-ui-overrides.md`
