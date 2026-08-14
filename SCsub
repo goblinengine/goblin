@@ -43,10 +43,6 @@ if env.editor_build:
 if os.path.exists(goblin_module_path + "/editor/SCsub"):
     SConscript("editor/SCsub")
 
-# MIDI / SoundFont module (additive, zero upstream changes).
-if os.path.exists(goblin_module_path + "/midi/SCsub"):
-    SConscript("midi/SCsub")
-
 # Add module registration
 env_goblin.add_source_files(env_goblin.goblin_sources, "*.cpp")
 

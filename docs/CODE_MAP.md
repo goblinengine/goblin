@@ -23,16 +23,11 @@ modules/goblin/
 │       ├── project_manager/project_manager.cpp   # Project Manager (Donate button removed)
 │       └── editor_node.cpp                       # EditorNode (Support Godot Development removed)
 ├── main/                # splash.png, splash_editor.png, app_icon.png
-├── midi/                # MIDI/SoundFont module (additive): MidiStream + TinySoundFont synth + importers
-│   ├── midi_stream.{h,cpp}             # MidiStream (AudioStream): sf/midi/loop/midi_speed props + GM/note/drum enums
-│   ├── midi_stream_playback.{h,cpp}    # MidiStreamPlayback: TSF/TML impl TU, event scheduling, live note_on/off
-│   ├── midi_resources.{h,cpp}          # MidiFileResource + SoundFontResource (raw byte containers)
-│   ├── midi_importers.{h,cpp}          # ResourceImporter subclasses ("midi_stream.mid" / "midi_stream.sf2")
-│   ├── midi_register_types.{h,cpp}     # SCENE: 4 classes; EDITOR: importers -> ResourceFormatImporter
-│   └── thirdparty/tinysoundfont/       # tsf.h (TinySoundFont, MIT) + tml.h (TinyMidiLoader, zlib) - verbatim
 ├── platform/windows/    # goblin.rc
 ├── docs/                # All fork docs (see docs/README.md)
 └── goblin_manager.py    # DEV UTILITY - never run its `clean` command (hard rule 1)
+
+modules/midi/            # STANDALONE additive feature module (ADR 0008) - see section below
 ```
 
 ## Build hooks (config.py)
@@ -74,9 +69,9 @@ Diff vs upstream: `git diff --no-index --stat modules/gdscript modules/goblin/mo
 | Shaped dictionaries | parser/analyzer/compiler/vm/editor | Typed entries, recursive shape, `OPCODE_CONSTRUCT_SHAPED_DICTIONARY`, access refinement |
 | `then`/`elthen` | tokenizer + parser + analyzer + compiler | `then` null-only (`a != null ? b : a`), `elthen` truthy (`a ? a : b`) — locked 2026-08-13; no VM changes; tests pending (TD-02) |
 
-## MIDI / SoundFont module (midi/)
+## MIDI / SoundFont module (`modules/midi/`)
 
-Additive module (no upstream files touched). Kills the external MidiStream GDExtension dependency (backlog C-07). Class/property/importer names are identical to the GDExtension so existing DB projects and `.import` files keep working.
+Standalone additive feature module at the repo root (ADR 0008) — standard Godot module anatomy, auto-discovered by the build with the full module lifecycle: `SCsub`, `config.py` (`can_build`/`get_doc_classes`/`get_icons_path`), `register_types.{h,cpp}` (registered via the generated `register_module_types.gen.cpp`, `MODULE_MIDI_ENABLED`), `doc_classes/`, `tests/`, `editor/icons/`, in-module `thirdparty/`. Not part of the override machinery; no goblin hooks, no upstream file touched. Kills the external MidiStream GDExtension dependency (backlog C-07). Class/property/importer names are identical to the GDExtension so existing DB projects and `.import` files keep working.
 
 - `MidiStream` is an `AudioStream` -> works in any stream player (`AudioStreamPlayer`, `AudioStreamPlayer3D`, ...) — this delivers backlog C-03 (3D spatialized MIDI) with no extra node.
 - The synthesizer is TinySoundFont v0.9 (MIT) + TinyMidiLoader v0.7 (zlib), single-header libs vendored verbatim under `thirdparty/tinysoundfont/`; `TSF_IMPLEMENTATION`/`TML_IMPLEMENTATION` compile into `midi_stream_playback.cpp` only.
@@ -92,14 +87,15 @@ Additive module (no upstream files touched). Kills the external MidiStream GDExt
 | Language feature (parser+analyzer+compiler) | `modules/goblin/modules/gdscript/` |
 | Single core .cpp | `modules/goblin/core/<mirror path>/` + dict entry in `goblin_add_library()` |
 | Single editor .cpp | `modules/goblin/editor/overrides/<mirror path>/` + dict entry in `goblin_add_library()` (NEVER a globbed dir — `editor/SCsub` globs `*.cpp` non-recursively; unmodified headers stay upstream, rewrite the bare own-header include to root-relative) |
-| New native class | .cpp/.h in `modules/goblin/` + `GDREGISTER_CLASS` in register_types.cpp |
+| New additive feature module (zero overrides) | standalone `modules/<name>/` with standard module anatomy (ADR 0008) — auto-discovered, full lifecycle; never inside `modules/goblin/` |
+| New native class (override-adjacent) | .cpp/.h in `modules/goblin/` + `GDREGISTER_CLASS` in register_types.cpp |
 | Build-time generator | `goblin_builders.py` + assignment in `configure()` |
 | Branding assets | `main/`, `editor/icons/`, `platform/windows/` |
 
 ## Tests
 
 - Fork tests: `modules/goblin/modules/gdscript/tests/` (mirror of upstream suite + new cases under `parser/`, `analyzer/`, `runtime/`). The test harness (`gdscript_test_runner_suite.h`, `test_completion.h`, `test_lsp.h`) targets the fork's own tests dir.
-- MIDI tests: `modules/goblin/tests/test_midi_stream.h` (doctest `TEST_CASE`s, picked up via `modules_tests.gen.h` when `tests=yes`). Generates a minimal SF2 + SMF in memory; covers length, synth render, song-end stop, loop restart, manual notes. Run: `bin/goblin.windows.editor.x86_64.exe --test --test-case="*MidiStream*"`.
+- MIDI tests: `modules/midi/tests/test_midi_stream.h` (doctest `TEST_CASE`s, picked up via `modules_tests.gen.h` when `tests=yes`). Generates a minimal SF2 + SMF in memory; covers length, synth render, song-end stop, loop restart, manual notes. Run: `bin/goblin.windows.editor.x86_64.exe --test --test-case="*MidiStream*"`.
 - Run: build with `tests=yes` (`scons platform=windows target=editor module_mono_enabled=no accesskit=no angle=no tests=yes -j4`), then `bin/goblin.windows.editor.x86_64.exe --headless --test --test-case "[Modules][GDScript]*"`.
 - Regenerate expected outputs from current behavior: `bin/goblin.windows.editor.x86_64.exe --headless --gdscript-generate-tests` (writes `.out` files — use with care; it encodes whatever the engine currently does).
 - Gotchas:
@@ -127,8 +123,8 @@ Additive module (no upstream files touched). Kills the external MidiStream GDExt
 | Add VM opcode | `gdscript_byte_codegen.h` + `gdscript_vm.cpp` (enum + dispatch) |
 | Autocomplete behavior | `gdscript_editor.cpp` `_find_identifiers_in_class` |
 | Branding string | `core/version_override.py` / `goblin_builders.py` / `editor/branding_translations.cpp` (runtime fallback) / `editor/overrides/` (compile-time) |
-| MIDI playback / synth | `modules/goblin/midi/midi_stream_playback.cpp` (TSF/TML impl lives there — single TU) |
-| MIDI import | `modules/goblin/midi/midi_importers.cpp` + registration in `midi_register_types.cpp` |
+| MIDI playback / synth | `modules/midi/midi_stream_playback.cpp` (TSF/TML impl lives there — single TU) |
+| MIDI import | `modules/midi/midi_importers.cpp` + registration in `modules/midi/register_types.cpp` |
 | Port upstream commit | `porting` skill + diff mirrors vs upstream |
 
 ## Update discipline

@@ -355,13 +355,13 @@ License: CC-BY-4.0
  that apply to the Licensor or You, including from the legal
  processes of any jurisdiction or authority.
 
-Files: midi/thirdparty/tinysoundfont/tsf.h
+Files: modules/midi/thirdparty/tinysoundfont/tsf.h
 Comment: TinySoundFont (SoundFont2 synthesizer)
 Copyright: 2017-2025, Bernhard Schelling
            Based on SFZero, Copyright (C) 2012 Steve Folta
 License: Expat
 
-Files: midi/thirdparty/tinysoundfont/tml.h
+Files: modules/midi/thirdparty/tinysoundfont/tml.h
 Comment: TinyMidiLoader (minimalistic MIDI parsing library)
 Copyright: 2017, 2018, 2020, Bernhard Schelling
 License: zlib

@@ -38,6 +38,9 @@ Promote an RFC to an ADR when direction and boundary are both stable enough to f
 7. [0007-compile-time-ui-overrides.md](0007-compile-time-ui-overrides.md)
    Replaces the runtime UI-patching singletons (120-attempt retry loops, `node_added` tree scans) with compile-time file overrides of four editor files; extends `goblin_add_library()` to a library-scoped dict.
 
+8. [0008-standalone-additive-modules.md](0008-standalone-additive-modules.md)
+   Additive feature modules (zero overrides) live at the repo root in `modules/<name>/` as standalone Godot modules with standard module anatomy and full lifecycle (`MODULE_<NAME>_ENABLED`, `DISABLE_MODULES`, own registration/docs/icons/tests); `modules/goblin/` stays override/branding-only. MIDI lives at `modules/midi/`.
+
 ## Not Yet ADRs
 
 The following remain at RFC level intentionally:
