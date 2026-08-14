@@ -1,5 +1,5 @@
-// Windows resource file for Goblin Engine (main executable).
-// Swapped in by goblin_add_library-style RES hook in modules/goblin/config.py.
+// Windows resource file for Goblin Engine (console wrapper executable).
+// Swapped in by the RES hook in modules/goblin/config.py.
 
 #include "core/version.h"
 
@@ -21,9 +21,9 @@ BEGIN
         BLOCK "040904b0"
         BEGIN
             VALUE "CompanyName",            "Goblin Engine"
-            VALUE "FileDescription",        GODOT_VERSION_NAME
+            VALUE "FileDescription",        GODOT_VERSION_NAME " (Console)"
             VALUE "FileVersion",            GODOT_VERSION_NUMBER
-            VALUE "ProductName",            GODOT_VERSION_NAME
+            VALUE "ProductName",            GODOT_VERSION_NAME " (Console)"
             VALUE "Licence",                "MIT"
             VALUE "LegalCopyright",         "(c) 2026-present Goblin Engine contributors; (c) 2014-present Godot Engine contributors"
             VALUE "Info",                   "https://goblin-engine.org"

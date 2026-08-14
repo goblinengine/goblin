@@ -1,6 +1,28 @@
 # Goblin Branding - What Gets Renamed
 
-> Status note (2026-08-13): partially superseded. The fork patches About-dialog strings at runtime via `editor/goblin_about.cpp` (translation overrides), not via .obj patching. A compile-time override of `editor_about.cpp` is backlog B-04. This file remains as reference for what is renamed where.
+> Status (2026-08-13): compile-time overrides are now the primary branding mechanism (ADR 0007). About dialog, export dialog, Project Manager donate button, and editor help menu are overridden at build time via `goblin_add_library()` mirrors in `modules/goblin/editor/overrides/`; remaining strings are rebranded at runtime by `branding_translations.cpp` translation overrides. This file documents what is renamed where.
+
+## ✅ Renamed via Compile-Time Overrides (ADR 0007)
+
+Editor files mirrored under `modules/goblin/editor/overrides/` and swapped at build time:
+
+| File | What is renamed/removed |
+|------|------------------------|
+| `gui/editor_about.cpp` | "Thanks from the Goblin community!", "© 2007-present Goblin & Godot contributors.", "Goblin Engine relies on..."; Donors tab removed |
+| `export/project_export.cpp` | "Goblin Project Pack" filters; "Goblin executable" tooltips; "Export With Debug" option only when a debug template exists; missing-debug-template warnings filtered |
+| `project_manager/project_manager.cpp` | Donate button removed |
+| `editor_node.cpp` | "Support Godot Development" menu item/shortcut removed |
+| `editor/icons/Logo.svg` | About dialog + credits roll: face + "GOBLIN" + "Engine" as **white path letters** (187×76). `<text>` elements forbidden — ThorVG has no font loader (B-14) |
+| `editor/icons/Godot.svg`, `TitleBarLogo.svg` | Help-menu About icon (face, 16×16) + PM title bar (face + "GOBLIN", 100×24) |
+| `platform/windows/goblin.rc` + `goblin_res_wrap.rc` | Windows exe icon (build-time `goblin.ico` from `app_icon.png`) + version info ("Goblin Engine", goblin-engine.org) — compiled instead of upstream `godot_res.rc` (B-16) |
+
+## ✅ Renamed via Runtime Translation Overrides (fallback)
+
+`editor/branding_translations.cpp` rebrands remaining editor strings (e.g. "About Godot..." shortcut name, Project Manager logo tooltip, generic "Godot" → "Goblin" in translated UI text).
+
+## ⚠️ Known Gaps (backlog B-11)
+
+Composed strings the exact-key translation overrides never matched stay Godot-branded: `"%s - Godot Engine"` window titles, `"Godot Version"`, `"Godot Feature Profile"`. Decide later whether to override those files.
 
 ## ✅ Automatically Renamed (via GODOT_VERSION_NAME define)
 
@@ -41,8 +63,8 @@ These are replaced by the goblin module's generated files:
    - Copyright notices and license text
 
 4. **Splash Screens**
-   - Runtime splash: `main/splash.gen.h`
-   - Editor splash: `main/splash_editor.gen.h`
+   - Runtime splash: `main/splash.gen.h` (regenerates on goblin `main/splash.png` change via Depends edges, B-15)
+   - Editor splash: `main/splash_editor.gen.h` — upstream 4.7 removed the editor splash; the fork re-enables it (B-15): config.py strips `NO_EDITOR_SPLASH`, goblin SCsub generates the header from `modules/goblin/main/splash_editor.png`
 
 5. **App Icon**
    - Window icon: `main/app_icon.gen.h`
@@ -50,75 +72,3 @@ These are replaced by the goblin module's generated files:
 6. **Editor Icons**
    - Logo in about screen (if you put Logo.svg in icons/ folder)
    - Any other SVG icons you add
-
-## ⚠️ Partially Renamed / Manual Override Needed
-
-These have hardcoded strings in C++ that need patches:
-
-### About Dialog (editor/gui/editor_about.cpp)
-
-**Strings that need patches:**
-- Line 210: `"Thanks from the Godot community!"` 
-  → Should be: `"Thanks from the Goblin community!"`
-  
-- Line 57: `"Godot Engine contributors"`
-  → Should be: `"Goblin Engine contributors"`
-  
-- Line 305: `"Godot Engine relies on a number of third-party..."`
-  → Should be: `"Goblin Engine relies on a number of third-party..."`
-
-**How to fix these:**
-
-You have two options:
-
-### Option 1: Accept Some "Godot" References (Easiest)
-Just note in your documentation that Goblin is based on Godot, and leave these strings as-is or add "(based on Godot)" notes.
-
-### Option 2: Patch at Build Time (Moderate)
-Add a post-processing step to replace strings in compiled .obj files before linking.
-
-### Option 3: Override the About Dialog (Advanced)
-Create a complete replacement EditorAbout class in the goblin module that inherits from AcceptDialog and replaces all strings.
-
-## 📝 Recommended Approach
-
-**For most users**: Use Option 1. The engine name, window titles, project manager, and all user-facing version strings already show "Goblin Engine". The few strings in the About dialog that still reference Godot can be seen as proper attribution to the base engine.
-
-**Example About text:**
-```
-Thanks from the Goblin community!
-
-© 2014-present Goblin Engine contributors.
-© 2014-present Godot Engine contributors (Goblin is based on Godot).
-© 2007-2014 Juan Linietsky, Ariel Manzur.
-
-Goblin Engine is based on Godot Engine and relies on a number of 
-third-party free and open source libraries...
-```
-
-This is honest, gives proper attribution, and doesn't require patching compiled code.
-
-## Current Status Summary
-
-✅ **Fully Working:**
-- Executable name: `goblin.exe`
-- Window title: "Goblin Engine"
-- Version info everywhere: "Goblin Engine"
-- Authors/Donors/License from your files
-- Splash screens from your files
-- App icon from your files
-
-⚠️ **Partially Working:**
-- About dialog logo: Works if you add `Logo.svg` to `modules/goblin/icons/`
-- About dialog text: Uses custom AUTHORS.md, but a few hardcoded strings remain
-
-❌ **Not Renamed (by design):**
-- Source code comments (shouldn't be renamed)
-- Internal class names (GODOT_ prefixes in C++)
-- Build system internals
-
-## Next Steps
-
-1. Add `Logo.svg` to `modules/goblin/icons/` for the about screen logo
-2. Decide if you want to patch the about dialog strings or acknowledge Godot as the base
-3. Test the build and verify all visible strings show "Goblin"

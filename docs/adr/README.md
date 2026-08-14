@@ -32,7 +32,11 @@ Promote an RFC to an ADR when direction and boundary are both stable enough to f
 4. `0004-gdscript-union-types` — union types in the GDScript fork.
 5. `0005-gdscript-safe-navigation-null-coalescing` — `then` / `elthen` operators (keywords locked; `?.`/`??` rejected).
 6. `0006-runtime-lightmap-api-surface` — promote `LightmapBaker` to public API.
-7. `0007-branding-compile-time-overrides` — replace retry loops with compile-time overrides.
+
+## Accepted ADRs (continued)
+
+7. [0007-compile-time-ui-overrides.md](0007-compile-time-ui-overrides.md)
+   Replaces the runtime UI-patching singletons (120-attempt retry loops, `node_added` tree scans) with compile-time file overrides of four editor files; extends `goblin_add_library()` to a library-scoped dict.
 
 ## Not Yet ADRs
 

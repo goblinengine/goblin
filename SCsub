@@ -11,14 +11,6 @@ Import("env")
 env_goblin = env.Clone()
 env_goblin.goblin_sources = []
 
-# Enable Goblin branding only for editor/tools builds so export templates
-# (no tools) don't link editor-only symbols like GoblinBranding.
-if env.editor_build:
-    env_goblin.Append(CPPDEFINES=[
-        "GOBLIN_BRANDING_ENABLED",
-        "GOBLIN_BRANDING_RUNTIME_ENABLED",  # Used to gate runtime/editor code
-    ])
-
 goblin_module_path = Dir(".").abspath
 
 # ===================================================================
@@ -33,6 +25,18 @@ Export("env_goblin")
 # Build subdirectories (mirrors Godot's structure)
 if os.path.exists(goblin_module_path + "/core/SCsub"):
     SConscript("core/SCsub")
+
+# Editor splash: upstream 4.7 removed it. config.py dropped NO_EDITOR_SPLASH;
+# generate the gen header here from the goblin splash_editor.png so main.cpp
+# picks it up (main/SCsub skips its own command since no_editor_splash stays True).
+if env.editor_build:
+    _splash_editor_png = goblin_module_path + "/main/splash_editor.png"
+    if os.path.exists(_splash_editor_png):
+        env_goblin.CommandNoCache(
+            "#main/splash_editor.gen.h",
+            _splash_editor_png,
+            env_goblin.Run(goblin_builders.goblin_splash_editor_builder),
+        )
 
 # Build branding sources even for export templates.
 # The C++ code itself gates editor-only behavior with TOOLS_ENABLED.

@@ -8,15 +8,20 @@ Companion docs: `docs/gdscript_features.md` (feature semantics), `docs/GOBLIN_FO
 
 ```
 modules/goblin/
-├── config.py            # Build hooks: configure(), goblin_add_library(), module trim
+├── config.py            # Build hooks: configure(), goblin_add_library() + _GOBLIN_FILE_OVERRIDES, module trim
 ├── SCsub                # GOBLIN_MODULE_OVERRIDES (module swap, line 57)
 ├── goblin_builders.py   # Branding builders (version/splash/icons/authors/license)
-├── register_types.cpp   # Module registration: GoblinBranding + GoblinExportTweaks
+├── register_types.cpp   # Module registration: calls register_branding_translations()
 ├── core/                # Core mirror - ONLY overridden files
 │   ├── variant/variant_construct.{cpp,h}   # String ctors (core file override)
 │   └── version_override.py                 # Branding metadata (name, website)
 ├── modules/gdscript/    # GDScript fork - compiled INSTEAD of upstream modules/gdscript/
-├── editor/              # goblin_about.cpp, goblin_export.cpp (runtime UI patches)
+├── editor/              # branding_translations.{cpp,h} (runtime translation fallback), icons/, README
+│   └── overrides/       # Editor file mirrors - swapped by goblin_add_library(), NEVER globbed by SCsub
+│       ├── gui/editor_about.cpp                  # About dialog (Goblin literals, no Donors tab)
+│       ├── export/project_export.{cpp,h}         # Export dialog (debug-template-aware option, warning filter)
+│       ├── project_manager/project_manager.cpp   # Project Manager (Donate button removed)
+│       └── editor_node.cpp                       # EditorNode (Support Godot Development removed)
 ├── main/                # splash.png, splash_editor.png, app_icon.png
 ├── platform/windows/    # goblin.rc
 ├── docs/                # All fork docs (see docs/README.md)
@@ -28,7 +33,8 @@ modules/goblin/
 | Symbol | What |
 |---|---|
 | `configure()` (:5) | Replaces upstream builders with goblin_builders, wraps add_program/add_library/add_shared_library (godot -> goblin rename), applies DISABLE_MODULES trim |
-| `goblin_add_library()` | Core file override: swaps matching basename in core.lib source list BEFORE capture |
+| `goblin_add_library()` | Library-scoped file override: `_GOBLIN_FILE_OVERRIDES = {lib: {stem: goblin_path}}` for `core` + `editor`; swaps matching basename in the library source list BEFORE capture (ADR 0007 / B-09) |
+| `get_icons_path()` | Editor icon overrides (`Logo.svg`, `Godot.svg`, `TitleBarLogo.svg`, ...) registered at configure time — MUST stay here, not in editor/SCsub: SConstruct collects `module_icons_paths` before `editor/icons/SCsub` runs, so a late append never applies |
 | `can_build()` (:1) | Module enable check |
 
 ## GDScript fork (modules/gdscript/)
@@ -66,7 +72,8 @@ Diff vs upstream: `git diff --no-index --stat modules/gdscript modules/goblin/mo
 | Change | Location |
 |---|---|
 | Language feature (parser+analyzer+compiler) | `modules/goblin/modules/gdscript/` |
-| Single core .cpp | `modules/goblin/core/<mirror path>/` + hook in `goblin_add_library()` |
+| Single core .cpp | `modules/goblin/core/<mirror path>/` + dict entry in `goblin_add_library()` |
+| Single editor .cpp | `modules/goblin/editor/overrides/<mirror path>/` + dict entry in `goblin_add_library()` (NEVER a globbed dir — `editor/SCsub` globs `*.cpp` non-recursively; unmodified headers stay upstream, rewrite the bare own-header include to root-relative) |
 | New native class | .cpp/.h in `modules/goblin/` + `GDREGISTER_CLASS` in register_types.cpp |
 | Build-time generator | `goblin_builders.py` + assignment in `configure()` |
 | Branding assets | `main/`, `editor/icons/`, `platform/windows/` |
@@ -86,6 +93,11 @@ Diff vs upstream: `git diff --no-index --stat modules/gdscript modules/goblin/mo
 1. `goblin_manager.py` `build` subcommand targets `linuxbsd` - wrong for this project (Windows). Never reintroduce a `clean` command (`scons --clean` violates hard rule 1).
 2. `gdscript.h` layout must stay identical to upstream: `main/main.cpp` + `editor/doc/editor_help.cpp` include it outside the module (ABI).
 3. `then`/`elthen` semantics: `then` null-only, `elthen` truthy — locked 2026-08-13, do not "fix" to null-only.
+4. `editor/overrides/` must stay out of any SCsub glob (non-recursive `*.cpp` glob in `modules/goblin/editor/SCsub` would double-compile swapped sources). Only `goblin_add_library()` references it.
+5. Editor mirrors drift from upstream: re-diff on rebase (`git diff --no-index --stat editor/<file> modules/goblin/editor/overrides/<file>`); `project_export.h` mirror is the only copied header (it carries the fork-only `_update_export_debug_option()`).
+6. `modules/goblin/core/SCsub` adds `Depends` edges for `authors/donors/license/version_generated.gen.h` AND `main/splash.gen.h`/`splash_editor.gen.h`/`app_icon.gen.h`: the upstream SCsubs declare only upstream files as sources, so without the edges the goblin builders' inputs would never trigger regeneration.
+7. Editor splash: upstream 4.7 removed it (commit c283fce698). config.py strips `NO_EDITOR_SPLASH` from CPPDEFINES; `modules/goblin/SCsub` generates `#main/splash_editor.gen.h` itself (main/SCsub skips its command because `no_editor_splash` stays True). Do not flip `no_editor_splash` to False — main/SCsub's command would then target a nonexistent `#main/splash_editor.png` and fail.
+8. Windows RES builder is shadowed in config.py (`env.AddMethod` on "RES"): compiles `goblin.rc`/`goblin_res_wrap.rc` instead of upstream `godot_res.rc`. `goblin.ico` is generated at build time from `main/app_icon.png` (PNG-compressed ICO). The `.rc` files must reference the ico with a repo-root-relative path (`modules/goblin/platform/windows/goblin.ico`).
 
 ## Fast lookup
 
@@ -95,7 +107,7 @@ Diff vs upstream: `git diff --no-index --stat modules/gdscript modules/goblin/mo
 | Add keyword | tokenizer.h enum + tokenizer.cpp names/keywords, then parser precedence table |
 | Add VM opcode | `gdscript_byte_codegen.h` + `gdscript_vm.cpp` (enum + dispatch) |
 | Autocomplete behavior | `gdscript_editor.cpp` `_find_identifiers_in_class` |
-| Branding string | `core/version_override.py` / `goblin_builders.py` / `editor/goblin_about.cpp` |
+| Branding string | `core/version_override.py` / `goblin_builders.py` / `editor/branding_translations.cpp` (runtime fallback) / `editor/overrides/` (compile-time) |
 | Port upstream commit | `porting` skill + diff mirrors vs upstream |
 
 ## Update discipline

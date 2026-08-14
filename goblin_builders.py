@@ -2,6 +2,7 @@
 
 import importlib.util
 import os
+import struct
 import sys
 from collections import OrderedDict
 
@@ -179,6 +180,26 @@ inline constexpr const unsigned char app_icon_png[] = {{
 	{methods.format_buffer(buffer, 1)}
 }};
 """)
+
+
+def goblin_ico_builder(target, source, env):
+    """Generate goblin.ico (Windows exe icon) from app_icon.png.
+
+    Writes a PNG-compressed ICO (Vista+ supports PNG entries): a single
+    256x256 entry pointing at the PNG bytes of app_icon.png.
+    """
+    png_path = str(source[0])
+    with open(png_path, "rb") as f:
+        png_data = f.read()
+
+    # ICONDIR: reserved(2)=0, type(2)=1, count(2)=1
+    header = struct.pack("<HHH", 0, 1, 1)
+    # ICONDIRENTRY: width(1)=0 (means 256), height(1)=0, colors(1)=0,
+    # reserved(1)=0, planes(2)=1, bitcount(2)=32, size(4), offset(4)=22
+    entry = struct.pack("<BBBBHHII", 0, 0, 0, 0, 1, 32, len(png_data), 22)
+
+    with open(str(target[0]), "wb") as f:
+        f.write(header + entry + png_data)
 
 
 def goblin_editor_icons_builder(target, source, env):

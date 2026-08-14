@@ -75,13 +75,13 @@ Each ADR must address:
 
 | ADR # | Topic | Status |
 |-------|-------|--------|
-| 0001 | Source override system architecture | Proposed |
-| 0002 | Stable-release tracking strategy | Proposed |
-| 0003 | Module trim methodology and evidence standard | Proposed |
+| 0001 | Source override system architecture | Accepted |
+| 0002 | Stable-release tracking strategy | Accepted |
+| 0003 | Module trim methodology and evidence standard | Accepted |
+| 0007 | Goblin branding — replace retry loops with compile-time overrides | Accepted |
 | 0004 | GDScript union types — port from gdscript2 | Proposed |
 | 0005 | GDScript safe navigation / null coalescing | Proposed |
 | 0006 | Runtime lightmap API surface | Proposed |
-| 0007 | Goblin branding — replace retry loops with compile-time overrides | Proposed |
 
 ---
 
@@ -91,14 +91,16 @@ Each ADR must address:
 
 **What it does:**
 - SCons builder monkey-patching: replaces version info, authors, donors, license, splash, app icon, binary name
-- Runtime UI patching: translation injection for "Godot" → "Goblin" strings, donate button removal
-- Export dialog tweaks: architecture filtering, template detection
+- Compile-time editor UI overrides (ADR 0007): About dialog, export dialog, Project Manager, editor help menu
+- Runtime translation injection as fallback for strings in files not overridden
+- GDScript language fork (whole-module override)
 
-**Limitations:**
-- **Cannot replace C++ source files.** The monkey-patching operates at the Python/SConf function level — it can swap build targets (splash, icons, version info) but cannot tell SCons "compile my .cpp instead of the original."
-- **Inefficient retry loops.** `goblin_about.cpp` and `goblin_export.cpp` both poll `SceneTree` availability with hardcoded 120-attempt bounds and no backoff. Each deferred retry burns an idle frame.
+**Limitations (as of ADR 0007):**
 - **Fragile coupling.** The `config.py` → `goblin_builders.py` handoff relies on module-level dictionary injection before any builder runs. If import order changes, this breaks silently.
-- **No source-level integration.** All runtime changes are done via translation strings and scene-tree scanning. Compile-time string replacement is impossible.
+- **Override rebase tax.** The four editor file mirrors (`editor_about.cpp`, `project_export.cpp`, `project_manager.cpp`, `editor_node.cpp`) must be re-diffed against upstream on each rebase; `editor_node.cpp` is the highest-churn file.
+- **Composed-string gaps.** Exact-key translation overrides cannot rebrand composed strings (`"%s - Godot Engine"` window titles, "Godot Version") — tracked as backlog B-11.
+
+The runtime retry loops and `node_added` tree scanning (formerly in `goblin_about.cpp` / `goblin_export.cpp`) were eliminated by ADR 0007.
 
 ### Existing GDScript2 Module (`modules/gdscript2/`)
 
@@ -147,15 +149,15 @@ Three build-time injection mechanisms replace upstream files without modifying G
 **1. Module Directory Override** (`SCsub` → `GOBLIN_MODULE_OVERRIDES`)
 Swaps an entry in `env.module_list` for a goblin-owned mirror directory. Currently maps `gdscript` → `modules/goblin/modules/gdscript/`. Used for whole-module forks (the GDScript language fork).
 
-**2. Core File Override** (`config.py` → `goblin_add_library()`)
-Intercepts `env.add_library("core", ...)` and swaps a single source `Object` node before the library captures its sources. Currently swaps `variant_construct.cpp`. Used for surgical single-file overrides.
+**2. Core/Editor File Override** (`config.py` → `goblin_add_library()`)
+Intercepts `env.add_library(...)` and swaps selected source `Object` nodes before the library captures its sources. A library-scoped dict `_GOBLIN_FILE_OVERRIDES = {lib: {stem: goblin_path}}` covers `core` (currently `variant_construct.cpp`) and `editor` (currently `editor_about.cpp`, `project_export.cpp`, `project_manager.cpp`, `editor_node.cpp`). Used for surgical single-file overrides. Editor mirrors live in `modules/goblin/editor/overrides/` — a subtree never globbed by SCsub (the module's `*.cpp` glob is non-recursive), so swapped sources are not double-compiled.
 
 **3. Builder Monkey-Patching** (`config.py` → `configure()`)
 Replaces build-time generator functions (version header, splash, icons, authors/license) and renames binaries `godot` → `goblin`. Used for branding.
 
 ### The Chosen Architecture
 
-The original fork plan proposed an `add_source_files()` interception layer with a declarative `OVERRIDE_MAP`. This was **rejected** in favor of the two simpler mechanisms above, which leverage Godot's existing `env.module_list` redirection and `add_library` infrastructure directly. No `goblin_source_overrides.py` or `overrides/` tree exists; the mirror directories are `modules/goblin/modules/` and `modules/goblin/core/`.
+The original fork plan proposed an `add_source_files()` interception layer with a declarative `OVERRIDE_MAP`. This was **rejected** in favor of the simpler mechanisms above, which leverage Godot's existing `env.module_list` redirection and `add_library` infrastructure directly. No `goblin_source_overrides.py` or interception layer exists; the mirror directories are `modules/goblin/modules/`, `modules/goblin/core/`, and `modules/goblin/editor/overrides/` (the last is the home of the editor file mirrors from ADR 0007 — the directory name is shared with the rejected layer, but the mechanism is the accepted `goblin_add_library()` swap).
 
 ### What This Enables
 
@@ -163,14 +165,14 @@ The original fork plan proposed an `add_source_files()` interception layer with 
 |---|---|
 | Fork GDScript (union types, @private, String ctors) | Module directory override — done |
 | Override a single core file (variant_construct.cpp) | Core file override — done |
-| Hardcoded "Godot" strings in About dialog | Compile-time override of `editor_about.cpp` (backlog B-04) |
+| Hardcoded "Godot" strings in About dialog | Compile-time override of `editor_about.cpp` (backlog B-04) — done |
 | Add renderer hooks later | Module or core override, chosen when needed |
 | Modify physics behavior | Single-file core override |
-| Awkward retry loops for SceneTree hooking | Compile-time changes instead of runtime polling (backlog B-04) |
+| Awkward retry loops for SceneTree hooking | Compile-time changes instead of runtime polling (backlog B-04) — done |
 
 ### Eliminating the Retry Loops
 
-`goblin_about.cpp`'s SceneTree polling loop (120 attempts at one-per-idle-frame) is replaced by directly overriding `editor_about.cpp` to use goblin branding strings at compile time. The runtime translation injection can be kept as a fallback, but the primary mechanism becomes compile-time — zero runtime overhead, zero polling.
+Done (ADR 0007, 2026-08-13): the runtime singletons (`GoblinBranding` in `goblin_about.cpp`, `GoblinExportTweaks` in `goblin_export.cpp`) and their 120-attempt SceneTree polling loops and `node_added` tree scans are **deleted**. Their behavior is now compile-time: four editor files are overridden via the library-scoped dict in `goblin_add_library()` — `editor_about.cpp` (Goblin literals, Donors tab removed), `project_export.cpp` (debug-template-aware "Export With Debug" option + warning filter), `project_manager.cpp` (Donate button removed), `editor_node.cpp` (Support Godot Development item removed). The runtime translation injection is kept as a fallback in `branding_translations.cpp` for strings in files not overridden — zero runtime overhead, zero polling.
 
 ---
 
@@ -712,14 +714,19 @@ modules/goblin/
 │   ├── variant/variant_construct.{cpp,h}   # [NEW] String ctors
 │   └── version_override.py + AUTHORS/DONORS/COPYRIGHT/LICENSE  # [NEW] Branding
 ├── modules/gdscript/              # [NEW] GDScript fork (whole-module override)
-├── editor/                        # goblin_about.cpp/h, goblin_export.cpp/h (runtime patches)
+├── editor/                        # branding_translations.{cpp,h} (runtime fallback), icons/, README
+│   └── overrides/                 # [NEW] Editor file mirrors (never globbed by SCsub)
+│       ├── gui/editor_about.cpp              # About dialog (Goblin literals, no Donors tab)
+│       ├── export/project_export.{cpp,h}     # Export dialog (debug-template-aware option)
+│       ├── project_manager/project_manager.cpp  # PM (Donate button removed)
+│       └── editor_node.cpp                   # EditorNode (Support item removed)
 ├── main/                          # splash, splash_editor, app icon
 ├── platform/windows/              # goblin.rc
 ├── tools/                         # sync_godot_icons.py
 └── docs/                          # This document, backlog, ADRs, CODE_MAP
 ```
 
-Planned (backlog B-04): compile-time override of `editor/editor_about.cpp` to replace the About-dialog retry loops. The originally proposed `goblin_source_overrides.py` / `overrides/` tree was rejected (see §4).
+Editor file mirrors (backlog B-04, ADR 0007): the four files above are swapped in at build time by `goblin_add_library()`. The originally proposed `goblin_source_overrides.py` / interception layer was rejected (see §4); the `overrides/` directory name is reused for the accepted mirror home.
 
 ## Appendix B: DB Project Pain Point → Fork Solution Map
 
@@ -738,7 +745,7 @@ Planned (backlog B-04): compile-time override of `editor/editor_about.cpp` to re
 | 3D MIDI player requires manual construction | Medium | Built-in AudioStreamPlayer3D MIDI | Phase 2 |
 | String-format keys in hot navigation path | Medium | Vector3i keys for AStar3D | Phase 2 |
 | LUT generation bound by GDScript (135ms for 48³) | Low | GDScript perf + structs | Phases 1-3 |
-| Editor retry loops (120-attempt polling for SceneTree) | Low | Source override → compile-time changes | Phase 1 |
+| Editor retry loops (120-attempt polling for SceneTree) | Low | Compile-time file overrides (ADR 0007) — done | Phase 1 |
 | `Array[StringName].sort()` unreliable | Low | Opcode fusing (fused sort paths) | Phase 1 |
 
 ## Appendix C: Decision Log

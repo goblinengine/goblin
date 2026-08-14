@@ -32,7 +32,8 @@ modules/goblin/
 ├── modules/                     # Mirrors upstream modules/ for whole-module overrides
 │   └── gdscript/                #   The GDScript fork (compiled instead of upstream)
 │
-├── editor/                      # Editor branding (translation overrides, export tweaks)
+├── editor/                      # Editor branding: branding_translations.{cpp,h} (runtime fallback), icons/, overrides/ (compile-time mirrors)
+│   └── overrides/               #   gui/editor_about.cpp, export/project_export.{cpp,h}, project_manager/project_manager.cpp, editor_node.cpp
 ├── main/                        # Splash / app icon overrides
 ├── platform/windows/            # Platform overrides
 ├── tools/                       # Utility scripts
@@ -44,7 +45,7 @@ modules/goblin/
 Three mechanisms inject changes at build time; upstream files are never modified. See [docs/adr/0001-source-override-architecture.md](docs/adr/0001-source-override-architecture.md) and [.kilo/rules/rules.md](../.kilo/rules/rules.md).
 
 1. **Module Directory Override** — `GOBLIN_MODULE_OVERRIDES` in `SCsub` swaps `env.module_list` entries for whole-module forks.
-2. **Core File Override** — `goblin_add_library()` in `config.py` swaps a single source at library creation.
+2. **Core/Editor File Override** — `goblin_add_library()` in `config.py` swaps selected sources at library creation via the `_GOBLIN_FILE_OVERRIDES` dict (`core` + `editor`; ADR 0007).
 3. **Builder Monkey-Patching** — `configure()` replaces build-time generator functions and renames binaries.
 
 ## Build

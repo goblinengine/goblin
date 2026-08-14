@@ -19,13 +19,13 @@ Output: `bin/goblin.windows.editor.x86_64.exe` (+ `.console.exe`).
 
 ```
 modules/goblin/
-├── config.py            # Build hooks: configure(), goblin_add_library(), module trim
+├── config.py            # Build hooks: configure(), goblin_add_library() + _GOBLIN_FILE_OVERRIDES, module trim
 ├── SCsub                # GOBLIN_MODULE_OVERRIDES (whole-module swap)
 ├── goblin_builders.py   # Branding builders
-├── register_types.cpp   # Module registration (GoblinBranding, GoblinExportTweaks)
+├── register_types.cpp   # Module registration (register_branding_translations)
 ├── core/                # Core mirror: variant_construct.{cpp,h}, version_override.py, branding files
 ├── modules/gdscript/    # GDScript fork (compiled instead of upstream modules/gdscript/)
-├── editor/              # goblin_about.cpp, goblin_export.cpp (runtime UI patches)
+├── editor/              # branding_translations.{cpp,h} (runtime fallback), icons/, overrides/ (compile-time mirrors)
 ├── main/                # Splash / app icon overrides
 ├── platform/windows/    # goblin.rc
 ├── tools/               # sync_godot_icons.py
