@@ -48,4 +48,4 @@ Negative / risks:
   render_scene_buffers_gles3.{h,cpp}, renderer_viewport, viewport). Accepted: no other
   mechanism reaches the post-copy call site; drift handled by the porting skill.
 
-Implementation spec: `.kilo/plans/1786732900249-cut-upscalers-plan.md`.
+Implementation spec: `../plans/cut-upscalers-plan.md`.

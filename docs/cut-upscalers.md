@@ -35,6 +35,6 @@ defaults; not exposed.
 Clean-room implementation (ADR 0009): from Su & Willis (2004) and Reshetov (2009) plus the
 README description of https://github.com/Swordfish90/cheap-upscaling-triangulation
 (GPL-3.0 — no code read or adapted, including its "MIT fork"). Validation black-box
-(output comparison only). Spec: `.kilo/plans/1786732900249-cut-upscalers-plan.md`.
+(output comparison only). Spec: `plans/cut-upscalers-plan.md`.
 
 The "CUT" name and the algorithm design are attributed to Matteo (Swordfish90) — used descriptively; no code is derived from his GPL implementation.

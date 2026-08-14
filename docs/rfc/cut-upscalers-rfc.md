@@ -1,7 +1,7 @@
 # RFC: Engine-side CUT Upscalers for GL Compatibility (GLES3 3D Scaling)
 
 Proposed 2026-08-14 (architect). Exploratory companion to the locked implementation spec
-`.kilo/plans/1786732900249-cut-upscalers-plan.md`. Direction approved; this RFC records the
+`../plans/cut-upscalers-plan.md`. Direction approved; this RFC records the
 options evaluated for the exploratory decisions (license path, enum strategy, scope, config
 surface) and the reasoning behind the locked choices. Locked decisions live in ADR 0009 +
 the plan.
@@ -82,5 +82,5 @@ fallback, HDR intermediate format). None block implementation.
 
 ## References
 
-Plan `.kilo/plans/1786732900249-cut-upscalers-plan.md`; ADR 0009; feature doc
+Plan `../plans/cut-upscalers-plan.md`; ADR 0009; feature doc
 `cut-upscalers.md`; backlog C-12/C-13.
