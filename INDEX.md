@@ -8,7 +8,6 @@ The canonical docs live in [docs/](docs/). Start at [docs/README.md](docs/README
 
 | Document | Purpose |
 |----------|---------|
-| [docs/vision.md](docs/vision.md) | Vision pointer — canonical charter in `.kilo/rules/master_prompt.md` |
 | [docs/backlog.md](docs/backlog.md) | Single source of truth for pending, in-progress, and proposed work |
 | [docs/ROADMAP.md](docs/ROADMAP.md) | Phased roadmap, pain-point → solution map, risk assessment |
 | [docs/gdscript_features.md](docs/gdscript_features.md) | GDScript fork features and divergence surface |

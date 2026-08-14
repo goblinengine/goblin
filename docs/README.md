@@ -4,10 +4,9 @@ Goblin Engine is a deliberately customized, lightweight fork of Godot Engine. Al
 
 ## Start Here
 
-1. **[vision.md](vision.md)** — vision pointer. Canonical charter: `.kilo/rules/master_prompt.md`.
-2. **[backlog.md](backlog.md)** — the single source of truth for all work: planned, in-progress, done, rejected.
-3. **[ROADMAP.md](ROADMAP.md)** — phased roadmap, pain-point → solution map, risk assessment.
-4. **[CODE_MAP.md](CODE_MAP.md)** — navigation map: where files live, what each layer does, where new code goes.
+1. **[backlog.md](backlog.md)** — the single source of truth for all work: planned, in-progress, done, rejected.
+2. **[ROADMAP.md](ROADMAP.md)** — phased roadmap, pain-point → solution map, risk assessment (§1 carries the vision).
+3. **[CODE_MAP.md](CODE_MAP.md)** — navigation map: where files live, what each layer does, where new code goes.
 
 ## Architecture Decisions
 
