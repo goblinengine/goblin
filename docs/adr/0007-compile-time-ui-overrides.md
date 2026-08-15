@@ -52,7 +52,7 @@ Negative / accepted risks:
 
 - **Rebase tax**: `editor_node.cpp` (9664 lines) and `project_manager.cpp` are high-churn upstream files; each sync must re-apply 5-6 small documented edits. Mitigation: porting skill procedure, drift check (backlog B-10), and the diffs are tiny and mechanical.
 - `project_export.h` is mirrored (+1 private method) — a new drift point.
-- **macOS single-zip + custom-template debug detection quirks** are preserved verbatim from the runtime singleton (a `macos.zip` bundles debug+release yet reports no debug template; custom-template presets are ignored). Same behavior as before the change; DB targets Windows.
+- **macOS single-zip + custom-template debug detection quirks** are preserved verbatim from the runtime singleton (a `macos.zip` bundles debug+release yet reports no debug template; custom-template presets are ignored). Same behavior as before the change; the reference title targets Windows.
 - `_open_donate_page()` and the `donate_btn` member stay as dead code in the `project_manager.cpp` mirror (header consistency without copying the 293-line header).
 - `"%s - Godot Engine"` window titles and "Godot Version" strings remain Godot-branded (the exact-key overrides never matched them; no regression). Tracked as backlog B-11.
 - The Donors tab is deleted rather than showing goblin donors — matches the previous runtime strip; `donors.gen.h` generation is retained for other consumers.

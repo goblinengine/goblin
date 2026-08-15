@@ -173,7 +173,7 @@ and small text, (d) stylized sprite sheet. Renders at 320×180 → 1280×720 (4�
 | CUT3 | Edge search at D=1…8 finds edges up to D px; MIN_CONTRAST 0.5 rejects noise on flat regions; per-D visual diff monotone; 12+4D+5 samples. |
 
 Regression gates (every phase): full build green (windows editor + template, `build`
-skill; never `scons -c`); full GDScript suite green (1384 cases); DB corpus + 342 tests +
+skill; never `scons -c`); full GDScript suite green (1384 cases); reference corpus + 342 tests +
 level load (decision hierarchy #2); NEAREST/BILINEAR/OFF before/after screenshots
 identical; RD Forward+/Mobile screenshots unchanged (CUT clamps to FSR); glow/SSAO on CUT
 modes within CUT tolerance of bilinear equivalents. Perf deltas recorded (indicative):
@@ -212,7 +212,7 @@ Total ≈ 2.5–3.5 weeks. CUT1-only milestone at end of P2 (≈1.5 wk to first 
 
 | OQ | Question | Recommendation |
 |---|---|---|
-| OQ-1 | Expose dynamic-blend knobs (min/max contrast, min/max sharpness)? | No — internal constants at reference defaults. Expose only if DB asks. |
+| OQ-1 | Expose dynamic-blend knobs (min/max contrast, min/max sharpness)? | No — internal constants at reference defaults. Expose only if the reference title asks. |
 | OQ-2 | `cut_fast_luma` default? | false (quality-first; retro content is luma-dense). |
 | OQ-3 | 2D canvas CUT as additive module (`modules/cut_2d/`, ADR 0008)? | Defer. Distinct ticket when a game needs it. |
 | OQ-4 | Fallback gate (no-glow/SSAO CUT) if parity explodes? | Acceptable, documented limitation. Target parity first. |

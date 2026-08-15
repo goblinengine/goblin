@@ -71,12 +71,12 @@ Diff vs upstream: `git diff --no-index --stat modules/gdscript modules/goblin/mo
 
 ## MIDI / SoundFont module (`modules/midi/`)
 
-Standalone additive feature module at the repo root (ADR 0008) — standard Godot module anatomy, auto-discovered by the build with the full module lifecycle: `SCsub`, `config.py` (`can_build`/`get_doc_classes`/`get_icons_path`), `register_types.{h,cpp}` (registered via the generated `register_module_types.gen.cpp`, `MODULE_MIDI_ENABLED`), `doc_classes/`, `tests/`, `editor/icons/`, in-module `thirdparty/`. Not part of the override machinery; no goblin hooks, no upstream file touched. Kills the external MidiStream GDExtension dependency (backlog C-07). Class/property/importer names are identical to the GDExtension so existing DB projects and `.import` files keep working.
+Standalone additive feature module at the repo root (ADR 0008) — standard Godot module anatomy, auto-discovered by the build with the full module lifecycle: `SCsub`, `config.py` (`can_build`/`get_doc_classes`/`get_icons_path`), `register_types.{h,cpp}` (registered via the generated `register_module_types.gen.cpp`, `MODULE_MIDI_ENABLED`), `doc_classes/`, `tests/`, `editor/icons/`, in-module `thirdparty/`. Not part of the override machinery; no goblin hooks, no upstream file touched. Kills the external MidiStream GDExtension dependency (backlog C-07). Class/property/importer names are identical to the GDExtension so existing projects and `.import` files keep working.
 
 - `MidiStream` is an `AudioStream` -> works in any stream player (`AudioStreamPlayer`, `AudioStreamPlayer3D`, ...) — this delivers backlog C-03 (3D spatialized MIDI) with no extra node.
 - The synthesizer is TinySoundFont v0.9 (MIT) + TinyMidiLoader v0.7 (zlib), single-header libs vendored verbatim under `thirdparty/tinysoundfont/`; `TSF_IMPLEMENTATION`/`TML_IMPLEMENTATION` compile into `midi_stream_playback.cpp` only.
 - Playback is engine-style: overrides public `start/stop/is_playing/get_loop_count/get_playback_position/seek` + `_mix_internal` + `get_stream_sampling_rate` (AudioStreamPlaybackWAV pattern), NOT the GDVIRTUAL `_start`/`_mix_resampled` hooks (those are for script subclasses).
-- Lazy loading (`_ensure_loaded`) parses SF2 + MIDI on first mix (audio thread) — same design as the GDExtension, DB-proven. Live notes via `note_on(preset, key, vel)`.
+- Lazy loading (`_ensure_loaded`) parses SF2 + MIDI on first mix (audio thread) — same design as the GDExtension, proven on the reference title. Live notes via `note_on(preset, key, vel)`.
 - Importers are `ResourceImporter` subclasses registered in `ResourceFormatImporter` at EDITOR level (WAV-importer pattern). Importer names `midi_stream.mid` / `midi_stream.sf2` match the GDExtension.
 - Test note: `--test` mode has no AudioServer; the doctest suite bootstraps `AudioDriverManager::get_driver(0)` (the dummy) via `set_singleton()` + `init()`, and recreates `AudioServer` whenever missing — `GodotTestCaseListener::test_case_end` deletes the singleton after every test case.
 
@@ -101,7 +101,7 @@ Standalone additive feature module at the repo root (ADR 0008) — standard Godo
 - Gotchas:
   - `.out` files must end with a trailing newline: `GDScriptTest::check_output()` compares against `strip_edges(output) + "\n"`.
   - `init_language()` forces `ProjectSettings`' resource path to the test scripts dir so `res://`-relative reads (LSP/completion suites) work even after other suites (e.g. GLTF) leave the singleton's resource path set.
-- Gate: DB corpus compile + 342 unit tests + level load. Never claim a change verified without a build.
+- Gate: reference corpus compile + 342 unit tests + level load. Never claim a change verified without a build.
 
 ## Landmines / drift (verified today)
 

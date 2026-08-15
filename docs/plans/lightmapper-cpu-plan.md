@@ -130,7 +130,7 @@ texel size, depth float):
   position/normal atlas images with an epsilon. These are deterministic (no RNG in S3/S4)
   → mismatch = raster bug, not noise. If position/normal match, the lighting math is a
   direct port, so lightmaps follow.
-- Visual gate: DB room — no acne on curved surfaces (smoothing), no UV-island border
+- Visual gate: reference room — no acne on curved surfaces (smoothing), no UV-island border
   artifacts (wireframe pass).
 
 ### S4 — Unocclude (direct port)
@@ -275,8 +275,8 @@ Rough cost model (grid DDA ≈ 20-100 triangle tests/ray, ~8-core desktop):
 
 | Scene | Texels | Quality | Direct (S5) | Indirect (S6, 128 rays) | Total est. |
 |-------|--------|---------|-------------|--------------------------|-----------|
-| DB room (256² × 2 slices, 4 lights) | 131k | MEDIUM | ~1-2 s | ~3-6 s | ~5-10 s |
-| DB room (512² × 2, 6 lights) | 524k | HIGH | ~4-8 s | ~10-20 s | ~15-30 s |
+| Reference room (256² × 2 slices, 4 lights) | 131k | MEDIUM | ~1-2 s | ~3-6 s | ~5-10 s |
+| Reference room (512² × 2, 6 lights) | 524k | HIGH | ~4-8 s | ~10-20 s | ~15-30 s |
 | Full level (2048² × 4, 12 lights) | 16.7M | HIGH | ~2-4 min | ~5-15 min | ~7-20 min |
 
 Notes:
@@ -300,7 +300,7 @@ Notes:
    Precision will differ slightly from GPU (filtering order) — parity tests must use
    tolerance, not bit equality, for any sampled value.
 2. **The wireframe pass**: emulated as UV-edge pixel walk (see 3.3.2) — visual parity only.
-3. **Area lights**: DB uses AreaLight3D on GL compat (screens/windows) — dynamic
+3. **Area lights**: the reference title uses AreaLight3D on GL compat (screens/windows) — dynamic
    rendering works in the GLES3 rasterizer (unaffected). Baked contribution needs the
    area-light texture atlas: GLES3 `bake_render_area_light_atlas` returns **empty**
    (rasterizer_scene_gles3.h:971) and `_build_area_light_texture_atlas` early-returns on
@@ -309,7 +309,7 @@ Notes:
    CPU-side in `_build_area_light_texture_atlas`; mipmaps via `Image::generate_mipmaps`)
    in the lightmap_gi.cpp override, then evaluate LTC analytically (lm_area_lights_inc.glsl
    is pure math — Hill/Heitz form factors, no LUT). Baked textured area lights on compat
-   become possible — a DB win. Scope: phase 3.
+   become possible — a reference-title win. Scope: phase 3.
 4. **Determinism vs RD**: same seeds + same math → near-identical output; float sampling
    differences only where textures are fetched. Two bakes on CPU are bit-identical.
 5. **Environment panorama**: GLES3 implements `sky_bake_panorama`/`environment_bake_panorama`
@@ -339,7 +339,7 @@ module as `LightmapBaker : RefCounted` — the extension's class name, engine-na
   on the descriptor mesh RID — works without scene nodes) → same `LightmapperCPU` →
   in-memory `LightmapGIData` writer (users from `user_path`/`target_instance_rid` +
   `RS::instance_geometry_set_lightmap` for RID targets, mirroring the extension's
-  `get_bake_assignments`). Kept only if DB uses it (RFC open question 5).
+  `get_bake_assignments`). Kept only if the reference title uses it (RFC open question 5).
 - **Settings surface** — the wrapper exposes the full engine bake settings (same names as
   `LightmapGI`, see RFC "Settings surface") applied to both paths; extension-only
   approximation settings are dropped by design (physical baking replaces them; mapping in
@@ -349,7 +349,7 @@ module as `LightmapBaker : RefCounted` — the extension's class name, engine-na
   `array_mesh_lightmap_unwrap_callback`).
 - **Parity with extension**: same class name, same method names, `get_gathered_mesh_count()`,
   `get_bake_assignments()`; the `ClassDB.class_exists("LightmapBaker")` guard disappears
-  (always registered). DB call sites unchanged; extension unloaded.
+  (always registered). Reference-title call sites unchanged; extension unloaded.
 
 Notes: `LightmapGI::bake()` remains C++-only in the engine path (called by the wrapper
 and the editor). No `lightmap_gi.h` change needed → no direct core edit.
@@ -454,7 +454,7 @@ node's origin leaves the camera frustum.
 - **GLES3**: `p_lightmaps` is **never used** (signature only, rasterizer_scene_gles3.cpp:2388)
   — lightmap binding is per-geometry-instance (`inst->lightmap_instance` → lightmap data,
   3580-3617), set once by `instance_geometry_set_lightmap`. Culling of the node does not
-  affect it. If DB sees the symptom on GL compat, the repro must be checked at P1 — the
+  affect it. If the reference title sees the symptom on GL compat, the repro must be checked at P1 — the
   classic mechanism is RD-only.
 
 **Upstream status:** issue open since 2023-01-17, no fix, no linked PR (2026-08-14).
@@ -471,17 +471,17 @@ RS::get_singleton()->instance_set_ignore_culling(get_instance(), true);
 `instance_set_ignore_culling` (rendering_server.cpp:3232, renderer_scene_cull.cpp:1156)
 sets `FLAG_IGNORE_ALL_CULLING` → the gate at 2930 always admits the instance. Works for
 all renderers; harmless on GLES3; no renderer changes. Upstream-acceptable shape.
-Bonus: the RS method is GDScript-bindable, so DB's existing workaround could even be
+Bonus: the RS method is GDScript-bindable, so the reference title's existing workaround could even be
 replaced by one call today.
 
-**Effect on DB:** the ~17 level.gd workaround functions for lightmap injection can be
-deleted once C-01 + C-02 land (DB-side cleanup).
+**Effect on the reference title:** the ~17 level-script workaround functions for lightmap injection can be
+deleted once C-01 + C-02 land (reference-title-side cleanup).
 
 ## 10. Verification gates (per phase)
 
 - Unit tests (module `tests/`): synthetic room — analytic direct falloff, shadow boundary,
   **zero leak across opaque wall** (S5), bounce energy decay (S6), determinism (two bakes,
   identical bytes), abort via step callback, seam blend uniformity (S11).
-- Integration: DB room bake at runtime on GL compat → visual comparison against the
+- Integration: reference room bake at runtime on GL compat → visual comparison against the
   extension baker output (minus leaks) and, in editor builds, against RD with tolerance.
-- Gates per rules: full GDScript suite + DB level load.
+- Gates per rules: full GDScript suite + reference level load.

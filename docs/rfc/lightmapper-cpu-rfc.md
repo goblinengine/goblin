@@ -6,7 +6,7 @@ Supersedes: ADR 0006 direction ("promote extension `LightmapBaker` to public API
 
 ## Context
 
-DB needs **runtime lightmap baking**: levels are generated on the fly from pre-saved
+The genre set's reference title needs **runtime lightmap baking**: levels are generated on the fly from pre-saved
 data, with many static lights + shadows, on the **GL Compatibility** renderer.
 
 Today the only runtime baker is the GDExtension `LightmapBaker`
@@ -120,7 +120,7 @@ Class name: `LightmapperCPU` (upstream conventions; parallel to `LightmapperRD`)
    check applies only when RD is the baker (verified: button currently hard-disabled
    without `lightmapper_rd`, plan §9b.3a).
 3. **Trim changes** (with permission, ADR 0003 evidence): disable `lightmapper_rd`
-   (evidence: DB bakes at runtime; one baker everywhere; removes RD + OIDN from the
+   (evidence: the reference title bakes at runtime; one baker everywhere; removes RD + OIDN from the
    pipeline). Re-enable `tinyexr` (evidence: editor lightmap bake writes `.exr`;
    `save_exr` is `ERR_UNAVAILABLE` without it — verified; editor bake is broken in
    the fork today, plan §9b.3c).
@@ -129,7 +129,7 @@ Class name: `LightmapperCPU` (upstream conventions; parallel to `LightmapperRD`)
    `thirdparty/xatlas` (present). Guard: skip when `MODULE_XATLAS_UNWRAP_ENABLED`
    (editor builds already get the callback from that module; runtime builds get
    it from us). `xatlas_unwrap` stays editor-gated and untouched.
-5. **GDExtension retirement**: DB migrates from `LightmapBaker` to
+5. **GDExtension retirement**: the reference title migrates from `LightmapBaker` to
    the engine-native `LightmapBaker` (module) — same call sites, no
    `class_exists` guard (closes C-02); extension class eventually removed.
 
@@ -146,7 +146,7 @@ declaration in `lightmap_gi.h` — headers are not swappable and a direct header
 sanctioned last resort we don't need. **All GDScript API ships in the module.**
 
 `LightmapBaker : RefCounted` (registered by the CPU module) — mirrors the extension's
-API 1:1 so DB migrates without call-site changes:
+API 1:1 so the reference title migrates without call-site changes:
 - `bake(from_node, output_data)` / `bake_descriptors(descriptors, output_data, from_node)`
   / `bake_descriptors_with_lights(descriptors, light_descriptors, output_data, from_node)`
   — node path calls the existing C++ `LightmapGI::bake(root, "")` (in-memory mode, module
@@ -160,8 +160,8 @@ API 1:1 so DB migrates without call-site changes:
   `ArrayMesh::lightmap_unwrap` (works once the module registers the unwrap callback).
 - `progress` property + signals; `get_gathered_mesh_count()`/`get_bake_assignments()` kept.
 - Kills the `ClassDB.class_exists("LightmapBaker")` guard — class always exists.
-3. **DB migration:** unload the extension's `LightmapBaker`; same call sites, same class
-   name, no guard. `bake_descriptors*` kept only if DB uses it (TBD — see open questions).
+3. **Reference-title migration:** unload the extension's `LightmapBaker`; same call sites, same class
+   name, no guard. `bake_descriptors*` kept only if the reference title uses it (TBD — see open questions).
 
 ### Denoiser
 
@@ -186,14 +186,14 @@ Injection correctness is independent of baking and required for both bakers.
 
 | Phase | Scope | Effort | Gate |
 |-------|-------|--------|------|
-| P1 | Module skeleton, own BVH, direct lighting, 1-2 bounces, atlas output, in-memory bake override, unwrap callback, settings ownership, WorkerThreadPool, progress/abort | ~1-1.5 wk | Bake a DB room at runtime on GL compat: visually matches extension output minus leaks; no light through opaque walls; injection renders correctly |
+| P1 | Module skeleton, own BVH, direct lighting, 1-2 bounces, atlas output, in-memory bake override, unwrap callback, settings ownership, WorkerThreadPool, progress/abort | ~1-1.5 wk | Bake a reference room at runtime on GL compat: visually matches extension output minus leaks; no light through opaque walls; injection renders correctly |
 | P2 | SH probes, environment panorama, supersampling, shadowmask, quality ray-count mapping, per-mesh lightmap_scale verification | ~1-1.5 wk | Probe-lit dynamic objects match static bake; settings parity with RD documented |
 | P3 | CPU JNLM denoiser, area lights, texture_for_bounces refinement | optional | Noise reduction at low ray counts |
 
 Tests: module `tests/` — synthetic room: analytic direct-light falloff, shadow
 boundary, **zero leak across opaque wall**, bounce energy decay, determinism
 (seeded RNG), abort via step callback. Gates per rules: full GDScript suite +
-DB level load.
+reference level load.
 
 ## Open questions (resolved 2026-08-14)
 
@@ -201,7 +201,7 @@ DB level load.
    Two CPU bakes are bit-identical; parallel-safe regardless of thread count.
 2. **Class registration** — register `LightmapperCPU` with ClassDB (parity with
    `LightmapperRD`, debuggability). `LightmapBaker` wrapper registered (it is the API).
-3. **Area lights** — DB uses them on GL compat (screens/windows) as dynamic lights;
+3. **Area lights** — the reference title uses them on GL compat (screens/windows) as dynamic lights;
    the GLES3 renderer renders them fine. Baked contribution: RD bakes nothing on compat
    (GLES3 `bake_render_area_light_atlas` returns an empty atlas — verified
    rasterizer_scene_gles3.h:971; `_build_area_light_texture_atlas` early-returns on compat,
@@ -217,7 +217,7 @@ DB level load.
    warnings restructure (RFC "Engine changes" 1-2); (b) editor `.exr` save is broken in
    the fork today (`tinyexr` trimmed) → re-enable `tinyexr` (RFC "Engine changes" 3).
    Descriptor API is GDScript-only (never editor-facing).
-5. **Descriptor API** — DB uses both `bake()` (scene root) and
+5. **Descriptor API** — the reference title uses both `bake()` (scene root) and
    `bake_descriptors_with_lights()` (Dictionary input). Both ship in the `LightmapBaker`
    wrapper (descriptor path ≈150 lines reusing engine infra).
 
@@ -235,8 +235,8 @@ physical baking): `use_material_albedo`/`use_lambert_normalization`/`light_fallo
 `use_environment_ambient` → environment modes; `lightmap_energy_scale` →
 `camera_attributes` exposure; `auto_unwrap_uv2` → explicit `lightmap_unwrap()` call;
 `atlas_size_override`/`atlas_padding` → engine atlas packing;
-`mesh_layer_mask` → scene structure under the bake root (or wrapper-side filter if DB
-needs it — revisit at P1 if DB parity tests demand).
+`mesh_layer_mask` → scene structure under the bake root (or wrapper-side filter if the reference title
+needs it — revisit at P1 if parity tests demand).
 
 ## Threading
 

@@ -13,7 +13,7 @@ the plan.
 - FSR1/FSR2 are compute-only (`servers/rendering/renderer_rd/effects/fsr.cpp`) — RD's
   upscalers cannot run on GL Compatibility (no compute).
 - Fork genre set is retro/low-fi; pixel-art content is CUT's strength (CUT > FSR1 on
-  stylized, loses on photographic). DB's canvas shaders cover 2D only — the 3D upscale
+  stylized, loses on photographic). Canvas shaders cover 2D only — the 3D upscale
   path (`post_copy` in `drivers/gles3/effects/post_effects.cpp:91`, call site
   `rasterizer_scene_gles3.cpp:3067`) is unreachable from shader-side workarounds.
 - Algorithm source: https://github.com/Swordfish90/cheap-upscaling-triangulation
@@ -54,7 +54,7 @@ the plan.
   (`rendering/scaling_3d/intensity`). Registered from goblin PostEffects ctor — no
   `project_settings.cpp` swap.
 - O4b: Per-viewport params. Rejected: viewport already carries mode + scale; bloat with
-  no DB need.
+  no reference-title need.
 
 ### O5 — RD behavior
 - **O5a: CUT → FSR on Forward+/Mobile** (LOCKED, `WARN_PRINT_ONCE`); Mobile falls through
@@ -68,7 +68,7 @@ the plan.
 
 ### O7 — 2D canvas CUT
 - Additive module (ADR 0008 anatomy). DEFERRED (plan OQ-3): not needed for 3D scaling;
-  canvas shaders already cover DB's 2D needs.
+  canvas shaders already cover the genre set's 2D needs.
 
 ## Recommended direction
 

@@ -11,7 +11,7 @@
 
 ### What This Fork Is
 
-A deliberately customized, lightweight fork of Godot Engine tailored specifically for immersive sim / systems-heavy FPS RPG development. It preserves full compatibility with the DB project's existing code and assets while removing unused engine components and extending the engine where it limits the game.
+A deliberately customized, lightweight fork of Godot Engine tailored specifically for immersive sim / systems-heavy FPS RPG development. It preserves full compatibility with existing Godot projects and the genre set's reference title while removing unused engine components and extending the engine where it limits the genre.
 
 ### What This Fork Is NOT
 
@@ -24,13 +24,13 @@ A deliberately customized, lightweight fork of Godot Engine tailored specificall
 
 1. **Source Override, Not Source Modification.** All changes live inside `modules/goblin/`. Godot core files are never modified. The build system redirects compilation to goblin-owned replacement files.
 
-2. **Surgical, Not Sweeping. Project-Specific Only.** Every core change must justify its existence against a concrete DB project pain point. No speculative over-engineering. This fork serves ONE project — not the general Godot community. Features that benefit "most users" but don't serve DB have zero priority. Core engine edits are a LAST RESORT, only when a module override or GDScript extension is impossible.
+2. **Surgical, Not Sweeping. Genre-Specific Only.** Every core change must justify its existence against a concrete genre requirement. No speculative over-engineering. This fork serves a narrow genre set — immersive sim / systems-heavy FPS RPG — not the general Godot community. Features that benefit "most users" but don't serve the genre set have zero priority. Core engine edits are a LAST RESORT, only when a module override or GDScript extension is impossible.
 
-3. **Trim Aggressively, Keep Compatibility.** Strip unused modules when evidence confirms they are unused. The trimmed binary still runs DB unmodified.
+3. **Trim Aggressively, Keep Compatibility.** Strip unused modules when evidence confirms they are unused. The trimmed binary still runs reference-title projects unmodified.
 
-4. **Single-Branch Progressive Stable Tracking.** `master` is the one and only branch. It tracks official Godot stable releases, never the upstream `master` development branch. At each new stable release (e.g., 4.7.2, 4.8.0), `master` is rebased onto that release tag and goblin changes are re-applied. No branch-per-release archaeology — this fork serves one project and complexity is waste. Current base: `4.7.1-stable` (commit a13da4feb8d).
+4. **Single-Branch Progressive Stable Tracking.** `master` is the one and only branch. It tracks official Godot stable releases, never the upstream `master` development branch. At each new stable release (e.g., 4.7.2, 4.8.0), `master` is rebased onto that release tag and goblin changes are re-applied. No branch-per-release archaeology — this fork serves a narrow genre set and complexity is waste. Current base: `4.7.1-stable` (commit a13da4feb8d).
 
-5. **ADR-Governed Architecture.** All structural decisions — GDScript language extensions, core engine modifications, module architecture, renderer changes — go through Architecture Decision Records (ADRs) modeled on the Goblin Custom Engine's governance. No feature lands without a locked ADR. The ADR must specify: what changes, why it's justified against a concrete DB pain point, what files are touched, what the merge conflict surface is, and what tests gate acceptance.
+5. **ADR-Governed Architecture.** All structural decisions — GDScript language extensions, core engine modifications, module architecture, renderer changes — go through Architecture Decision Records (ADRs) modeled on the Goblin Custom Engine's governance. No feature lands without a locked ADR. The ADR must specify: what changes, why it's justified against a concrete genre requirement, what files are touched, what the merge conflict surface is, and what tests gate acceptance.
 
 6. **Cherry-Pick GDScript Features, Don't Fork Wholesale.** The existing `gdscript2` module has partial breakage and untracked complexity across multiple unmerged branches. Instead of merging it wholesale, start from clean upstream GDScript and port individual features one at a time: union types first, then `then`/`elthen`, then performance optimizations. Each feature lands as its own tested, reviewed change.
 
@@ -46,7 +46,7 @@ This fork follows the same ADR-driven governance as the Goblin Custom Engine. No
 
 Each ADR must address:
 - **Status:** Proposed → Accepted → Superseded
-- **Context:** What concrete DB pain point or engine limitation justifies this change?
+- **Context:** What concrete genre requirement or engine limitation justifies this change?
 - **Decision:** What exactly changes? What files are touched? What is the override surface?
 - **Alternatives Considered:** What other approaches were rejected and why?
 - **Consequences:** What becomes easier? What becomes harder? What is the merge-conflict surface?
@@ -57,15 +57,15 @@ Each ADR must address:
 
 | Category | Example Decisions | Governing Principle |
 |----------|------------------|---------------------|
-| **Language** | Union types, structs, typed dicts | Every syntax addition must solve a concrete DB pain point. No speculative language features. |
+| **Language** | Union types, structs, typed dicts | Every syntax addition must solve a concrete genre requirement. No speculative language features. |
 | **Engine Core** | LightmapGI fix, MIDI support, AStar3D keys | Surgical changes only. Minimum files touched. Must be upstream-acceptable where possible. |
-| **Module** | Which modules to trim, which to keep | Evidence-based: verified against DB project config, script corpus, and content files. |
-| **Renderer** | GL Compat vs Forward+, custom render passes | DB 1.0 compatibility is non-negotiable. Renderer changes are post-1.0 only. |
+| **Module** | Which modules to trim, which to keep | Evidence-based: verified against the reference title's project config, script corpus, and content files. |
+| **Renderer** | GL Compat vs Forward+, custom render passes | Reference-title compatibility is non-negotiable. Renderer changes are post-first-title only. |
 | **Build System** | Source override mechanism, SCons hooks | Must not modify Godot build files. All changes in `modules/goblin/`. |
 
 ### ADR Lifecycle
 
-1. **Proposal:** Draft ADR in `modules/goblin/docs/adr/`. Must include concrete evidence (DB code references, benchmark data, module dependency analysis).
+1. **Proposal:** Draft ADR in `modules/goblin/docs/adr/`. Must include concrete evidence (reference-title code references, benchmark data, module dependency analysis).
 2. **Review:** Cross-check against existing ADRs for conflicts. Verify test gates are specific and measurable.
 3. **Acceptance:** Lock the ADR. Implementation begins only after acceptance.
 4. **Implementation:** Code changes live in `modules/goblin/overrides/`. Test suite gates the merge.
@@ -122,7 +122,7 @@ The runtime retry loops and `node_added` tree scanning (formerly in `goblin_abou
 **Known Issues:**
 - User reports partial breakage (certain scripting patterns cause issues) — needs diagnosis and fix before merging into goblin
 
-### DB Project Engine Dependencies
+### Reference Title Engine Dependencies
 
 **Full dependency map documented separately.** Key findings:
 - **Renderer:** GL Compatibility only. No Forward+ or Mobile.
@@ -181,9 +181,9 @@ Done (ADR 0007, 2026-08-13): the runtime singletons (`GoblinBranding` in `goblin
 ### Methodology
 
 Each module was assessed against:
-1. Does DB directly use the classes or APIs it provides?
-2. Is it a dependency of another module DB uses?
-3. Would removing it break editor functionality needed for DB development?
+1. Does the reference title directly use the classes or APIs it provides?
+2. Is it a dependency of another module the reference title uses?
+3. Would removing it break editor functionality needed for reference-title development?
 
 ### Keep List (~20 modules)
 
@@ -194,11 +194,11 @@ Each module was assessed against:
 | `msdfgen` | MSDF font generation (enabled in project) | No |
 | `text_server_adv` | All text rendering (HarfBuzz) | No |
 | `jolt_physics` | Selected physics engine | No |
-| `regex` | CaveIni parser, dice rolling, string tools | No |
+| `regex` | Level-format parser, dice rolling, string tools | No |
 | `goblin` | Fork identity + override system | No |
 | `ogg` | OGG container (dep of vorbis) | No |
 | `vorbis` | OGG Vorbis audio decoder | No |
-| `mp3` | MP3 audio decoder (used in shot.gd) | No |
+| `mp3` | MP3 audio decoder (used in a gameplay script) | No |
 | `bcdec` | BC texture decompression | No |
 | `meshoptimizer` | Vertex cache optimization for SurfaceTool | No |
 | `mbedtls` | TLS, CryptoCore (engine internals) | No |
@@ -225,7 +225,7 @@ Each module was assessed against:
 **Image/Texture Formats (12 modules):**
 `bmp`, `tga`, `dds`, `hdr`, `jpg`, `webp`, `tinyexr`, `basis_universal` (runtime), `ktx`, `astcenc`, `etcpak`, `svg` (runtime)
 
-*DB uses only PNG. All other image formats are dead code.*
+*The reference title uses only PNG. All other image formats are dead code.*
 
 **Audio/Video (2 modules):**
 `theora` (video playback), `interactive_music` (AudioStreamPlaylist/Interactive/Synchronized)
@@ -248,7 +248,7 @@ All networking modules preserved: `enet`, `websocket`, `webrtc`, `upnp`, `multip
 **Navigation (2 modules):**
 `navigation_3d`, `navigation_2d`
 
-*Verified: DB's `navigation.gd` (1648 lines) uses only `AStar3D` — a core math class in `core/math/`, NOT part of the `navigation_3d` module. Zero references to `NavigationServer3D`, `NavigationAgent3D`, `NavigationRegion3D`, or `NavigationMesh`. The `navigation_3d` module provides these unused classes. `AStar3D` is preserved as core.*
+*Verified: the reference title's navigation script (1648 lines) uses only `AStar3D` — a core math class in `core/math/`, NOT part of the `navigation_3d` module. Zero references to `NavigationServer3D`, `NavigationAgent3D`, `NavigationRegion3D`, or `NavigationMesh`. The `navigation_3d` module provides these unused classes. `AStar3D` is preserved as core.*
 
 **Physics (2 modules):**
 `godot_physics_3d`, `godot_physics_2d`
@@ -291,14 +291,14 @@ All networking modules preserved: `enet`, `websocket`, `webrtc`, `upnp`, `multip
 - **Compile time:** ~55% reduction in modules compiled (~22 from 56 enabled, up from 14 due to keeping networking + noise + platforms)
 - **Binary size:** Estimated 30-45% reduction in export template
 - **Linker time:** Significant reduction from fewer static libraries
-- **Risk:** Low — all trimmed modules verified unused by DB project
+- **Risk:** Low — all trimmed modules verified unused by the reference title
 
 ### Trimming Mechanism
 
 Module trimming uses Godot's existing `module_check_dependencies()` disabling mechanism. In `goblin/config.py:configure()`:
 
 ```python
-# After the source override hook, disable modules DB doesn't use
+# After the source override hook, disable modules the reference title doesn't use
 DISABLE_MODULES = {
     "bmp", "tga", "dds", "hdr", "jpg", "webp", "tinyexr",
     "basis_universal", "ktx", "astcenc", "etcpak",
@@ -328,9 +328,9 @@ This leverages Godot's existing `module_check_dependencies()` in `methods.py` �
 
 **Feature 0a — Union Types (`int | String`, `Dictionary | null`)**
 - Highest impact / lowest risk of the gdscript2 features
-- Solves ~30 `typeof()` + `as` variant-checking patterns in navigation builder alone
+- Solves ~30 `typeof()` + `as` variant-checking patterns in the navigation builder alone
 - Replaces `Variant` branching in physics shape-size code
-- Port approach: extract the union type changes from gdscript2's parser/analyzer/compiler diffs. Add union type test suite (50+ patterns). Run against DB script corpus.
+- Port approach: extract the union type changes from gdscript2's parser/analyzer/compiler diffs. Add union type test suite (50+ patterns). Run against the reference corpus.
 
 **Feature 0b — Safe Navigation `then` and Null Coalescing `elthen`**
 - Replace hundreds of `if x != null:` guards across the codebase
@@ -340,12 +340,12 @@ This leverages Godot's existing `module_check_dependencies()` in `methods.py` �
 **Feature 0c — Inline Caching for Property Access**
 - Monomorphic property cache (4 opcodes: SET/GET named/member)
 - Port approach: extract bytecode gen slot reservation + VM fast-path changes
-- Validate: profile hot paths in DB's physics (`_physics_process`) and AI detection
+- Validate: profile hot paths in the reference title's physics (`_physics_process`) and AI detection
 
 **Feature 0d — Fast String Cast**
 - Trivial optimization: `as String` fast path in VM
 - Port approach: single change in `gdscript_vm.cpp`
-- Validate: benchmark string-heavy code paths (navigation keys, CaveIni parsing)
+- Validate: benchmark string-heavy code paths (navigation keys, level-format parsing)
 
 **ADR Required:** Each feature gets its own ADR documenting: what changes, exact files touched in `overrides/gdscript/`, what test suite gates acceptance, what upstream GDScript behavior is preserved vs modified.
 
@@ -357,12 +357,12 @@ Extract from gdscript2's `opcode_fusing` branch. Fused opcodes for typed array/d
 **PIC (Polymorphic Inline Cache):**
 Extract from gdscript2's `pic` branch. Upgrade monomorphic cache to 4-way PIC with negative caching. Extend to method calls.
 
-**Impact on DB:** Eliminates per-frame lambda allocation for `sort_custom` (33+ call sites). Dictionary hot paths in combat/stealth/conditions see 2-5x speedup.
+**Impact on the reference title:** Eliminates per-frame lambda allocation for `sort_custom` (33+ call sites). Dictionary hot paths in combat/stealth/conditions see 2-5x speedup.
 
-### Tier 2 — Language Features (Post-DB 1.0, high impact)
+### Tier 2 — Language Features (Post-first-title 1.0, high impact)
 
 **Structs / Value Types:**
-The single biggest language gap. DB's entire entity model is `Dictionary` because GDScript lacks value types:
+The single biggest language gap. The reference title's entire entity model is `Dictionary` because GDScript lacks value types:
 - 60+ `duplicate(true)` call sites to avoid reference-sharing bugs
 - Physics hot paths take individual scalar parameters instead of data dicts for performance
 - Enables stack-allocated, copy-by-value data with known compile-time layout
@@ -379,7 +379,7 @@ Implementation approach (daslang-inspired):
 **Built-in PriorityQueue / Binary Heap:**
 GDScript has no stdlib data structures. The navigation system's Dijkstra is O(N²) because it uses linear array scan for the unvisited set. A built-in `PriorityQueue` class replaces that with O(log N) extract-min.
 
-### Tier 3 — Language Deepening (Post-DB 1.0, medium impact)
+### Tier 3 — Language Deepening (Post-first-title 1.0, medium impact)
 
 **Blocks / Stack-Bound Callables:**
 Zero-allocation callbacks that capture by reference and cannot escape scope. Replaces `sort_custom` lambda allocations (33+ sites) and AI filter lambdas with zero-cost alternatives.
@@ -409,37 +409,37 @@ These are surgical modifications to Godot core files that cannot be achieved thr
 
 ### 6.1 LightmapGI Frustum Culling Fix (#71585)
 
-**DB Pain Point:** LightmapGI node frustum culling breaks lightmap injection when the node is out of view. The entire runtime lightmap pipeline (~17 functions in `level.gd`) partially exists to work around this.
+**Pain point:** LightmapGI node frustum culling breaks lightmap injection when the node is out of view. The entire runtime lightmap pipeline (~17 functions in the level script) partially exists to work around this.
 
 **Change:** Fix the frustum culling logic in `LightmapGI` so lightmap injection is independent of node visibility. This is a known upstream Godot bug (issue #71585).
 
 **Files touched:** ~1-2 in `scene/3d/lightmap_gi.cpp` or `servers/rendering/renderer_scene_cull.cpp`
 
-**Justification:** Fixes a shipped engine bug that directly impacts DB's lighting quality. Upstream would accept this fix.
+**Justification:** Fixes a shipped engine bug that directly impacts the genre set's runtime-lightmap workflow. Upstream would accept this fix.
 
 ### 6.2 Runtime LightmapBaker API Surface
 
-**DB Pain Point:** Runtime lightmap baking requires `ClassDB.class_exists("LightmapBaker")` guard — the baker class is a custom module, not in standard Godot builds. `lightmap_unwrap()` and runtime `bake()` are gated behind custom additions.
+**Pain point:** Runtime lightmap baking requires `ClassDB.class_exists("LightmapBaker")` guard — the baker class is a custom module, not in standard Godot builds. `lightmap_unwrap()` and runtime `bake()` are gated behind custom additions.
 
 **Change:** Expose `lightmap_unwrap()` and `bake()` on `LightmapGI` as public API, or promote the `LightmapBaker` class to a first-class engine feature. This eliminates the `ClassDB` guard and makes runtime baking a standard capability.
 
 **Files touched:** ~1-2 in `scene/3d/lightmap_gi.cpp/.h`
 
-**Justification:** DB's level editor needs runtime lightmap baking for procedural geometry. Making this a standard API reduces the custom module surface.
+**Justification:** Level authoring needs runtime lightmap baking for procedural geometry. Making this a standard API reduces the custom module surface.
 
 ### 6.3 MIDI Support in AudioStreamPlayer3D
 
-**DB Pain Point:** 3D spatialized MIDI playback requires manual `AudioStreamPlayer3D` construction + `MidiStream` cloning + soundfont copying. The current code creates players dynamically per critter body and manually copies soundfont.
+**Pain point:** 3D spatialized MIDI playback requires manual `AudioStreamPlayer3D` construction + `MidiStream` cloning + soundfont copying. The current code creates players dynamically per NPC body and manually copies soundfont.
 
 **Change:** Add `midi_stream` property to `AudioStreamPlayer3D` (or `AudioStreamPlayer`) so MIDI playback is a first-class feature with automatic spatialization.
 
 **Files touched:** ~1-2 in `scene/audio/audio_stream_player_3d.cpp/.h`
 
-**Justification:** DB has instrument-playing NPCs (GDR-009b) and MIDI-based adaptive music. This is a small change with large gameplay impact.
+**Justification:** The genre set includes instrument-playing NPCs and MIDI-based adaptive music. This is a small change with large gameplay impact.
 
 ### 6.4 Vector3i Keys for AStar3D
 
-**DB Pain Point:** Navigation edge tracking uses string-format keys (`"%d|%d|%d"` in hot paths). String allocation and hashing in inner navigation loops.
+**Pain point:** Navigation edge tracking uses string-format keys (`"%d|%d|%d"` in hot paths). String allocation and hashing in inner navigation loops.
 
 **Change:** Expose `Vector3i` as a key type in AStar3D's internal point lookup, or add an overload that accepts integer triples. `Vector3i` already exists as a Variant type — just needs to be used as a hash key internally.
 
@@ -454,7 +454,7 @@ These are surgical modifications to Godot core files that cannot be achieved thr
 ### Current: GL Compatibility (OpenGL ES 3.0)
 
 **Pros:**
-- DB is built and tested on it
+- The reference title is built and tested on it
 - Low-fi pixel art aesthetic works perfectly
 - All 25 shaders are GLSL — fully compatible
 - No SPIR-V compilation needed
@@ -478,11 +478,11 @@ These are surgical modifications to Godot core files that cannot be achieved thr
 
 **Cons:**
 - All 25 shaders need `.gdshader` header changes (`render_mode` may need adjustment)
-- DB's GL Compatibility-specific workarounds need audit
+- The reference title's GL Compatibility-specific workarounds need audit
 - Build includes `vulkan/` driver and `glslang/` module
 - Testing burden: full visual regression pass needed
 
-**Recommendation:** Stay on GL Compatibility through DB 1.0. Re-evaluate Forward+ for the next game. The lightmap baking system already works around the 16-light limit acceptably. The shader work for Forward+ migration is straightforward (mostly render_mode header changes) but carries regression risk that's not worth taking before 1.0.
+**Recommendation:** Stay on GL Compatibility through the first title's release. Re-evaluate Forward+ for the next title. The lightmap baking system already works around the 16-light limit acceptably. The shader work for Forward+ migration is straightforward (mostly render_mode header changes) but carries regression risk that's not worth taking before 1.0.
 
 ### GLES3 3D Scaling: CUT Upscalers
 
@@ -492,18 +492,18 @@ CUT1/2/3 fragment-only upscalers for `scaling_3d_mode` on the Compatibility rend
 
 ## 9. Goblin Custom Engine Ideas to Port
 
-The custom engine at `D:\DEV\Goblin` (raylib + daslang, v0.37.0) has several architectural ideas that are directly applicable to the Godot fork, even though the engine itself is not viable as a DB host.
+The custom engine at `D:\DEV\Goblin` (raylib + daslang, v0.37.0) has several architectural ideas that are directly applicable to the Godot fork, even though the engine itself is not viable as the host engine.
 
-### Already Adopted by DB (via Design Convergence)
+### Already Adopted by the Reference Title (via Design Convergence)
 
-| Goblin Custom Engine Idea | DB Implementation |
+| Goblin Custom Engine Idea | Reference-Title Implementation |
 |---|---|
-| Lego-block entity composition | DB's type templates + runtime dicts with fallback chains |
-| Scene-first authoring → compiled world | DB's CaveIni sectors → Level builder → ArrayMesh + collision |
-| Partition streaming | DB's sector-based level loading (per-sector) |
-| Minimal kernel, extension-first | DB's static system functions over node types |
-| Binary world packages | DB's delta save/load with curated runtime state |
-| Cadence-based scheduler | DB's Scheduler (tick/anim/map/low/decay cadences) |
+| Lego-block entity composition | Type templates + runtime dicts with fallback chains |
+| Scene-first authoring → compiled world | Text-level-format sectors → level builder → ArrayMesh + collision |
+| Partition streaming | Sector-based level loading (per-sector) |
+| Minimal kernel, extension-first | Static system functions over node types |
+| Binary world packages | Delta save/load with curated runtime state |
+| Cadence-based scheduler | Cadence scheduler (tick/anim/map/low/decay cadences) |
 
 ### Ideas to Port to the Godot Fork
 
@@ -511,37 +511,37 @@ The custom engine at `D:\DEV\Goblin` (raylib + daslang, v0.37.0) has several arc
 
 2. **Lego-Block Entity System (daScript API):** The `goblin_ecs` module's compile-time component type registration with builder pattern could inspire a GDScript API using structs + typed containers.
 
-3. **Scheduler Cadence Model:** Goblin Custom's `scheduler.hpp` has `FrameScheduler` with explicit cadence groups, warmup/cooldown, and budget enforcement. DB's Scheduler already does much of this. For the fork, consider exposing cadence configuration as an engine-level feature rather than a GDScript autoload.
+3. **Scheduler Cadence Model:** Goblin Custom's `scheduler.hpp` has `FrameScheduler` with explicit cadence groups, warmup/cooldown, and budget enforcement. The reference title's scheduler already does much of this. For the fork, consider exposing cadence configuration as an engine-level feature rather than a GDScript autoload.
 
 4. **Script Module Tier System (StableGameplay / ToolingData / ExpertExtension):** Goblin Custom's three-tier API stability model for daScript bindings. This could inform how enhanced GDScript exposes engine internals — stable gameplay APIs in tier 1, editor/data APIs in tier 2, expert/meshing APIs in tier 3.
 
-5. **Light Probe Grid for Stealth:** Goblin Custom's retro-native RFC proposes a coarse ambient light probe grid with CPU-readable values. DB's `LightSensor` (viewport-based sampling) is not scalable. A first-class light probe grid as an engine feature would solve GDR-009a (stealth detection read from world, not HUD).
+5. **Light Probe Grid for Stealth:** Goblin Custom's retro-native RFC proposes a coarse ambient light probe grid with CPU-readable values. The reference title's viewport-based light sensor is not scalable. A first-class light probe grid as an engine feature would solve stealth detection read from world, not HUD.
 
-6. **Basis-Frame + Position Transform Authority:** Goblin Custom avoids Euler angles and quaternions, using basis-frame transforms instead. This is a deep change but eliminates gimbal lock and axis-order ambiguity. For DB, the `Basis` type already exists — the convention could be enforced via the scripting layer.
+6. **Basis-Frame + Position Transform Authority:** Goblin Custom avoids Euler angles and quaternions, using basis-frame transforms instead. This is a deep change but eliminates gimbal lock and axis-order ambiguity. In Godot the `Basis` type already exists — the convention could be enforced via the scripting layer.
 
 7. **Portals & Mirrors as Custom Nodes (not first-class core):** Provided by the goblin module as custom nodes — e.g. `PortalSurface3D` / `MirrorSurface3D` extending `Node3D`/`Area3D`, registered in ClassDB. They approximate the spatial-weirdness of Ultima Underworld / System Shock / Thief via `SubViewport` + teleportation plus portal-aware query helpers, without deep core surgery. The standalone engine made portals first-class because its renderer/physics are custom; the fork does not need that — a node is the right granularity. (`PortalSurface3D` is named to avoid the upstream `Portal`/`Room` occlusion-culling nodes in Godot 4.4+.)
 
-8. **Retro-Native Rendering (editor-provided):** Palette quantization, indexed-color looks, dithering, color cycling, and posterization as editor-provided tools — custom editor nodes/plugins (`PalettePostProcess`, `DitherPostProcess`, `ColorCycle`) — not core renderer changes. DB already uses pixel-art upscalers (scale2x, hq2x, eagle2x) as shaders; these can be consolidated into goblin-owned nodes exposed in the editor.
+8. **Retro-Native Rendering (editor-provided):** Palette quantization, indexed-color looks, dithering, color cycling, and posterization as editor-provided tools — custom editor nodes/plugins (`PalettePostProcess`, `DitherPostProcess`, `ColorCycle`) — not core renderer changes. The genre set already uses pixel-art upscalers (scale2x, hq2x, eagle2x) as shaders; these can be consolidated into goblin-owned nodes exposed in the editor.
 
 9. **Generic Spatial Field System:** The standalone engine's "ambient probe / ambient field" concept, generalized. A coarse spatial field (scalar or vector samples over a grid) that multiple systems sample from — light exposure for stealth, audio environment/reverb zones, dynamic music behavior, and effect intensity. The retro-native RFC's post-1.0 direction explicitly expands the ambient probe beyond light into "environment channels that can drive audio environment response and dynamic music behavior." This is the Thief "light field" generalized: one field infrastructure, many consumers.
 
-10. **Native Stealth Shadow Value (Thief Light Gem):** A gameplay-facing shadow readout combining direct light, shadow occlusion between actor and lights, and ambient light — inspectable and queryable at runtime for AI, HUD, and scripting (GDR-009a). It is the stable, temporally-smoothed gameplay readout on top of the field system (idea 9).
+10. **Native Stealth Shadow Value (Thief Light Gem):** A gameplay-facing shadow readout combining direct light, shadow occlusion between actor and lights, and ambient light — inspectable and queryable at runtime for AI, HUD, and scripting. It is the stable, temporally-smoothed gameplay readout on top of the field system (idea 9).
 
 11. **Concrete retro-native features worth porting (from the retro-native RFC):**
     - **Per-view palette selection and blending** — palette overrides that portal views inherit (Feature 1).
     - **Texture-space animation families** — UV scroll and frame cycling driven by a global simulation clock, evaluated in-shader (Feature 3). This is the "color cycling" mechanism.
-    - **Hitscan surface metadata** — raycast results that return surface class (wall/floor/ceiling), object ID, and impact UV, for weapon/trigger/material logic (Feature 9). DB already resolves surface class via `UPDOWN_THRESHOLD`; a native contract would formalize it.
-    - **Kinematic brush movers** — doors, lifts, crushers with deterministic hull traces and blocking policy (Feature 7). DB already has `Moving` via `AnimatableBody3D`; the mover contract is the native generalization.
+    - **Hitscan surface metadata** — raycast results that return surface class (wall/floor/ceiling), object ID, and impact UV, for weapon/trigger/material logic (Feature 9). Reference-title code already resolves surface class via slope thresholds; a native contract would formalize it.
+    - **Kinematic brush movers** — doors, lifts, crushers with deterministic hull traces and blocking policy (Feature 7). Reference-title code already has kinematic movers via `AnimatableBody3D`; the mover contract is the native generalization.
     - **Lightstyle channels and surface-class lighting** — style-channel modulation of baked light plus per-surface retro class flags (Feature 8).
     - **Visibility-set override** — precomputed visibility sets that reject offscreen partitions early (Feature 6).
 
-*Note: the scheduler/cadence idea (idea 3) and the "off-screen simulation" idea are already realized in DB — `scheduler.gd` implements custom process groups (`tick`/`anim`/`map`/`low`/`effect`/`condition`) and a tick-based event queue with save/restore. There is nothing further to port there.*
+*Note: the scheduler/cadence idea (idea 3) and the "off-screen simulation" idea are already realized — a cadence scheduler script implements custom process groups (`tick`/`anim`/`map`/`low`/`effect`/`condition`) and a tick-based event queue with save/restore. There is nothing further to port there.*
 
 ---
 
 ## 10. Implementation Phases
 
-### Phase 0 — Foundation (Now, during DB development)
+### Phase 0 — Foundation (Now, during first-title development)
 
 **Goal:** Prove the source override system works, fix the retry loops, and land the first GDScript feature (union types) from a clean base.
 
@@ -550,26 +550,26 @@ The custom engine at `D:\DEV\Goblin` (raylib + daslang, v0.37.0) has several arc
 | Implement source override system in `goblin/config.py` | 2-3 days | Low — additive change to config.py | 0001 |
 | **Replace retry loops with compile-time overrides** (`editor_about.cpp`) | 1-2 days | Low — proves source override end-to-end | 0007 |
 | Cherry-pick union types from gdscript2 into clean GDScript base | 3-5 days | Medium — extract parser/analyzer/compiler diffs, write 50-pattern test suite | 0004 |
-| Run DB project against goblin build with union types | 1 day | Gate: all DB scripts compile and all 342 tests pass | 0004 |
+| Run the reference title against the goblin build with union types | 1 day | Gate: all reference scripts compile and all 342 tests pass | 0004 |
 
-### Phase 1 — Trim & More Features (During DB development)
+### Phase 1 — Trim & More Features (During first-title development)
 
 **Goal:** Strip unused modules, land remaining Tier 0 features, and add performance optimizations.
 
 | Task | Effort | Risk | ADR |
 |------|--------|------|-----|
 | Implement module disable list in config.py | 1 day | Low — uses existing Godot mechanism | 0003 |
-| Verify trimmed build runs DB without errors | 1-2 days | Low — all trims verified against DB | 0003 |
+| Verify trimmed build runs the reference title without errors | 1-2 days | Low — all trims verified against the reference title | 0003 |
 | Cherry-pick safe navigation `then` and null coalescing `elthen` | 2-3 days | Medium — tokenizer/parser changes | 0005 |
 | Cherry-pick inline caching for property access | 2-3 days | Medium — VM changes, validate with profiling | — |
 | Cherry-pick fast String cast | 1 day | Low — single VM change | — |
 | Cherry-pick opcode fusing (high-impact fused opcodes first) | 3-5 days | Medium — integration testing | — |
 | Cherry-pick PIC (polymorphic inline cache) | 2-3 days | Medium — builds on inline caching | — |
-| Run DB project against optimized build, measure perf delta | 1 day | Gate: no regressions, measurable speedup | — |
+| Run the reference title against the optimized build, measure perf delta | 1 day | Gate: no regressions, measurable speedup | — |
 
-### Phase 2 — Core Changes (Post-DB 1.0, 2028+)
+### Phase 2 — Core Changes (Post-first-title 1.0, 2028+)
 
-**Goal:** Surgical engine changes that directly improve DB's successor.
+**Goal:** Surgical engine changes that directly improve the genre set's next title.
 
 | Task | Effort | Risk |
 |------|--------|------|
@@ -578,9 +578,9 @@ The custom engine at `D:\DEV\Goblin` (raylib + daslang, v0.37.0) has several arc
 | Add MIDI support to AudioStreamPlayer3D | 1-2 days | Low — small feature |
 | Add Vector3i keys to AStar3D | 1-2 days | Low — small math change |
 
-### Phase 3 — GDScript Deepening (Post-DB 1.0, 2028-2029)
+### Phase 3 — GDScript Deepening (Post-first-title 1.0, 2028-2029)
 
-**Goal:** Language features that DB didn't have but the next game needs.
+**Goal:** Language features the genre set needs beyond the first title.
 
 | Task | Effort | Risk |
 |------|--------|------|
@@ -611,26 +611,26 @@ Every phase has concrete test gates. No feature merges without passing its gate.
 
 | Layer | What it covers | When it runs | Tool |
 |-------|---------------|-------------|------|
-| **DB Unit Tests** | 342 existing tests in `tests/` — combat, inventory, interaction, rule eval, quest, chargen, etc. | Phase 0-4: every change | `run_test.bat` / `run_test_and_health.bat` |
-| **DB Script Corpus Compile** | All ~100+ `.gd` scripts, 25 `.gdshader` files, dynamic `GDScript.new()` compilation in `Var.gd` | Every GDScript feature change | Manual: load DB project in goblin editor, verify zero parse errors |
-| **DB Level Load** | `level1.txt` loads all 30 sectors, 39 objects, 9 NPCs, builds nav graph, bakes lightmaps | Every core engine change | `db_level_load("level1")` via MCP tools |
+| **Reference-Title Unit Tests** | 342 existing tests in `tests/` — combat, inventory, interaction, rule eval, quest, chargen, etc. | Phase 0-4: every change | The reference title's test runner |
+| **Reference Script Corpus Compile** | All ~100+ `.gd` scripts, 25 `.gdshader` files, dynamic `GDScript.new()` compilation in the runtime value helper | Every GDScript feature change | Manual: load the reference title in the goblin editor, verify zero parse errors |
+| **Reference Level Load** | The reference level loads all 30 sectors, 39 objects, 9 NPCs, builds nav graph, bakes lightmaps | Every core engine change | Level-load tooling (MCP) |
 | **GDScript Feature Test Suites** | 50+ targeted tests per feature (union types, structs, etc.) written against the GDScript test framework | At feature implementation time | `modules/goblin/modules/gdscript/tests/` (fork's copy; run via `--test --test-case "[Modules][GDScript]*"` on a `tests=yes` build) |
-| **Navigation Regression** | Nav graph build produces identical point counts, connections, and path results as unmodified Godot | Every change touching AStar3D, navigation, or collision | Manual: `_build_sparse_graph` comparison |
-| **Combat Regression** | Identical damage values, hit/miss results, and charge/block behavior | Every change touching Variant dispatch or math | DB unit test suite |
-| **Health Scan** | `run_health.bat` — architecture conformance, missing types, anti-patterns | Every code change | `run_test_and_health.bat` |
+| **Navigation Regression** | Nav graph build produces identical point counts, connections, and path results as unmodified Godot | Every change touching AStar3D, navigation, or collision | Manual: sparse-graph build comparison |
+| **Combat Regression** | Identical damage values, hit/miss results, and charge/block behavior | Every change touching Variant dispatch or math | Reference unit test suite |
+| **Health Scan** | Architecture conformance, missing types, anti-patterns | Every code change | The reference title's health scan |
 
 ### Per-Phase Gates
 
 **Phase 0 Go/No-Go:**
 - Source override system: `editor_about.cpp` override compiles and goblin-branded About dialog appears
-- Union types: DB project loads, all 342 unit tests pass, no parse errors in any script
+- Union types: reference title loads, all 342 unit tests pass, no parse errors in any script
 - Module trim: disabled module list produces a compilable build
 
 **Phase 1 Go/No-Go:**
-- `then` / `elthen`: all DB scripts compile, null-guard patterns verify correctly
+- `then` / `elthen`: all reference scripts compile, null-guard patterns verify correctly
 - Inline caching: profile shows measurable speedup in physics/AI hot paths without regressions
 - Opcode fusing: no behavioral change in combat/stealth/navigation
-- Trimmed build: DB editor launches, level loads, navigation builds, all unit tests pass
+- Trimmed build: reference title editor launches, level loads, navigation builds, all unit tests pass
 
 **Phase 2+ Go/No-Go:**
 - LightmapGI fix: runtime lightmap baking produces identical visual results
@@ -683,7 +683,7 @@ func test_graph_build_produces_identical_results():
 
 | Risk | Mitigation |
 |------|-----------|
-| Cherry-picked GDScript features introduce subtle regressions in DB's script corpus | Each feature lands independently with its own test suite. DB script corpus compile is the gate. Features are isolated — if union types breaks something, only union types is reverted, not all GDScript changes. |
+| Cherry-picked GDScript features introduce subtle regressions in the reference corpus | Each feature lands independently with its own test suite. Reference corpus compile is the gate. Features are isolated — if union types breaks something, only union types is reverted, not all GDScript changes. |
 | Struct implementation introduces subtle Variant compatibility bugs | De-risk via 50+ parser-only test cases before VM work begins (see Testing Strategy). Implement as a new Variant type with exhaustive test coverage. Ensure round-trip through Variant, Dictionary, and save/load. |
 | Aggressive module trimming breaks editor functionality | Trim conservatively for editor builds (keep svg, lightmapper_rd, etc. in editor). Trim aggressively only for export templates. |
 | Upstream Godot stable release rebase creates merge conflicts in overridden source files | Keep override surface small. Track which upstream releases touch overridden files. Prefer additive overrides. Rebase only at stable release boundaries, not continuously. |
@@ -694,15 +694,15 @@ func test_graph_build_produces_identical_results():
 |------|-----------|
 | GL Compatibility deprecation by upstream Godot | Monitor upstream. GL Compatibility is kept for mobile/Web export — unlikely to be dropped. If dropped, Forward+ migration is straightforward. |
 | MidiStream GDExtension breaks or needs porting | Replace with built-in MIDI support (Phase 2, item 6.3). Eliminates external dependency. |
-| Additions addon (`CompoundMeshInstance3D`, `AreaLight3D`) breaks | These are used by Emitter. `CompoundMeshInstance3D` could be promoted to an engine feature. `AreaLight3D` can be replaced with OmniLight + custom culling. |
+| Additions addon (`CompoundMeshInstance3D`, `AreaLight3D`) breaks | These are used by the reference title's emitter system. `CompoundMeshInstance3D` could be promoted to an engine feature. `AreaLight3D` can be replaced with OmniLight + custom culling. |
 
 ### Low Risk
 
 | Risk | Mitigation |
 |------|-----------|
-| Module trim breaks unexpected engine internals | Test suite catches this. Trim list derived from systematic analysis of every module against DB's project config, scripts, and content. |
+| Module trim breaks unexpected engine internals | Test suite catches this. Trim list derived from systematic analysis of every module against the reference title's project config, scripts, and content. |
 | Source override system has subtle build-ordering bugs | SCons `configure()` runs before any `SCsub` — guaranteed. Fallback to original file if goblin override doesn't exist on disk. |
-| DB project doesn't run on trimmed fork | Full verification pass (Phase 1). Trim list is conservative — only modules verified as unused are trimmed. |
+| The reference title doesn't run on the trimmed fork | Full verification pass (Phase 1). Trim list is conservative — only modules verified as unused are trimmed. |
 
 ---
 
@@ -732,16 +732,16 @@ modules/goblin/
 
 Editor file mirrors (backlog B-04, ADR 0007): the four files above are swapped in at build time by `goblin_add_library()`. The originally proposed `goblin_source_overrides.py` / interception layer was rejected (see §4); the `overrides/` directory name is reused for the accepted mirror home.
 
-## Appendix B: DB Project Pain Point → Fork Solution Map
+## Appendix B: Genre Requirements → Fork Solution Map
 
-| DB Pain Point | Severity | Solution | Phase |
+| Genre Requirement | Severity | Solution | Phase |
 |---|---|---|---|
 | No structs — 60+ `duplicate(true)` calls | High | GDScript structs | Phase 3 |
 | O(N²) Dijkstra — no priority queue | High | Built-in PriorityQueue | Phase 3 |
 | Dict overhead in physics hot paths | High | Structs (physics data is ideal struct candidate) | Phase 3 |
 | LightmapGI frustum culling bug | Critical | Fix #71585 in core | Phase 2 |
 | Runtime LightmapBaker requires custom module | High | Promote to public API | Phase 2 |
-| Callable overhead in voxel mesher | High | Blocks + opcode fusing (Phase 1) | Phase 1 |
+| Callable overhead in procedural meshing | High | Blocks + opcode fusing (Phase 1) | Phase 1 |
 | AI time-slicing (can't do per-frame N-agent updates) | High | GDScript perf (opcode fusing, PIC, then structs) | Phases 1-3 |
 | ~30 Variant checks in navigation builder | Medium | Union types (already in gdscript2) + typed dicts | Phase 0 + Phase 3 |
 | 33+ `sort_custom` lambda allocations | Medium | Opcode fusing (fused iterator opcodes) | Phase 1 |
@@ -758,16 +758,16 @@ Editor file mirrors (backlog B-04, ADR 0007): the four files above are swapped i
 |----------|-----------|------|
 | Rebase fork on Godot 4.7.1-stable (a13da4feb8d) | Move from tracking upstream `master` to tracking stable releases on a single `master` branch. Progressive rebase at each stable release boundary. | 2026-08-11 |
 | Single-branch over branch-per-release | Branch-per-release adds archaeology complexity with zero value for a single-project fork. `master` is the one branch; rebase it at each stable release. | 2026-08-11 |
-| Fork approach over custom engine | Custom engine (Goblin raylib+daslang) is 2-3 years from viable. Fork preserves all DB work, editor, asset pipeline. | 2026-08-11 |
+| Fork approach over custom engine | Custom engine (Goblin raylib+daslang) is 2-3 years from viable. Fork preserves all reference-title work, editor, asset pipeline. | 2026-08-11 |
 | Source override over core patching | Allows all changes to live in `modules/goblin/`. Clean rebase surface. | 2026-08-11 |
 | ADR governance for all structural decisions | Production-quality fork requires rigid architectural constraints, not experimental features. Modeled on Goblin Custom Engine governance. | 2026-08-11 |
 | Stable-release tracking over master | Reduces merge churn, avoids half-baked upstream features, ensures production-tested base. Rebase only at tagged stable releases. | 2026-08-11 |
 | Cherry-pick GDScript features from clean base | gdscript2 has partial breakage and unmerged branches. Port individual features one at a time, each with its own ADR and test gate. | 2026-08-11 |
-| Stay on GL Compatibility through DB 1.0 | Avoids regression risk from Forward+ migration. Lightmap system already works around GL limits. | 2026-08-11 |
+| Stay on GL Compatibility through the first title's release | Avoids regression risk from Forward+ migration. Lightmap system already works around GL limits. | 2026-08-11 |
 | Trim modules rather than stub them | Simpler build, fewer dependencies, faster compile. Stubs create maintenance burden and silent failure modes. | 2026-08-11 |
 | Keep all networking modules | User has multiplayer plans. Trim would be premature. | 2026-08-11 |
 | Keep all target platforms | User wants cross-platform support. Platform removal is easy later, hard to restore. | 2026-08-11 |
-| Trim navigation_3d module | Verified: DB uses AStar3D (core math, not a module). NavigationServer3D/Agent3D/Region3D completely unused. | 2026-08-11 |
+| Trim navigation_3d module | Verified: the reference title uses AStar3D (core math, not a module). NavigationServer3D/Agent3D/Region3D completely unused. | 2026-08-11 |
 | Keep noise module | User wants FastNoiseLite for potential procedural content. | 2026-08-11 |
 | Trim VR/XR modules | Not needed. Trivially re-addable via module enable flag. | 2026-08-11 |
 | Retry-loop fix in Phase 0 | Most embarrassing code in the fork. Proves source override system end-to-end. | 2026-08-11 |

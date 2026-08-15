@@ -211,12 +211,12 @@ def configure(env):
 
     # ===================================================================
     # MODULE TRIM — 30 modules disabled (~55% faster compile)
-    # Evidence-based: every module below is verified unused by DB project.
+    # Evidence-based: every module below is verified unused by the reference title.
     # Uses Godot's existing disabled_modules infrastructure (methods.py).
     # Trimming happens at configure time — skipped modules never compile.
     # ===================================================================
     DISABLE_MODULES = {
-        # Image/texture formats (DB uses PNG only)
+        # Image/texture formats (PNG only)
         "bmp", "tga", "dds", "hdr", "jpg", "webp", "tinyexr",
         "basis_universal", "ktx", "astcenc", "etcpak",
         # Audio/video (no video playback, no interactive music)
@@ -225,7 +225,7 @@ def configure(env):
         "webxr", "openxr", "mobile_vr",
         # 3D nodes/scene (no CSG, GridMap, GLTF/FBX import)
         "csg", "gridmap", "gltf", "fbx",
-        # Navigation (DB uses AStar3D from core/math, not these modules)
+        # Navigation (AStar3D from core/math, not these modules)
         "navigation_3d", "navigation_2d",
         # Physics (Jolt only, GodotPhysics unused)
         "godot_physics_3d", "godot_physics_2d",

@@ -9,7 +9,7 @@
 
 ## 1. Purpose
 
-Make Goblin Engine useful out of the box for DB. Primary deliverables:
+Make Goblin Engine useful out of the box for the genre set's reference title. Primary deliverables:
 1. **Expanded Dictionary** (typed entries, templates, callable members) — §2.
 2. **Safe navigation & null coalescing** (`then` / `elthen`), recovered from the deleted `gdscript2` module — §3.
 
@@ -24,14 +24,14 @@ Secondary candidates (MIDI, lightmap baking, spatial field, palette) — §4.
 ### 2.1 What it delivers
 
 ```gdscript
-var critter_tpl := {
+var creature_tpl := {
     hp: int = 10,
     reach: float = 1.5,
     tags: Array[String] = [],
 }
 
 var goblin := {
-    _template = critter_tpl,
+    _template = creature_tpl,
     hp = 25,          # override default; type stays int
     reach = 2.0,
 }
@@ -79,7 +79,7 @@ No `core/variant/dictionary` replacement; no value semantics; no JSON-style type
 
 ### 2.7 Test gates
 
-Parser (typed entries, `_template`, style rules), analyzer (default merging, override/type precedence, nesting ≥ 3, union entries), runtime (clean `keys()`, typed-write errors, nested enforcement), callables. DB: 236 scripts + 342 tests compile/pass unchanged.
+Parser (typed entries, `_template`, style rules), analyzer (default merging, override/type precedence, nesting ≥ 3, union entries), runtime (clean `keys()`, typed-write errors, nested enforcement), callables. Reference corpus: 236 scripts + 342 tests compile/pass unchanged.
 
 ### 2.8 ADRs
 
@@ -129,11 +129,11 @@ Work items (5 files, no VM changes): tokenizer (tokens + names + keywords), pars
 
 ### 3.4 Keywords vs symbols
 
-User wants `then`/`elthen` back. Keep those keywords. Optional follow-up (fork plan Tier 0b): rename to `?.` / `??` syntax — more tokens + tokenizer ambiguity handling; do only if `then`/`elthen` prove unergonomic in DB's corpus.
+User wants `then`/`elthen` back. Keep those keywords. Optional follow-up (fork plan Tier 0b): rename to `?.` / `??` syntax — more tokens + tokenizer ambiguity handling; do only if `then`/`elthen` prove unergonomic in the reference corpus.
 
 ### 3.5 Tests (none existed in gdscript2 — add)
 
-New suite in `modules/gdscript/tests/` (~25 cases): basic `then`/`elthen`, constant folding, type inference, chaining, null vs falsy distinction (decides the §3.2 wart), interplay with union types, error cases (`then` on non-nullish types). DB corpus compile gate.
+New suite in `modules/gdscript/tests/` (~25 cases): basic `then`/`elthen`, constant folding, type inference, chaining, null vs falsy distinction (decides the §3.2 wart), interplay with union types, error cases (`then` on non-nullish types). Reference corpus compile gate.
 
 ### 3.6 Effort & risk
 
@@ -147,7 +147,7 @@ New suite in `modules/gdscript/tests/` (~25 cases): basic `then`/`elthen`, const
 |-----------|--------|-------|
 | Native `MidiStream` (+ `MidiFileResource`, `SoundFontResource`, importers) | 1–2 d | Port of GDExtension; TinySoundFont (MIT); names preserved; editor tooling `TOOLS_ENABLED`. |
 | Native `LightmapBaker` (CPU runtime baker) | 2–4 d | Port of GDExtension; xatlas via namespace-wrapped TU to avoid editor duplicate symbols; works in export templates. |
-| `SpatialField` / `LightField` | 3–5 d | Generic spatial field + CPU Thief-style light sampling; matches DB proposal API. |
+| `SpatialField` / `LightField` | 3–5 d | Generic spatial field + CPU Thief-style light sampling; matches the reference-title API proposal. |
 | `Palette` / `PaletteCycle` | 2–3 d | Native 256-color palette + C++ LUT gen + color cycling. |
 | Typed-dictionary hardening (E1 union, E2 `.get()` refinement) | 0.5–2 d | E2 rides along with §2.4 P3. |
 | `CompoundMeshInstance3D` | parked | Sources deleted from extension repo (`a95d3ac`); recover via git history if still needed. |
@@ -164,7 +164,7 @@ New suite in `modules/gdscript/tests/` (~25 cases): basic `then`/`elthen`, const
 | Expose editor `LightmapperRD` at runtime | Editor-only GPU module + forbidden build-flag changes; GL-compat templates lack RenderingDevice. |
 | GDScript `extends Dictionary` / user Variant types | Variant + ClassDB surgery; §2 covers the need at language level. |
 | Renderer-side light sampling on GL Compatibility | No exposed cluster seams; CPU `LightField` substitutes. |
-| Native upscaler nodes | DB's GL-compat canvas shaders already do this. |
+| Native upscaler nodes | The reference title's GL-compat canvas shaders already do this. |
 
 ---
 

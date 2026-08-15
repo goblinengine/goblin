@@ -17,7 +17,7 @@ All branches track official Godot stable release tags (e.g. `4.7-stable`), not `
 When a new stable release arrives:
 1. diff `modules/goblin/modules/gdscript/` against `modules/gdscript/` and `modules/goblin/core/` against `core/`,
 2. port the goblin changes onto the new base,
-3. verify DB loads and passes its test suite before locking.
+3. verify the reference title loads and passes its test suite before locking.
 
 ## Consequences
 

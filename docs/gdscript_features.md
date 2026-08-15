@@ -57,7 +57,7 @@ var tpl := {
 - Style rules: typed entries are Lua style only; mixing with Python-style untyped literals errors (tests: `shaped_dictionary_style_mixing_*`, `shaped_dictionary_typed_in_python`).
 - NOT implemented (planned): template dictionaries (`_template` reserved key, creation-time default expansion) — see `modules/goblin/docs/rfc/native-game-features-rfc.md` §2.
 
-Purpose: typed dictionaries with zero runtime lookups for data-driven entity templates — the language-layer answer to DB's dict-heavy entity model.
+Purpose: typed dictionaries with zero runtime lookups for data-driven entity templates — the language-layer answer to the genre set's dict-heavy entity model.
 
 ### `then` / `elthen` (safe navigation / null coalescing)
 
