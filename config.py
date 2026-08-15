@@ -1,3 +1,61 @@
+# ===================================================================
+# MODULE TRIM — 28 modules disabled (~55% faster compile)
+# Mechanism: build-time option injection (ADR 0012). module_*_enabled
+# is decided at SConstruct:499 opts.Update from ARGUMENTS (args layer
+# beats defaults and custom.py/profile files). configure() runs AFTER
+# that Update (gate loop, SConstruct:1124) — too late for the trim
+# candidates sorting before "goblin". So the injection happens at
+# IMPORT time (first module loop, SConstruct:474), before the Update:
+# for each trimmed module without a user CLI value, ARGUMENTS gets
+# module_<name>_enabled = "no". The gate at SConstruct:1113 then skips
+# all of them regardless of alphabetical position. User CLI wins.
+# Precedent: methods.py:229, platform/android/detect.py:118.
+# ===================================================================
+DISABLE_MODULES = {
+    # Image/texture formats (PNG only) — tinyexr KEPT (editor .exr
+    # lightmap save, Image::save_exr needs modules/tinyexr; C-11)
+    "bmp", "tga", "dds", "hdr", "jpg", "webp",
+    "basis_universal", "ktx", "astcenc", "etcpak",
+    # Audio/video (no video playback, no interactive music)
+    "theora", "interactive_music",
+    # VR/XR (no VR usage)
+    "webxr", "openxr", "mobile_vr",
+    # 3D nodes/scene (no CSG, GridMap, GLTF/FBX import)
+    "csg", "gridmap", "gltf", "fbx",
+    # Navigation (AStar3D from core/math, not these modules)
+    "navigation_3d", "navigation_2d",
+    # 2D physics (3D game; 2D falls back to PhysicsServer2DDummy).
+    # godot_physics_3d KEPT: jolt_physics registers "Jolt Physics"
+    # but NOT the default (jolt_physics/register_types.cpp:59);
+    # GodotPhysics3D is the registered default (godot_physics_3d/
+    # register_types.cpp:56-57) used by main.cpp:362-372 fallback and
+    # tests/test_main.cpp:204 new_default_server(). Trimming it would
+    # drop the test suite + fresh-project boot to the dummy server.
+    "godot_physics_2d",
+    # Shader compiler (GL Compatibility uses GLSL directly, no SPIR-V;
+    # RenderingDevice shader_compile_spirv_from_source fails without
+    # glslang — Forward+/Mobile unsupported by design, ADR 0003)
+    "glslang",
+    # Utility (no webcam, no runtime zip)
+    "camera", "zip",
+    # Rendering (Embree occlusion culling — Forward+/Mobile only)
+    "raycast",
+    # Debug/profiling (release builds only)
+    "objectdb_profiler",
+    # Physics tools (convex decomposition, editor only)
+    "vhacd",
+}
+
+# Import-time injection: runs when this module's config.py is imported
+# in the first module loop (SConstruct:474), before the options Update
+# at SConstruct:499. Idempotent across the second (gate-loop) import.
+from SCons.Script import ARGUMENTS
+for _mod in DISABLE_MODULES:
+    _key = f"module_{_mod}_enabled"
+    if _key not in ARGUMENTS:
+        ARGUMENTS[_key] = "no"
+
+
 def can_build(env, platform):
     return True
 
@@ -210,42 +268,15 @@ def configure(env):
             pass
 
     # ===================================================================
-    # MODULE TRIM — 30 modules disabled (~55% faster compile)
-    # Evidence-based: every module below is verified unused by the reference title.
-    # Uses Godot's existing disabled_modules infrastructure (methods.py).
-    # Trimming happens at configure time — skipped modules never compile.
+    # MODULE TRIM CANARY — the gate is env["module_<name>_enabled"],
+    # injected at import time above (ADR 0012). By now (configure,
+    # gate loop) SConstruct:499 has already applied ARGUMENTS, so every
+    # trimmed module must read False. Count < len(DISABLE_MODULES) means
+    # the injection regressed (upstream options-flow drift) or the user
+    # re-enabled modules via CLI — both visible in every build log.
     # ===================================================================
-    DISABLE_MODULES = {
-        # Image/texture formats (PNG only)
-        "bmp", "tga", "dds", "hdr", "jpg", "webp", "tinyexr",
-        "basis_universal", "ktx", "astcenc", "etcpak",
-        # Audio/video (no video playback, no interactive music)
-        "theora", "interactive_music",
-        # VR/XR (no VR usage)
-        "webxr", "openxr", "mobile_vr",
-        # 3D nodes/scene (no CSG, GridMap, GLTF/FBX import)
-        "csg", "gridmap", "gltf", "fbx",
-        # Navigation (AStar3D from core/math, not these modules)
-        "navigation_3d", "navigation_2d",
-        # Physics (Jolt only, GodotPhysics unused)
-        "godot_physics_3d", "godot_physics_2d",
-        # Shader compiler (GL Compatibility uses GLSL directly, no SPIR-V)
-        "glslang",
-        # Utility (no webcam, no runtime zip)
-        "camera", "zip",
-        # Rendering (Embree occlusion culling — Forward+/Mobile only)
-        "raycast",
-        # Debug/profiling (release builds only)
-        "objectdb_profiler",
-        # Physics tools (convex decomposition, editor only)
-        "vhacd",
-    }
-
-    env.disabled_modules = list(getattr(env, 'disabled_modules', []))
-    for mod in DISABLE_MODULES:
-        if mod not in env.disabled_modules:
-            env.disabled_modules.append(mod)
-    print(f"Goblin: Disabled {len(DISABLE_MODULES)} unused modules for faster build")
+    _disabled = [m for m in DISABLE_MODULES if not env[f"module_{m}_enabled"]]
+    print(f"Goblin: Module trim active ({len(_disabled)}/{len(DISABLE_MODULES)} modules gated off)")
 
     if env.get("verbose"):
         print("Goblin: Build hooks enabled (builders monkey-patched)")

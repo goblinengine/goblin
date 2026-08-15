@@ -80,6 +80,16 @@ Standalone additive feature module at the repo root (ADR 0008) — standard Godo
 - Importers are `ResourceImporter` subclasses registered in `ResourceFormatImporter` at EDITOR level (WAV-importer pattern). Importer names `midi_stream.mid` / `midi_stream.sf2` match the GDExtension.
 - Test note: `--test` mode has no AudioServer; the doctest suite bootstraps `AudioDriverManager::get_driver(0)` (the dummy) via `set_singleton()` + `init()`, and recreates `AudioServer` whenever missing — `GodotTestCaseListener::test_case_end` deletes the singleton after every test case.
 
+## Combat module (`modules/combat/`)
+
+Standalone additive feature module at the repo root (ADR 0008) — standard Godot module anatomy, auto-discovered with the full module lifecycle (`MODULE_COMBAT_ENABLED`). Same structure as `modules/midi/`. No overrides, no upstream file touched.
+
+- `Hitbox3D` — active damage detector (extends Area3D): monitoring on, monitorable off. Carries attack data (damage, knockback, damage_types, element, source); on Hurtbox3D overlap dedups per activation, forwards via `Hurtbox3D.apply_hit`, emits `hit(hurtbox, hit_data)`.
+- `Hurtbox3D` — passive damage receiver (extends Area3D): monitoring off, monitorable on. `apply_hit(attacker, hit_data)` emits `hurt(attacker, hit_data)` when active (virtual, C++ subclasses can intercept damage).
+- `Projectile3D` — manual-velocity projectile (extends Area3D, NOT RigidBody3D): owns velocity/gravity/homing, continuous swept collision via an internal `ShapeCast3D` child (no tunneling), bounce/expiry/range behavior, emits `hit(hit_data)` + `expired()`. Forwards hits to Hurtbox3D on the collider.
+- Hit-data contract: `CombatUtils` (combat_utils.h) defines the stable Dictionary keys (`damage`, `knockback`, `damage_types`, `element`, `source`, `position`, `normal`, `velocity`, `collider`) shared by all three classes.
+- Physics tick: native nodes receive it via `_notification(NOTIFICATION_PHYSICS_PROCESS)` (not a C++ virtual `_physics_process` — GDVIRTUAL only in 4.7).
+
 ## Where new code goes
 
 | Change | Location |
@@ -96,6 +106,7 @@ Standalone additive feature module at the repo root (ADR 0008) — standard Godo
 
 - Fork tests: `modules/goblin/modules/gdscript/tests/` (mirror of upstream suite + new cases under `parser/`, `analyzer/`, `runtime/`). The test harness (`gdscript_test_runner_suite.h`, `test_completion.h`, `test_lsp.h`) targets the fork's own tests dir.
 - MIDI tests: `modules/midi/tests/test_midi_stream.h` (doctest `TEST_CASE`s, picked up via `modules_tests.gen.h` when `tests=yes`). Generates a minimal SF2 + SMF in memory; covers length, synth render, song-end stop, loop restart, manual notes. Run: `bin/goblin.windows.editor.x86_64.exe --test --test-case="*MidiStream*"`.
+- Combat tests: `modules/combat/tests/test_combat.h` — 11 doctest cases (defaults, hit registration, dedup/reset, inactive states, motion/gravity, bounce math, lifetime expiry, hit-data contract). Name prefix `[SceneTree]` is required: physics nodes crash without the per-case physics-server bootstrap that `[SceneTree]`-prefixed cases get in `tests/test_main.cpp`. Run: `bin/goblin.windows.editor.x86_64.exe --headless --test --test-case="[SceneTree][Combat]*"`.
 - Run: build with `tests=yes` (`scons platform=windows target=editor module_mono_enabled=no accesskit=no angle=no tests=yes -j4`), then `bin/goblin.windows.editor.x86_64.exe --headless --test --test-case "[Modules][GDScript]*"`.
 - Regenerate expected outputs from current behavior: `bin/goblin.windows.editor.x86_64.exe --headless --gdscript-generate-tests` (writes `.out` files — use with care; it encodes whatever the engine currently does).
 - Gotchas:
