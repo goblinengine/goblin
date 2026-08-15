@@ -70,4 +70,20 @@ for _mod_name, _goblin_path in GOBLIN_MODULE_OVERRIDES.items():
 # Core file overrides are handled in config.py via the add_library hook.
 # See goblin_add_library() in config.py.
 
+# ===================================================================
+# CUT UPSCALER SHADER — goblin-owned GLES3 shader compiled with the
+# upstream GLES3_GLSL builder (gles3_builders.py). The .gen.h lands
+# in-tree next to the source and is committed (same as the upstream
+# shaders). The include files (_inc.glsl) are byte-identical MIT copies
+# of the upstream ones, so the builder can inline them relative to the
+# goblin tree.
+# ===================================================================
+if "GLES3_GLSL" in env_goblin["BUILDERS"]:
+    import glob as _glob
+
+    _goblin_glsl_dir = os.path.join(goblin_module_path, "drivers", "gles3", "shaders")
+    _cut_inc_files = [str(f) for f in _glob.glob(os.path.join(_goblin_glsl_dir, "*_inc.glsl"))]
+    _cut_gen = env_goblin.GLES3_GLSL("drivers/gles3/shaders/effects/cut.glsl")
+    env_goblin.Depends(_cut_gen, _cut_inc_files + ["#gles3_builders.py"])
+
 print("Goblin Engine: Complete rebranding applied")

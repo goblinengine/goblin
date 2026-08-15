@@ -50,10 +50,13 @@ Three mechanisms inject changes at build time; upstream files are never modified
 
 ## Build
 
+`debug_symbols=yes` is REQUIRED for all test/diagnostic builds (B-14): the PDB in `bin/` is
+what makes crash dumps analyzable.
+
 ```
-scons platform=windows target=editor module_mono_enabled=no accesskit=no angle=no -j4
+scons platform=windows target=editor module_mono_enabled=no accesskit=no angle=no debug_symbols=yes -j4
 ```
 
-Optional faster incremental: add `--max-drift=1 --implicit-deps-unchanged`. Output: `bin/goblin.windows.editor.x86_64.exe`.
+Optional faster incremental: add `--max-drift=1 --implicit-deps-unchanged`. Output: `bin/goblin.windows.editor.x86_64.exe` (+ PDB).
 
 Never delete or clean `bin/`. Never modify files outside `modules/goblin/` without explicit permission.

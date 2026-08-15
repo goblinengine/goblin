@@ -6,12 +6,16 @@ This is a production fork, not a generic rebranding template.
 
 ## Build
 
+`debug_symbols=yes` is REQUIRED for all test/diagnostic builds (B-14: symbol-less
+binaries made heap-corruption diagnosis a multi-hour detour; crashes are only
+analyzable when the PDB exists in `bin/`).
+
 ```
-scons platform=windows target=editor module_mono_enabled=no accesskit=no angle=no -j4
+scons platform=windows target=editor module_mono_enabled=no accesskit=no angle=no debug_symbols=yes -j4
 ```
 
 Optional faster incremental: `--max-drift=1 --implicit-deps-unchanged`.
-Output: `bin/goblin.windows.editor.x86_64.exe` (+ `.console.exe`).
+Output: `bin/goblin.windows.editor.x86_64.exe` (+ `.console.exe`) + PDB in `bin/`.
 
 **Never run `scons -c` or delete anything in `bin/`** — the build cache must never be cleared.
 

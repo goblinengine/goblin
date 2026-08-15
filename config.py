@@ -92,6 +92,17 @@ def configure(env):
             "project_manager": os.path.join(_goblin_dir, "editor", "overrides", "project_manager", "project_manager.cpp"),
             "editor_node": os.path.join(_goblin_dir, "editor", "overrides", "editor_node.cpp"),
         },
+        "drivers": {
+            "post_effects": os.path.join(_goblin_dir, "drivers", "gles3", "effects", "post_effects.cpp"),
+            "rasterizer_scene_gles3": os.path.join(_goblin_dir, "drivers", "gles3", "rasterizer_scene_gles3.cpp"),
+            "render_scene_buffers_gles3": os.path.join(_goblin_dir, "drivers", "gles3", "storage", "render_scene_buffers_gles3.cpp"),
+        },
+        "servers": {
+            "renderer_viewport": os.path.join(_goblin_dir, "servers", "rendering", "renderer_viewport.cpp"),
+        },
+        "scene": {
+            "viewport": os.path.join(_goblin_dir, "scene", "main", "viewport.cpp"),
+        },
     }
 
     def goblin_add_library(self_env, program, source, **kw):
@@ -102,6 +113,11 @@ def configure(env):
         lib_name = str(program).replace("#bin/obj/", "").split(".", 1)[0]
         overrides = _GOBLIN_FILE_OVERRIDES.get(lib_name)
         if overrides:
+            # Goblin mirrors compile with the goblin tree as a pseudo-root include
+            # overlay: root-relative includes ("drivers/gles3/effects/post_effects.h")
+            # resolve to the goblin mirror first, then fall through to upstream.
+            _goblin_env = self_env.Clone()
+            _goblin_env.Prepend(CPPPATH=[_goblin_dir])
             _new_source = []
             for _s in source:
                 # Sources are Object nodes whose str() is the target path, e.g.
@@ -111,7 +127,7 @@ def configure(env):
                 if _stem in overrides and os.path.isfile(overrides[_stem]):
                     if self_env.get("verbose"):
                         print(f"Goblin: Overriding {_stem} -> {overrides[_stem]}")
-                    _new_source.append(self_env.Object(overrides[_stem]))
+                    _new_source.append(_goblin_env.Object(overrides[_stem]))
                 else:
                     _new_source.append(_s)
             source = _new_source
