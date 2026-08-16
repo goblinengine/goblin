@@ -4,15 +4,15 @@ Spec: `modules/goblin/docs/rfc/fast-scene-tree-rfc.md` (proposed 2026-08-16). Co
 
 ## Goal
 
-Additive module `modules/tree/` providing `FastSceneTree : public MainLoop`, a full re-implementation of the SceneTree contract with new internals; selected per-project via `application/run/main_loop_type`. Mandatory seam work: node.h additive `fast_tree` field + return-type change (ADR 0009), node.cpp swap with dual-path (mechanism #2). Editor untouched (base SceneTree).
+Additive module `modules/fast_scene_tree/` providing `FastSceneTree : public MainLoop`, a full re-implementation of the SceneTree contract with new internals; selected per-project via `application/run/main_loop_type`. Mandatory seam work: node.h additive `fast_tree` field + return-type change (ADR 0009), node.cpp swap with dual-path (mechanism #2). Editor untouched (base SceneTree). **The module also hosts the EntityNode/EntityComponent layer (phase 2, `entity-node-rfc.md`) — same module, own subdirs, shipped after the tree validates.**
 
 ## Phases
 
 | Phase | What | Files | Effort | Gate |
 |-------|------|-------|--------|------|
 | **P0** | Evidence + audit: instrument reference title (node counts, per-frame tree costs, scheduler `call_group` frequency); corpus audit for typed `SceneTree` annotations / `is SceneTree` checks; answer harness question (open q4) | temp instrumentation | 0.5–1 d | Numbers + audit counts recorded. Kill: tree+group < 5% of frame budget → park M-14. Type-identity divergence accepted or rejected from audit |
-| **P1** | Contract test matrix: notification order, signal semantics, group flags, timer modes, pause/quit/scene-change — pinned as tests against BASE SceneTree first (reference behavior) | `modules/tree/tests/` | 1–2 d | Matrix green on base SceneTree — it IS the spec |
-| **P2** | Module skeleton + seam: `modules/tree/` (ADR 0008), `FastSceneTree : MainLoop` class registered in ClassDB; node.h additive `fast_tree` field + `_set_tree`/`get_tree` dual-path (ADR 0009); title sets `application/run/main_loop_type`; **hardcoded-reference handling per RFC §3.1**: audit shader/material inspector sites, guard/swap window.cpp:3284 + viewport.cpp:1485, declare friend-private equivalents (`xform_change_list`, `_call_input_pause`) | `modules/tree/**`, node.h edit, window.cpp/viewport.cpp swap, title project.godot | 2–4 d | Game runs on FastSceneTree; P1 matrix green on FastSceneTree; editor smoke green (base path); suite green |
+| **P1** | Contract test matrix: notification order, signal semantics, group flags, timer modes, pause/quit/scene-change — pinned as tests against BASE SceneTree first (reference behavior) | `modules/fast_scene_tree/tests/` | 1–2 d | Matrix green on base SceneTree — it IS the spec |
+| **P2** | Module skeleton + seam: `modules/fast_scene_tree/` (ADR 0008), `FastSceneTree : MainLoop` class registered in ClassDB; node.h additive `fast_tree` field + `_set_tree`/`get_tree` dual-path (ADR 0009); title sets `application/run/main_loop_type`; **hardcoded-reference handling per RFC §3.1**: audit shader/material inspector sites, guard/swap window.cpp:3284 + viewport.cpp:1485, declare friend-private equivalents (`xform_change_list`, `_call_input_pause`) | `modules/fast_scene_tree/**`, node.h edit, window.cpp/viewport.cpp swap, title project.godot | 2–4 d | Game runs on FastSceneTree; P1 matrix green on FastSceneTree; editor smoke green (base path); suite green |
 | **P3** | Contract implementation: frame loop (initialize/process/physics_process/iteration_prepare/end/finalize), notifications, timers, pause, scene change, signals — against the P1 matrix | `fast_scene_tree.{h,cpp}` | 4–6 d | P1 matrix green; suite + corpus + 342 tests + level load green; editor smoke green |
 | **P4** | Groups + determinism: group API with flag semantics; ordered unique-call flush | `fast_scene_tree.{h,cpp}` | 2–3 d | Group-flag matrix green; determinism test (call order pinned) |
 | **P5** | node.cpp dual-path complete: ~40 sites route via `fast_tree` when present, base otherwise (editor) | node.cpp swap | 2–3 d | Editor smoke (base path byte-identical); game path green; profile delta vs P2 |
@@ -25,7 +25,7 @@ Additive module `modules/tree/` providing `FastSceneTree : public MainLoop`, a f
 
 ## Mechanism wiring
 
-- ADR 0008 additive module: `modules/tree/` standard anatomy, auto-discovered.
+- ADR 0008 additive module: `modules/fast_scene_tree/` standard anatomy, auto-discovered.
 - node.h: direct edit (ADR 0009 precedent — additive field `FastSceneTree *fast_tree` + `_set_tree`/`get_tree` dual-path). Smallest sanctioned header touch; needs explicit permission per rules.
 - node.cpp: `_GOBLIN_FILE_OVERRIDES["scene"] = {"node": ...}` — existing mechanism #2 dict (ADR 0007).
 - Selection: `application/run/main_loop_type = "FastSceneTree"` in the reference title's project.godot (main.cpp:4361 → `ClassDB::instantiate` at :4416).

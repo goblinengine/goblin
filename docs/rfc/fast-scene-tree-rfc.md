@@ -15,7 +15,7 @@ A fork-owned, SceneTree-compatible main loop class, **re-implemented from `MainL
 
 - New class `FastSceneTree : public MainLoop` — zero ClassDB conflict, registered like any module class, selected per-project via `application/run/main_loop_type`.
 - **Full re-implementation** of the SceneTree contract (frame loop, notifications, groups, timers, pause, input, scene change, multiplayer API) — same public API, same signals, same semantics, **new internals**: no per-frame process-list copies, no per-call group copies, no string dispatch, deterministic ordering.
-- Extensible afterward (cadence API, flat-data ComposableNode stage).
+- Extensible afterward (cadence API, flat-data EntityNode stage).
 
 ## 2. Why MainLoop and not SceneTree (locked 2026-08-16)
 
@@ -84,7 +84,7 @@ equivalents; the rest is public API.
 
 ## 4. Architecture
 
-- **Module:** additive `modules/tree/` (ADR 0008 anatomy): `SCsub`, `config.py`, `register_types.{h,cpp}`, `doc_classes/`, `tests/`, `editor/icons/`.
+- **Module:** additive `modules/fast_scene_tree/` (ADR 0008 anatomy): `SCsub`, `config.py`, `register_types.{h,cpp}`, `doc_classes/`, `tests/`, `editor/icons/`. **Self-contained** — owns FastSceneTree (phase 1) AND the EntityNode/EntityComponent layer (phase 2, `entity-node-rfc.md`): the entity registry + component pools are tree-owned data, so the entity system is a subsystem of this module, not a separate one.
 - **Class:** `FastSceneTree : public MainLoop`, `GDCLASS`, registered in ClassDB.
 - **Selection:** reference title `project.godot`: `application/run/main_loop_type = "FastSceneTree"`. Games get it; editor untouched.
 - **Re-implementation surface** (must match upstream semantics): `initialize`, `process(delta)`, `physics_process(delta)`, `iteration_prepare/end`, `finalize` (MainLoop virtuals); groups (`call_group` + flags DEFAULT/REVERSE/DEFERRED/UNIQUE, `get_nodes_in_group`, `notify_group`, `set_group`); timers (`create_timer` semantics incl. process_always/physics/ignore_time_scale); pause/suspend; scene change API; multiplayer API; accessibility hooks; signals (`process_frame`, `physics_frame`, `node_added/removed/renamed`, `tree_changed`, `tree_process_mode_changed`); `get_node_count`, `queue_delete`, `add_idle_callback`, physics-interpolation flags.
@@ -127,7 +127,9 @@ M4–M7 live in the node.cpp seam or tree-owned lists; all within the dual-path 
 
 ## 8. Deferred
 
-ComposableNode/SoA flat-data stage — future RFC on T6 stable-iteration hooks. SimServer (RID-space) orthogonal; S-01 cadence pipeline may consume T5 `register_cadence`.
+EntityNode/EntityComponent flat-data stage — future RFC on T6 stable-iteration hooks
+(`entity-node-rfc.md`, deferred until FastSceneTree ships). SimServer (RID-space) orthogonal;
+S-01 cadence pipeline may consume T5 `register_cadence`.
 
 ## 9. Risks
 

@@ -253,9 +253,10 @@ surface-resolution path). Suggested order: S-01 → S-02 → S-03 (light channel
 SceneTree replacement is a **separate track, deliberately not part of this RFC**: SimServer is
 RID-space and orthogonal to the tree. Direction locked 2026-08-16: `FastSceneTree : public MainLoop`
 — a full re-implementation (spec in `fast-scene-tree-rfc.md` + `plans/fast-scene-tree-plan.md`,
-backlog M-14). The ComposableNode/SoA flat-data stage is a further, deferred RFC riding on the
-tree's stable-iteration hooks. SimServer and the tree track stay independent; the cadence pipeline
-(S-01) may later consume the tree's `register_cadence` (T5) when both exist.
+backlog M-14). The EntityNode/EntityComponent flat-data stage is a further, deferred RFC
+(`entity-node-rfc.md`) riding on the tree's stable-iteration hooks. SimServer and the tree track
+stay independent; the cadence pipeline (S-01) may later consume the tree's `register_cadence`
+(T5) when both exist.
 
 ## 11. Open questions (decide at plan time)
 
