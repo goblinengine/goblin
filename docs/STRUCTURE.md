@@ -9,7 +9,7 @@ modules/goblin/
 ├── config.py                    # configure() hook — runs before any SCsub
 │   │                            #   · monkey-patches builders (branding)
 │   │                            #   · goblin_add_library() — library-scoped file swaps
-│   │                            #   · DISABLE_MODULES — module trim
+│   │                            #   · DISABLE_MODULES — module trim (import-time ARGUMENTS injection, ADR 0012; canary print in configure)
 │   └── (registers the add_program/add_library/add_shared_library hooks)
 │
 ├── SCsub                        # Main build script

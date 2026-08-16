@@ -25,6 +25,7 @@ Goblin Engine is a deliberately customized, lightweight fork of Godot Engine. Al
 - **[gdscript_features.md](gdscript_features.md)** — the GDScript fork's language features and divergence from upstream.
 - **[genre-coverage.md](genre-coverage.md)** — genre-by-genre needs × Godot overlap × fork plan gap analysis (vision alignment).
 - **[rfc/simserver-rfc.md](rfc/simserver-rfc.md)** — SimServer: systemic/immersive-sim server (clock/cadence, stimulus, surface query, ambient field, stealth readout).
+- **[rfc/fast-scene-tree-rfc.md](rfc/fast-scene-tree-rfc.md)** — FastSceneTree: additive SceneTree-compatible main loop (new class, cadence fast paths, frame hooks).
 - **[STRUCTURE.md](STRUCTURE.md)** — module layout and the override mechanisms.
 - **[BRANDING_STATUS.md](BRANDING_STATUS.md)** — what gets rebranded and what does not.
 - **[LIGHTMAP_INVESTIGATION.md](LIGHTMAP_INVESTIGATION.md)** — reference for the lightmap core changes (backlog C-01/C-02).

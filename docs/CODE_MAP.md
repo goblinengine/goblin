@@ -34,7 +34,8 @@ modules/midi/            # STANDALONE additive feature module (ADR 0008) - see s
 
 | Symbol | What |
 |---|---|
-| `configure()` (:5) | Replaces upstream builders with goblin_builders, wraps add_program/add_library/add_shared_library (godot -> goblin rename), applies DISABLE_MODULES trim |
+| `configure()` (:5) | Replaces upstream builders with goblin_builders, wraps add_program/add_library/add_shared_library (godot -> goblin rename), prints the module-trim canary (`28/28 modules gated off`, ADR 0012) |
+| module-level trim code (import time) | Mutates `SCons.Script.ARGUMENTS` (first module loop, SConstruct:474, before `opts.Update` at 499): `module_<name>_enabled=no` per `DISABLE_MODULES` entry the user did not set on the CLI — the gate (SConstruct:1113) then skips them regardless of alphabetical position (ADR 0012; was a no-op via `env.disabled_modules` until 2026-08-16) |
 | `goblin_add_library()` | Library-scoped file override: `_GOBLIN_FILE_OVERRIDES = {lib: {stem: goblin_path}}` for `core` + `editor`; swaps matching basename in the library source list BEFORE capture (ADR 0007 / B-09) |
 | `get_icons_path()` | Editor icon overrides (`Logo.svg`, `Godot.svg`, `TitleBarLogo.svg`, ...) registered at configure time — MUST stay here, not in editor/SCsub: SConstruct collects `module_icons_paths` before `editor/icons/SCsub` runs, so a late append never applies |
 | `can_build()` (:1) | Module enable check |

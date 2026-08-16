@@ -19,7 +19,7 @@ Promote an RFC to an ADR when direction and boundary are both stable enough to f
 ## Accepted ADRs
 
 1. [0001-source-override-architecture.md](0001-source-override-architecture.md)
-   Locks the three override mechanisms: whole-module replacement, single-file core swap, and builder monkey-patching. All changes live in `modules/goblin/`.
+   Locks the three override mechanisms: whole-module replacement, single-file core swap, and builder monkey-patching — plus build-time option injection (0012). All changes live in `modules/goblin/`.
 
 2. [0002-stable-release-tracking.md](0002-stable-release-tracking.md)
    Locks tracking of official Godot stable release tags instead of `master`, with rebase only at release boundaries.
@@ -43,6 +43,9 @@ Promote an RFC to an ADR when direction and boundary are both stable enough to f
 
 9. [0009-clean-room-cut-upscalers.md](0009-clean-room-cut-upscalers.md)
    Clean-room GPL boundary for the CUT upscalers + first header direct-edit precedent (`rendering_server_enums.h`, unreachable by swap).
+
+10. [0012-build-time-option-injection.md](0012-build-time-option-injection.md)
+   4th override mechanism: module-level ARGUMENTS mutation in `modules/goblin/config.py` (import time, before `opts.Update`) sets `module_*_enabled=no` for the module trim gate — fixes B-01 (the trim was a silent no-op). User CLI wins; configure() canary print.
 
 ## Not Yet ADRs
 

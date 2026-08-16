@@ -291,32 +291,21 @@ All networking modules preserved: `enet`, `websocket`, `webrtc`, `upnp`, `multip
 - **Compile time:** ~55% reduction in modules compiled (~22 from 56 enabled, up from 14 due to keeping networking + noise + platforms)
 - **Binary size:** Estimated 30-45% reduction in export template
 - **Linker time:** Significant reduction from fewer static libraries
-- **Risk:** Low — all trimmed modules verified unused by the reference title
+- **Risk:** Re-validation pending — the original "verified unused" evidence (ADR 0003) was gathered while the trim was a no-op (B-01 was falsely `done` until 2026-08-16). Trim now actually engages; B-01 plan gates re-validate against the reference corpus.
 
 ### Trimming Mechanism
 
-Module trimming uses Godot's existing `module_check_dependencies()` disabling mechanism. In `goblin/config.py:configure()`:
+Module trim is a build-time option injection (ADR 0012), not `env.disabled_modules` (that was a no-op). `module_*_enabled` is decided at `SConstruct:499` `opts.Update` from `ARGUMENTS` (args layer beats defaults and custom.py/profile files). `configure()` runs too late for the trim candidates sorting before "goblin", so `modules/goblin/config.py` mutates `SCons.Script.ARGUMENTS` at IMPORT time (first module loop, `SConstruct:474`, before the Update):
 
 ```python
-# After the source override hook, disable modules the reference title doesn't use
-DISABLE_MODULES = {
-    "bmp", "tga", "dds", "hdr", "jpg", "webp", "tinyexr",
-    "basis_universal", "ktx", "astcenc", "etcpak",
-    "theora", "interactive_music",
-    "webxr", "openxr", "mobile_vr",
-    "csg", "gridmap", "gltf", "fbx",
-    "navigation_3d", "navigation_2d",
-    "godot_physics_3d", "godot_physics_2d",
-    "glslang", "camera", "zip", "raycast",
-}
-
-env.disabled_modules = list(getattr(env, 'disabled_modules', []))
-for mod in DISABLE_MODULES:
-    if mod not in env.disabled_modules:
-        env.disabled_modules.append(mod)
+from SCons.Script import ARGUMENTS
+for _mod in DISABLE_MODULES:
+    _key = f"module_{_mod}_enabled"
+    if _key not in ARGUMENTS:   # user CLI wins
+        ARGUMENTS[_key] = "no"
 ```
 
-This leverages Godot's existing `module_check_dependencies()` in `methods.py` — modules in `disabled_modules` are skipped during discovery and their dependencies cascade.
+The gate at `SConstruct:1113` (`if not env[f"module_{name}_enabled"]: continue`) then skips all trimmed modules regardless of alphabetical position. `configure()` prints a canary (`Goblin: Module trim active (28/28 modules gated off)`) so a regression or CLI override is visible in every build log. Trim list: 28 modules (tinyexr kept for editor `.exr` lightmap save, C-11; godot_physics_3d kept as the default physics server — jolt registers no default, ADR 0003). GL Compatibility-only fork: glslang trimmed by design (Forward+/Mobile require re-enabling it).
 
 ---
 

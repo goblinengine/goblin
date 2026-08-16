@@ -19,6 +19,7 @@ Promote an RFC to an ADR (in [../adr/](../adr/)) when direction and boundary are
 | [cut-upscalers-rfc.md](cut-upscalers-rfc.md) | Core rendering | Proposed 2026-08-14; clean-room CUT1/2/3 for GLES3 3D scaling (license path + enum strategy + mechanism options; locked in plan) |
 | [native-game-features-rfc.md](native-game-features-rfc.md) | GDScript language | Proposed 2026-08-13 — consolidated: expanded dictionary (typed entries, template dictionaries, callable members) + recovered `then`/`elthen`; secondary candidates and rejected ideas. Not yet approved as an implementation plan |
 | [simserver-rfc.md](simserver-rfc.md) | Systemic / immersive sim | Proposed 2026-08-16; direction agreed (user 2026-08-16). Additive module `modules/sim/`: clock/cadence + stimulus bus (S-01), surface registry + query (S-02), ambient field + stealth readout (S-03), interaction substrate (S-04), combat hooks (S-05). Folds C-05/C-06/M-07/M-08/M-09. Cadence pipeline (pre_tick → sim_tick → post_tick) for determinism; RID-space, orthogonal to SceneTree |
+| [fast-scene-tree-rfc.md](fast-scene-tree-rfc.md) | Core — SceneTree replacement | Proposed 2026-08-16; direction locked (user 2026-08-16): **`FastSceneTree : public MainLoop` — full re-implementation** (extending SceneTree rejected — inherits unoptimizable private machinery). Additive module `modules/tree/` (ADR 0008), selected via `application/run/main_loop_type`; mandatory seam: node.h additive `fast_tree` field + node.cpp dual-path swap (ADR 0009 + mechanism #2). T1–T6 new internals; type-identity divergence documented. Companion plan: `plans/fast-scene-tree-plan.md` |
 
 Implementation breakdowns for approved directions live in [../plans/](../plans/) (e.g. `lightmapper-cpu-plan.md` — stage-by-stage port map of `lightmapper_rd` → CPU, data structures, threading, perf model, risks; companion to the RFC).
 
@@ -33,6 +34,6 @@ Implementation breakdowns for approved directions live in [../plans/](../plans/)
 | retro-native-editor-rfc | Editor | Palette, dither, color cycling, posterization as editor-provided nodes/plugins |
 | brush-mover-contract-rfc | Core | Kinematic doors/lifts/crushers; deterministic hull traces |
 | lightstyle-surface-class-rfc | Core | Style-channel modulation of baked light + retro surface classes |
-| scene-tree-hybrid-rfc | Core | SceneTree replacement / tree+ECS hybrid exploration (ComposableNode/ComposableComponent). Research only; additive opt-in if ever built; separate from SimServer (see simserver-rfc §10) |
+| composable-node-stage-rfc | Core | Deferred: flat-data layer on top of FastSceneTree (stable-iteration hooks) — ComposableNode/ComposableComponent, SoA iteration. Explicitly separate from fast-scene-tree-rfc (T1–T3 deliver the bypass fast paths; the flat-data stage delivers the orders of magnitude) |
 
 Each RFC must state: context, the problem, options considered, a recommended direction, and open questions. RFCs are strong directional guidance unless explicitly marked superseded.

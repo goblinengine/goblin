@@ -248,14 +248,14 @@ surface-resolution path). Suggested order: S-01 → S-02 → S-03 (light channel
 | Worker-thread bake races | Main-thread-owned state; workers only fill pre-allocated buffers |
 | Title migration breaks existing scripts | Dict-compatible results (S-02), API 1:1 with the scheduler script (S-01); migration is opt-in per call site |
 
-## 10. Out of scope — SceneTree exploration (separate topic)
+## 10. Out of scope — SceneTree replacement (separate track)
 
-The user wants to explore a possible SceneTree replacement / hybrid "tree + ECS" (ComposableNode /
-ComposableComponent, flat vector lists, relationship-mapped tree). That is a **separate research
-track, deliberately not part of this RFC**: SimServer is RID-space and orthogonal to the tree.
-Constraints agreed for that track: must be fully backwards compatible with regular nodes; if ever
-built, additive (opt-in), never a replacement of the upstream SceneTree; revisit only with
-profiling evidence that node/entity iteration is the bottleneck. Parked as research (backlog).
+SceneTree replacement is a **separate track, deliberately not part of this RFC**: SimServer is
+RID-space and orthogonal to the tree. Direction locked 2026-08-16: `FastSceneTree : public MainLoop`
+— a full re-implementation (spec in `fast-scene-tree-rfc.md` + `plans/fast-scene-tree-plan.md`,
+backlog M-14). The ComposableNode/SoA flat-data stage is a further, deferred RFC riding on the
+tree's stable-iteration hooks. SimServer and the tree track stay independent; the cadence pipeline
+(S-01) may later consume the tree's `register_cadence` (T5) when both exist.
 
 ## 11. Open questions (decide at plan time)
 
