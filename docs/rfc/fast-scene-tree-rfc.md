@@ -22,65 +22,61 @@ A fork-owned, SceneTree-compatible main loop class, **re-implemented from `MainL
 - Extending `SceneTree` inherits the machinery we need to replace: `_process_group` (per-frame copy, scene_tree.cpp:1201), group-call copies (:397/469/532/1448), `_flush_ugc` hash order (:323), and the private data structures (`ProcessGroup`, `group_map`) are **private non-virtual** — a subclass can only add parallel systems, never replace the internals.
 - Extending `MainLoop` and re-implementing gives full control of every hot path. The class name is ours; `ClassDB::instantiate(main_loop_type)` at main.cpp:4416 selects it; default flips via project setting (`main.cpp:4361`). Editor hardcode `memnew(SceneTree)` (main.cpp:4358) is untouched.
 
-## 3. The Node seam — what the MainLoop route costs (source-verified)
+## 3. The Node seam — the generic interface (locked 2026-08-16)
 
-`Node` is compile-time typed against `SceneTree`:
+`Node` is compile-time typed against `SceneTree`. The **proper fix** (user 2026-08-16): the seam
+operates on **any main loop type** — nothing hardcodes `SceneTree` or `FastSceneTree`.
 
-| Site | Declaration |
-|------|-------------|
-| node.h:219 | `SceneTree *tree = nullptr;` (Node::Data) |
-| node.h:334 | `void _set_tree(SceneTree *p_tree);` |
-| node.h:558 | `_FORCE_INLINE_ SceneTree *get_tree() const` — the GDScript-bound API |
-| node.cpp | ~40 friend-access call sites (`data.tree->add_to_group()`, `->node_added()`, `->default_process_group`, `->_add_process_group()`, `->nodes_in_tree_count`, `->queue_delete()`, `->get_multiplayer()` …) |
-| viewport.cpp / window.cpp | 24 + 13 `get_tree()` users (public API only) |
+```
+BaseSceneTree : MainLoop           ← NEW additive core header: scene/main/base_scene_tree.h
+ ├── SceneTree : BaseSceneTree     ← narrow upstream edit (base class + moved members)
+ └── FastSceneTree : BaseSceneTree ← our implementation
+```
 
-A `FastSceneTree *` cannot be stored in or returned from a `SceneTree *` slot. Therefore the
-MainLoop route **mandates** owning the Node seam:
+- **`BaseSceneTree`** lives **in core** as a new additive header: `scene/main/base_scene_tree.h`
+  (next to scene_tree.h, same layer; header-only — pure virtual methods, no .cpp). It cannot live
+  in the fast_scene_tree or goblin module: scene_tree.h must `#include` the complete definition
+  (inheritance needs the full type), and a core header including a module header inverts the
+  dependency and makes the module non-disableable. With the core placement, disabling the
+  fast_scene_tree module is safe — SceneTree just extends the abstract BaseSceneTree, behavior
+  identical. The include is `#include "base_scene_tree.h"` — same pattern as scene_tree.h:39
+  (`scene/main/scene_tree_fti.h`). Public virtual methods covering everything the engine calls on
+  the tree — `call_group`(+flags),
+  `notify_group`, `set_group`, `get_root`, `get_edited_scene_root`, `create_timer`, `create_tween`,
+  `queue_delete`, `get_multiplayer`, `is_paused`/`is_suspended`, `get_physics_process_time`/
+  `get_process_time`, `is_debugging_*_hint`, accessibility (`is_accessibility_enabled/supported`,
+  `_accessibility_force_update/notify_change`), `get_collision_debug_contact_count`,
+  `get_scene_tree_fti`, plus process-group registration, xform-change-list add/remove,
+  input-pause dispatch, node count. Private friend-accessed members
+  (`xform_change_list`, `default_process_group`, `process_groups_dirty`, `nodes_in_tree_count`)
+  move up to the interface.
+- **node.h edit (permission granted, keep narrow):** `data.tree` (node.h:219) / `_set_tree`
+  (:334) / `get_tree()` (:558) → `BaseSceneTree *`. The ~326 upstream `get_tree()->` call sites
+  and the ~40 friend accesses then compile **unchanged** via virtual dispatch — no swaps of
+  node_3d/canvas_item/viewport/window required.
+- **Upstream core edit (last resort, user-sanctioned, narrow):** `scene_tree.h` — `class SceneTree
+  : public BaseSceneTree` + move the 4 private members up; ~20 lines. Editor path untouched
+  (`memnew(SceneTree)` at main.cpp:4358 still constructs a working BaseSceneTree).
+- **No hardcoded class names in the seam.** Any future main loop type implements BaseSceneTree.
+- **Type-identity caveat (unchanged, honest):** GDScript `is SceneTree` and typed
+  `var t: SceneTree` annotations fail on a FastSceneTree instance (type identity, not API).
+  Dynamic calls work via the interface. Lightweight corpus spot-check at validation.
 
-1. **node.h direct edit (ADR 0009 precedent, additive):** add `FastSceneTree *fast_tree = nullptr;`
-   to `Node::Data` + modify `_set_tree`/`get_tree` to serve both. One additive field + return-type
-   change — the smallest sanctioned header touch.
-2. **node.cpp swap (mechanism #2):** dual-path at ~40 sites — `fast_tree` present → FastSceneTree
-   API; absent (editor, base SceneTree) → existing behavior byte-identical. Editor keeps
-   `memnew(SceneTree)`; one binary serves both.
-3. **Type-identity caveat (honest incompatibility):** a MainLoop-derived class is **not** a
-   `SceneTree`. GDScript `is SceneTree` checks and typed `var t: SceneTree` annotations fail at
-   runtime against a FastSceneTree instance. Dynamic calls (`get_tree().call_group(...)`) work if
-   the re-implementation exposes the same API/signals. Corpus audit for typed SceneTree usage is a
-   P0/P5 gate.
-
-### 3.1 Hardcoded `SceneTree` references outside the tree (full inventory, 2026-08-16)
+### 3.1 Hardcoded `SceneTree` references outside the tree (reclassified 2026-08-16)
 
 Grep-verified across `scene/`, `main/`, `servers/` (editor excluded — always base SceneTree):
 
-**A. `SceneTree::get_singleton()` static uses — 10 game-relevant files:**
+| Site | With BaseSceneTree |
+|------|--------------------|
+| ~326 `get_tree()->` call sites (61 files) — public API | ✅ compile unchanged, virtual dispatch |
+| friend-private accesses: `xform_change_list` (node_3d/canvas_item), `_call_input_pause` (viewport) | ✅ members/methods on BaseSceneTree |
+| `SceneTree::get_singleton()` statics: performance.cpp:148, main.cpp:4434/5170, shape_3d.cpp:122 | ✅ null-guarded; no-op in game |
+| `SceneTree::get_singleton()` statics: shader.cpp:147, material.cpp:124 | ⚠️ audit at P1; TOOLS-ish paths |
+| `SceneTree::get_singleton()` statics: window.cpp:3284, viewport.cpp:1485 (unguarded) | ⚠️ route via BaseSceneTree accessor at P1 |
+| tests/** | harness: FastSceneTree tests under FastSceneTree, rest under SceneTree |
 
-| Site | Guarded? | Handling |
-|------|----------|----------|
-| `main/performance.cpp:148` | ✅ `if (!sml) return` | no-op in game — none |
-| `main/main.cpp:4434` (`cast_to<SceneTree>(main_loop)`) | ✅ `if (sml)` | debug hints skipped — none |
-| `main/main.cpp:5170` | ✅ `scene_tree &&` | accessibility — none |
-| `scene/resources/shader.cpp:147` | ⚠️ used immediately | audit at P0; TOOLS-ish path |
-| `scene/resources/material.cpp:124` | ⚠️ used immediately | audit at P0; TOOLS-ish path |
-| `scene/resources/3d/shape_3d.cpp:122` | ✅ `if (scene_tree)` | debug draw — none |
-| `scene/main/window.cpp:3284` | ❌ unguarded `->get_root()` | swap or guard; reached via window embedding paths |
-| `scene/main/viewport.cpp:1485` | ❌ unguarded | swap or guard; mouse-pos fallback |
-| `scene/main/node.cpp:2624,3467` | — | owned via node.cpp swap |
-| `tests/**` | — | harness constructs own tree — open q4 |
-
-**B. Friend-private accesses through `get_tree()` — 3 files (the real seam):**
-`node_3d.cpp` (`xform_change_list` ×5), `canvas_item.cpp` (`xform_change_list` ×5),
-`viewport.cpp` (`_call_input_pause` ×4). FastSceneTree must declare the **same private members +
-friend relationships** (`friend class Node3D/CanvasItem/Viewport`) so these resolve to our
-implementation.
-
-**C. All other `get_tree()->` call sites (~326 across 61 files) use public API**
-(`call_group`, `get_root`, `is_debugging_collisions_hint`, accessibility, FTI, …) — resolve
-dynamically on the actual object; satisfied by reimplementing the public surface. No handling.
-
-**Verdict (user, 2026-08-16): "probably not a big deal, should mostly work" — confirmed by
-inventory.** 6/10 singleton sites guarded no-ops; 4 need audit/swap; 3 files need friend-private
-equivalents; the rest is public API.
+**Verdict (user, 2026-08-16): "probably not a big deal, should mostly work" — confirmed.** The
+generic interface makes the seam type-agnostic; the 4 unguarded/TOOLS sites are P1 audit items.
 
 ## 4. Architecture
 
@@ -112,7 +108,7 @@ equivalents; the rest is public API.
 | M6 | recursive `_propagate_*` walks O(subtree) per add/remove (node.cpp:595) | flat worklist + dirty flags, iterative |
 | M7 | `SceneTreeTimer` alloc per `create_timer` | free-list pooling, reuse instances |
 
-M4–M7 live in the node.cpp seam or tree-owned lists; all within the dual-path swap scope.
+M4–M7 live in tree-owned lists and the children-cache maintenance; M4/M6 touch the Node children path via the interface seam (still no file swaps).
 
 ## 6. What stays upstream
 
@@ -136,15 +132,15 @@ S-01 cadence pipeline may consume T5 `register_cadence`.
 | Risk | Mitigation |
 |------|-----------|
 | node.h edit is upstream-touch | ADR 0009 additive-field precedent; one field + return-type change; smallest sanctioned header edit |
-| node.cpp dual-path must be byte-identical on editor path | Editor smoke test at every phase; guard on `fast_tree != nullptr` |
+| node.h/scene_tree.h seam edits must keep base-SceneTree semantics byte-identical | Editor smoke test at every phase; seam edits kept narrow and re-diffed on rebase |
 | Re-implementation semantics drift (notification order, flags, timers) | Contract test matrix (P1) + full suite + corpus + 342 tests + level load per phase |
 | Typed SceneTree usage in corpus breaks | Corpus audit at P0/P5; documented type-identity divergence |
 | Scope (full tree re-implementation is the largest fork change) | Hard phase gates; P2 pure-contract baseline before optimization |
 | Rebase drift of node.h/node.cpp | Porting-skill mirror discipline; friend-contract grep canary |
 
-## 10. Open questions (decide at P0/P1)
+## 10. Open questions (decide at P1/P7)
 
-1. Evidence gate first: instrument reference title — node counts, per-frame tree costs, scheduler `call_group` frequency. Kill: tree+group < 5% of frame budget → park M-14.
-2. Corpus audit: how many typed `SceneTree` annotations / `is SceneTree` checks exist in the reference corpus? (Determines whether the type-identity divergence is acceptable.)
+1. A/B benchmark scope (P8): which tests/corpus scenarios run under both trees.
+2. Type-identity: lightweight corpus spot-check at P7 — dynamic calls via the interface are the norm.
 3. T5 cadence API shape: exact `register_cadence` signature + SimServer integration point.
-4. Test harness: which main loop do the 1397 GDScript tests run under — do they exercise FastSceneTree?
+4. Test harness (locked 2026-08-16): FastSceneTree tests run under FastSceneTree; all other tests under the regular SceneTree; fork default = FastSceneTree when present (project-settings default injection, user-overridable).
