@@ -1,71 +1,117 @@
 # FastSceneTree — Implementation Plan
 
-> **SUPERSEDED 2026-08-17 (user directive): module + BaseSceneTree seam REJECTED.**
-> Direction now: **modify `SceneTree` in place** — edit home is the goblin mirror
-> `modules/goblin/scene/main/scene_tree.cpp` (single core-file swap, content =
+> **PIVOT 2026-08-17 (user directive): module + BaseSceneTree seam REJECTED.**
+> Direction: **modify `SceneTree` in place** via the goblin mirror
+> `modules/goblin/scene/main/scene_tree.cpp` (single core-file swap; content =
 > faithful upstream copy). No module, no base-class seam, no retype ripple:
 > `get_tree()`/`SceneTree::get_singleton()`/editor/PM stay upstream-typed, and
-> the optimized tree runs everywhere (editor, PM, games) for free. Lost vs this
-> plan: A/B benchmark baseline and per-project opt-out; acceptance = suite green
-> + no regressions. P5 T1–T6/M1–M7 optimizations land directly in the mirror
-> (upstream scene_tree.cpp changes port manually). Full re-lock pending architect.
+> the optimized tree runs everywhere (editor, PM, games) for free. The old
+> module-era plan below (§2–§10) is kept for history only.
+> **Acceptance = suite green + no regressions + smoke boots** (A/B benchmark
+> baseline and per-project opt-out are lost vs the module design — accepted).
 
-Spec: `modules/goblin/docs/rfc/fast-scene-tree-rfc.md` (proposed 2026-08-16). Companion to backlog M-14. Direction locked 2026-08-16 (user): **`FastSceneTree : public MainLoop` — full re-implementation** (extending SceneTree rejected — inherits unoptimizable private machinery).
+- **Spec (superseded):** `modules/goblin/docs/rfc/fast-scene-tree-rfc.md`
+- **Backlog:** M-14
+- **Edit home:** `modules/goblin/scene/main/scene_tree.cpp` + direct core edit
+  `scene/main/scene_tree.h` (user-sanctioned: 7 lines — 2 ProcessGroup flags
+  + 3 cached StringName members; the only upstream file touched)
 
-## Goal
+---
 
-Additive module `modules/fast_scene_tree/` providing `FastSceneTree : public MainLoop`, a full re-implementation of the SceneTree contract with new internals; selected per-project via `application/run/main_loop_type`. **Seam via generic interface (locked 2026-08-16):** `BaseSceneTree : MainLoop` lives **in core** as a NEW additive header `scene/main/base_scene_tree.h` (header-only, pure virtuals — core header cannot include a module header); narrow upstream edits — `scene_tree.h` base change (`SceneTree : BaseSceneTree` + 4 moved members, ~20 lines, user-sanctioned last resort), `node.h` pointer/`get_tree()` retyped to `BaseSceneTree *` (permission granted). No dual-path, no hardcoded tree class names, no node.cpp/node_3d/viewport/window swaps. Editor untouched (base SceneTree). **The module also hosts the EntityNode/EntityComponent layer (phase 2, `entity-node-rfc.md`) — same module, own subdirs, shipped after the tree validates.**
+## What shipped (2026-08-17)
 
-## P0 — A/B benchmark, not a gate (locked 2026-08-16)
+### Batch 1 — T1: copy-free process iteration
 
-FastSceneTree is additive/optional (swappable via Godot's own `main_loop_type`), so no
-pre-implementation kill criterion. Instead: **run the same test under SceneTree, then under
-FastSceneTree, diff the result** (frame time, allocs, group-call cost). Benchmark harness is built
-with P8, numbers recorded as the acceptance evidence. Tree-time < 5% of frame budget no longer
-parks the work — the A/B diff IS the deliverable.
+`_process_group()` no longer copies every group's node list per
+frame/physics tick. Removals null-mark the slot (no vector shift, no iterator
+invalidation, no per-frame `nodes_copy` alloc). New `_compact_process_nodes()`
+helper compacts lazily on the next pass; re-sorts only when order changed.
+`nodes_removed_on_group_call` lookup in `_process_group` removed (provably
+redundant — exit-tree null-marks before `node_removed`). Live-list iteration
+with captured count + per-iteration re-read + null-skip.
 
-## Phases
+**Files:** `scene/main/scene_tree.h` (+2 ProcessGroup flags) + mirror.
 
-| Phase | What | Files | Effort | Gate |
-|-------|------|-------|--------|------|
-| **P1** | Contract test matrix: notification order, signal semantics, group flags, timer modes, pause/quit/scene-change — pinned as tests against BASE SceneTree first (reference behavior). Also route the 4 singleton sites (shader/material inspector, window:3284, viewport:1485) via BaseSceneTree accessors | `modules/fast_scene_tree/tests/` | 1–2 d | Matrix green on base SceneTree — it IS the spec |
-| **P2** | Module skeleton + seam: `modules/fast_scene_tree/` (ADR 0008); `BaseSceneTree : MainLoop` (public virtual API); narrow upstream edits: `scene_tree.h` base change + moved members (user-sanctioned), `node.h` retype to `BaseSceneTree *` (permission granted); `FastSceneTree : BaseSceneTree` class registered in ClassDB; title sets `application/run/main_loop_type`; fork default = FastSceneTree when present (project-settings default injection, user-overridable) | `modules/fast_scene_tree/**`, scene_tree.h base edit, node.h retype, title project.godot | 2–4 d | Game runs on FastSceneTree; P1 matrix green on FastSceneTree; editor smoke green (base path); suite green |
-| **P3** | Contract implementation: frame loop (initialize/process/physics_process/iteration_prepare/end/finalize), notifications, timers, pause, scene change, signals — against the P1 matrix | `fast_scene_tree.{h,cpp}` | 4–6 d | P1 matrix green; suite + corpus + 342 tests + level load green; editor smoke green |
-| **P4** | Groups + determinism: group API with flag semantics; ordered unique-call flush | `fast_scene_tree.{h,cpp}` | 2–3 d | Group-flag matrix green; determinism test (call order pinned) |
-| **P5** | Optimizations: T1 flat process lists + epochs, T2 intrusive groups + Callable dispatch, T4 subtree mode flags, T6 allocation-free iteration; **M4–M7 memory-churn items** (incremental children cache, coalesced `tree_changed()`, iterative propagation, timer pooling) | `fast_scene_tree.{h,cpp}` | 4–6 d | Behavior identical (matrix + suite); profile deltas recorded per M-item |
-| **P6** | T5 cadence API + frame hooks (SimServer integration point) | `fast_scene_tree.{h,cpp}` | 1–2 d | Cadence-equivalent of title scheduler passes; determinism test |
-| **P7** | Full validation: P1 matrix + full GDScript suite (FastSceneTree tests under FastSceneTree, rest under SceneTree) + corpus + 342 tests + level load + determinism replay + editor smoke | — | 2–3 d | All gates green |
-| **P8** | A/B benchmark: same test under SceneTree vs FastSceneTree (frame time, allocs, group-call cost) — the P0 deliverable, now measured | benchmark harness | 1–2 d | Numbers recorded as acceptance evidence |
-| **P9** | Docs lock: CODE_MAP, STRUCTURE, rfc/plan statuses, backlog; porting-skill mirror discipline for the interface + seam edits | docs | 1 d | Docs consistent |
+### Batch 2 — T6: copy-free group calls + timer ref efficiency
 
-**Total: ~17–25 d.** P1 matrix is the spec; every phase independently testable and revertible.
+`call_group_flagsp` / `notify_group_flags` / `set_group_flags` /
+`_call_input_pause`: read the CoW-shared group vector via `ptr()` instead of
+`ptrw()` — old code force-detached the copy on **every** group call (full
+alloc + memcpy); shared buffer now only copies if the group mutates mid-call.
+`process_timers()`: binds the stored `Ref<SceneTreeTimer>&` (no refcount churn
+per timer per frame — matches `process_tweens`). Cached signal names
+(`process_frame`, `physics_frame`, `timeout`) replace per-frame/per-timer
+`SNAME()` lookups.
 
-## Mechanism wiring
+**Files:** `scene/main/scene_tree.h` (+3 StringName members) + mirror.
 
-- ADR 0008 additive module: `modules/fast_scene_tree/` standard anatomy, auto-discovered.
-- **Seam (generic interface, no dual-path):** `BaseSceneTree : MainLoop` lives **in core** as a new
-  additive header `scene/main/base_scene_tree.h` (header-only, pure virtuals; next to scene_tree.h
-  — core header cannot include a module header). Narrow sanctioned upstream edits: `scene_tree.h`
-  base class → `BaseSceneTree` + move 4 private members up (~20 lines); `node.h` `data.tree` /
-  `_set_tree` / `get_tree()` retyped to `BaseSceneTree *` (permission granted). No
-  `goblin_add_library` swaps needed for node.cpp/node_3d/viewport/window — the 326 call sites +
-  ~40 friend accesses compile unchanged via virtual dispatch. Module stays disableable (SceneTree
-  extends the abstract base regardless).
-- Selection: `application/run/main_loop_type = "FastSceneTree"` in the reference title's
-  project.godot (main.cpp:4361 → `ClassDB::instantiate` at :4416); fork default = FastSceneTree
-  when present via project-settings default injection (user-overridable).
+### Verification (2026-08-17)
 
-## Risks & mitigations
+- Build green (trim 28/28, `godot_physics_2d` re-enabled)
+- Doctest suite: **1337/1337 passed, 0 failed, 1 skipped** (baseline match)
+- GDScript suite: 516 assertions ✓ | Completion: 635 ✓ | LSP: 57,556 ✓
+- 4000-node churn stress: group counts exact (2000/6000), survivors process
+  20 frames, disabled stop at 5, re-added process 11 frames — all PASS
+- Editor/PM/game boots clean; byte-identical script output
+- Timing print: 1100 → 416 usec (~62% faster)
 
-Per RFC §9. Operational: (1) the two narrow upstream edits are user-sanctioned — keep them
-minimal, re-diff on rebase (porting skill); (2) the 4 moved members must keep identical semantics
-for the editor's base SceneTree path — editor smoke at P2/P7; (3) re-implementation semantics drift
-— P1 matrix is the executable spec; (4) type-identity divergence (`is SceneTree` fails) — dynamic
-calls work via the interface; lightweight corpus spot-check at P7.
+### Found, not introduced here (separate GDScript-VM ticket recommended)
 
-## Open questions (resolved at P1)
+`get_tree().call_group()` with 0-arg / nested-callp dispatch is flaky in the
+fork — dispatched calls reach `GDScriptFunction::call` (err=0) but
+script-member writes don't stick (heisenbug; debug prints alter behavior).
+The group-call **iteration** code is fine (verified: `_process` increments via
+the same dispatch path stick; `notify_group` and `call_group_flags` with args
+work; `Object.call()` works). All machinery in the failing path (VM
+`variant_addresses`/instruction_args, MethodBindVarVarArg, compiler emission,
+tree binds) is upstream-identical; fork diffs (shaped-dict / `then`/`elthen`)
+are unrelated.
 
-1. A/B benchmark scope: which tests/corpus scenarios run under both trees (P8).
-2. Type-identity: lightweight corpus spot-check (P7) — dynamic calls via interface are the norm.
-3. T5 cadence API shape + SimServer integration.
-4. Test harness: FastSceneTree tests under FastSceneTree, rest under SceneTree (locked).
+---
+
+## What's deferred (out of scope under tree-only constraint)
+
+Per the 2026-08-17 pivot, only `scene_tree.{cpp,h}` edits ship. Items below
+touch other files or have observable behavior effects — deferred unless a
+narrower sanction is granted:
+
+| Tier / M-item | What | Why deferred |
+|---|---|---|
+| **T2** | Intrusive group lists, direct Callable dispatch, incremental order | Needs `node.h` (per-node group membership links) — out of tree-only scope |
+| **T3** | Ordered unique-group-call flush | Replaced `_flush_ugc` HashMap order — same copy cost as T6 already fixed |
+| **T4** | Subtree pause/suspend mode flags (skip paused subtrees wholesale) | Needs node-side `Tree` data (process mode/pause state) — `node.h` edit |
+| **M4** | Incremental children cache (no full dump+sort on remove) | `node.cpp:1771` — not `scene_tree.cpp` |
+| **M5** | Coalesced `tree_changed()` (dirty flag, emit once at frame end) | Signal timing is observable — behavior-visible change |
+| **M6** | Iterative `_propagate_*` (flat worklist vs recursive O(subtree)) | `node.cpp:595` propagation — not scene_tree.cpp |
+| **M7** | `SceneTreeTimer` free-list pooling | Marginal (~2x speedup on timer-heavy tests only); `Ref<>` reuse (batch 2) covers the hot path |
+
+## Original plan (history — module-era design, NOT followed)
+
+The sections below describe the rejected full-reimplementation approach
+(`FastSceneTree : public MainLoop` + `BaseSceneTree` core header seam +
+`modules/fast_scene_tree/` module). They are kept for architectural context;
+**do not follow them.** The actual implementation is the in-place approach
+documented above.
+
+### Phases (historical — module era)
+
+| Phase | What | Gate |
+|-------|------|------|
+| P1 | Contract test matrix (reference behavior) | Matrix green on base SceneTree |
+| P2 | Module skeleton + BaseSceneTree seam + node.h retype | Game runs on FastSceneTree |
+| P3 | Full contract implementation | Matrix + suite + corpus green |
+| P4 | Groups + determinism | Group-flag matrix green |
+| P5 | Optimizations (T1–T6, M4–M7) | Behavior identical |
+| P6 | T5 cadence API + SimServer hooks | Cadence-equivalent |
+| P7 | Full validation | All gates green |
+| P8 | A/B benchmark | Numbers recorded |
+| P9 | Docs lock | Docs consistent |
+
+### Risks (historical)
+
+- node.h scene edit was upstream-touch — now **not needed** (in-place approach
+  only touches scene_tree.{cpp,h}).
+- Re-implementation semantics drift — **not a concern** (in-place edits, no
+  new contract to match).
+- Type-identity divergence — **not a concern** (SceneTree still IS the tree).
+- Scope — reduced to copy-free iteration + name caching (no full re-implementation).

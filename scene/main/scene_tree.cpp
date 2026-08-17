@@ -396,10 +396,15 @@ void SceneTree::call_group_flagsp(uint32_t p_call_flags, const StringName &p_gro
 		}
 
 		_update_group_order(g);
+
+		// Goblin Engine: fast scene tree (M-14, T6) — the handle is shared with
+		// the group (CoW); the buffer is only duplicated if the group mutates
+		// mid-call. The loop below only reads, so `ptr()` (no detach) keeps the
+		// call allocation-free; the old `ptrw()` forced a full copy per call.
 		nodes_copy = g.nodes;
 	}
 
-	Node **gr_nodes = nodes_copy.ptrw();
+	Node *const *gr_nodes = nodes_copy.ptr();
 	int gr_node_count = nodes_copy.size();
 
 	{
@@ -468,10 +473,12 @@ void SceneTree::notify_group_flags(uint32_t p_call_flags, const StringName &p_gr
 
 		_update_group_order(g);
 
+		// Goblin Engine: fast scene tree (M-14, T6) — see call_group_flagsp():
+		// read-only iteration over the shared CoW handle, no per-call copy.
 		nodes_copy = g.nodes;
 	}
 
-	Node **gr_nodes = nodes_copy.ptrw();
+	Node *const *gr_nodes = nodes_copy.ptr();
 	int gr_node_count = nodes_copy.size();
 
 	{
@@ -531,9 +538,11 @@ void SceneTree::set_group_flags(uint32_t p_call_flags, const StringName &p_group
 
 		_update_group_order(g);
 
+		// Goblin Engine: fast scene tree (M-14, T6) — see call_group_flagsp():
+		// read-only iteration over the shared CoW handle, no per-call copy.
 		nodes_copy = g.nodes;
 	}
-	Node **gr_nodes = nodes_copy.ptrw();
+	Node *const *gr_nodes = nodes_copy.ptr();
 	int gr_node_count = nodes_copy.size();
 
 	{
@@ -648,7 +657,7 @@ bool SceneTree::physics_process(double p_time) {
 	}
 	physics_process_time = p_time;
 
-	emit_signal(SNAME("physics_frame"));
+	emit_signal(physics_frame_name); // Goblin Engine: fast scene tree — cached name (was SNAME("physics_frame"))
 
 #if !defined(PHYSICS_2D_DISABLED) || !defined(PHYSICS_3D_DISABLED)
 	call_group(SNAME("_picking_viewports"), SNAME("_process_picking"));
@@ -712,7 +721,7 @@ bool SceneTree::process(double p_time) {
 		}
 	}
 
-	emit_signal(SNAME("process_frame"));
+	emit_signal(process_frame_name); // Goblin Engine: fast scene tree — cached name (was SNAME("process_frame"))
 
 	MessageQueue::get_singleton()->flush(); //small little hack
 
@@ -799,7 +808,9 @@ void SceneTree::process_timers(double p_delta, bool p_physics_frame) {
 
 	for (List<Ref<SceneTreeTimer>>::Element *E = timers.front(); E;) {
 		List<Ref<SceneTreeTimer>>::Element *N = E->next();
-		Ref<SceneTreeTimer> timer = E->get();
+		// Goblin Engine: fast scene tree (M-14) — bind the stored Ref (no
+		// refcount churn per timer per frame; mirrors process_tweens()).
+		Ref<SceneTreeTimer> &timer = E->get();
 
 		if ((paused && !timer->is_process_always()) || (timer->is_process_in_physics() != p_physics_frame)) {
 			if (E == L) {
@@ -814,7 +825,7 @@ void SceneTree::process_timers(double p_delta, bool p_physics_frame) {
 		timer->set_time_left(time_left);
 
 		if (time_left <= 0) {
-			E->get()->emit_signal(SNAME("timeout"));
+			timer->emit_signal(timer_timeout_name); // Goblin Engine: fast scene tree — cached name (was SNAME("timeout"))
 			timers.erase(E);
 		}
 		if (E == L) {
@@ -1176,6 +1187,23 @@ bool SceneTree::is_suspended() const {
 	return suspended;
 }
 
+// Goblin Engine: fast scene tree (M-14, T1/T6) — in-place compaction of
+// null-marked removal slots. Stable (relative order preserved), O(n) only
+// when removals happened since the last process pass.
+static void _compact_process_nodes(Vector<Node *> &p_nodes) {
+	uint32_t count = p_nodes.size();
+	Node **ptr = p_nodes.ptrw();
+	uint32_t write = 0;
+	for (uint32_t read = 0; read < count; read++) {
+		if (ptr[read] != nullptr) {
+			ptr[write++] = ptr[read];
+		}
+	}
+	if (write != count) {
+		p_nodes.resize(write);
+	}
+}
+
 void SceneTree::_process_group(ProcessGroup *p_group, bool p_physics) {
 	// When reading this function, keep in mind that this code must work in a way where
 	// if any node is removed, this needs to continue working.
@@ -1187,28 +1215,43 @@ void SceneTree::_process_group(ProcessGroup *p_group, bool p_physics) {
 		return;
 	}
 
+	// Goblin Engine: fast scene tree (M-14, T1/T6) — compact null-marked
+	// removals first, then sort only when the order changed. Removals never
+	// shift the vector during iteration (they null the slot), so the per-frame
+	// node-list copy is gone. The group-call removal set is not consulted here:
+	// every set member encountered during processing was removed from the tree,
+	// which also null-marks its process-group slot (and nodes outside the list
+	// are never seen by this loop); the set stays in the group-call paths,
+	// where CoW copies still need it.
 	if (p_physics) {
+		if (p_group->physics_nodes_need_compaction) {
+			_compact_process_nodes(p_group->physics_nodes);
+			p_group->physics_nodes_need_compaction = false;
+		}
 		if (p_group->physics_node_order_dirty) {
 			nodes.sort_custom<Node::ComparatorWithPhysicsPriority>();
 			p_group->physics_node_order_dirty = false;
 		}
 	} else {
+		if (p_group->nodes_need_compaction) {
+			_compact_process_nodes(p_group->nodes);
+			p_group->nodes_need_compaction = false;
+		}
 		if (p_group->node_order_dirty) {
 			nodes.sort_custom<Node::ComparatorWithPriority>();
 			p_group->node_order_dirty = false;
 		}
 	}
 
-	// Make a copy, so if nodes are added/removed from process, this does not break
-	Vector<Node *> nodes_copy = nodes;
-
-	uint32_t node_count = nodes_copy.size();
-	Node **nodes_ptr = (Node **)nodes_copy.ptr(); // Force cast, pointer will not change.
+	// Iterate the live list directly; the count is captured so nodes appended
+	// during processing are ignored this pass (the vector may realloc on
+	// append — elements are re-read per iteration, so that is safe).
+	uint32_t node_count = nodes.size();
 
 	for (uint32_t i = 0; i < node_count; i++) {
-		Node *n = nodes_ptr[i];
-		if (nodes_removed_on_group_call.has(n)) {
-			// Node may have been removed during process, skip it.
+		Node *n = nodes[i];
+		if (unlikely(n == nullptr)) {
+			// Node was removed during process, skip it.
 			// Keep in mind removals can only happen on the main thread.
 			continue;
 		}
@@ -1403,14 +1446,22 @@ void SceneTree::_remove_node_from_process_group(Node *p_node, Node *p_owner) {
 	_THREAD_SAFE_METHOD_
 	ProcessGroup *pg = p_owner ? (ProcessGroup *)p_owner->data.process_group : &default_process_group;
 
+	// Goblin Engine: fast scene tree (M-14, T1/T6) — removals null-mark the
+	// slot instead of erasing (no O(n) shift, no iterator invalidation), so
+	// `_process_group()` iterates the live list without a per-frame copy.
+	// The group compacts (and re-sorts) lazily on the next process pass.
 	if (p_node->is_processing() || p_node->is_processing_internal()) {
-		bool found = pg->nodes.erase(p_node);
-		ERR_FAIL_COND(!found);
+		int idx = pg->nodes.find(p_node);
+		ERR_FAIL_COND(idx == -1);
+		pg->nodes.write[idx] = nullptr;
+		pg->nodes_need_compaction = true;
 	}
 
 	if (p_node->is_physics_processing() || p_node->is_physics_processing_internal()) {
-		bool found = pg->physics_nodes.erase(p_node);
-		ERR_FAIL_COND(!found);
+		int idx = pg->physics_nodes.find(p_node);
+		ERR_FAIL_COND(idx == -1);
+		pg->physics_nodes.write[idx] = nullptr;
+		pg->physics_nodes_need_compaction = true;
 	}
 }
 
@@ -1445,13 +1496,13 @@ void SceneTree::_call_input_pause(const StringName &p_group, CallInputType p_cal
 
 		_update_group_order(g);
 
-		//copy, so copy on write happens in case something is removed from process while being called
-		//performance is not lost because only if something is added/removed the vector is copied.
+		// Goblin Engine: fast scene tree (M-14, T6) — see call_group_flagsp():
+		// read-only iteration over the shared CoW handle, no per-call copy.
 		nodes_copy = g.nodes;
 	}
 
 	int gr_node_count = nodes_copy.size();
-	Node **gr_nodes = nodes_copy.ptrw();
+	Node *const *gr_nodes = nodes_copy.ptr();
 
 	{
 		_THREAD_SAFE_METHOD_
