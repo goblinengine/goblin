@@ -120,6 +120,8 @@ Verified in the recovered sources — the user's recollection is **inverted** re
 
 ### 3.3 Porting to the current fork
 
+**Port status: COMPLETE.** All items below have been applied to `modules/goblin/modules/gdscript/`. The "Confirmed absent" line describes the pre-port state only (what was missing from upstream before the port was applied).
+
 The current fork (`modules/goblin/modules/gdscript/`) is the same 4.7.1 base as gdscript2, so the port is mechanical:
 
 - Confirmed present in current fork: `write_start_ternary`/`write_ternary_*` codegen helpers (`gdscript_byte_codegen.h:494-498`), `OP_LOGIC_AND`/`OP_LOGIC_OR` enum (`gdscript_parser.h:551-552`), `PREC_TERNARY`/`PREC_LOGIC_OR` (`gdscript_parser.h:1524-1526`).
