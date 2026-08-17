@@ -97,6 +97,7 @@ Standalone additive feature module at the repo root (ADR 0008) — standard Godo
 |---|---|
 | Language feature (parser+analyzer+compiler) | `modules/goblin/modules/gdscript/` |
 | Single core .cpp | `modules/goblin/core/<mirror path>/` + dict entry in `goblin_add_library()` |
+| Fast scene tree (M-14): SceneTree modified IN PLACE | `modules/goblin/scene/main/scene_tree.cpp` (swap in config.py `"scene"` dict) — content is a faithful upstream copy; optimizations land here directly. No module, no base-class seam: `get_tree()`/`SceneTree::get_singleton()` stay upstream, editor/PM/games all run the one tree |
 | Single editor .cpp | `modules/goblin/editor/overrides/<mirror path>/` + dict entry in `goblin_add_library()` (NEVER a globbed dir — `editor/SCsub` globs `*.cpp` non-recursively; unmodified headers stay upstream, rewrite the bare own-header include to root-relative) |
 | New additive feature module (zero overrides) | standalone `modules/<name>/` with standard module anatomy (ADR 0008) — auto-discovered, full lifecycle; never inside `modules/goblin/` |
 | New native class (override-adjacent) | .cpp/.h in `modules/goblin/` + `GDREGISTER_CLASS` in register_types.cpp |

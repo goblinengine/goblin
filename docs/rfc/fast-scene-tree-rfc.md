@@ -1,8 +1,13 @@
 # Goblin Engine — FastSceneTree RFC
 
+> **SUPERSEDED 2026-08-17 (user directive): module + BaseSceneTree seam REJECTED.**
+> Direction: **modify `SceneTree` in place** via the goblin mirror
+> `modules/goblin/scene/main/scene_tree.cpp`. See plan superseded note + backlog
+> M-14 pivot entry. The module-era design below is kept for history only.
+
 - **Proposal file:** `modules/goblin/docs/rfc/fast-scene-tree-rfc.md`
 - **Date:** 2026-08-16
-- **Status:** Proposed — direction locked (user 2026-08-16): **`FastSceneTree : public MainLoop` — full re-implementation**. Extending SceneTree rejected (inherits the non-virtual private machinery that cannot be optimized).
+- **Status:** Superseded (2026-08-17) — original: **`FastSceneTree : public MainLoop` — full re-implementation**. Extending SceneTree rejected (inherits the non-virtual private machinery that cannot be optimized).
 - **Base:** Godot 4.7.1-stable, fork plan v0.2.0
 - **Companion plan:** `modules/goblin/docs/plans/fast-scene-tree-plan.md`
 - **Backlog:** M-14

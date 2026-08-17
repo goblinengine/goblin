@@ -1,5 +1,15 @@
 # FastSceneTree — Implementation Plan
 
+> **SUPERSEDED 2026-08-17 (user directive): module + BaseSceneTree seam REJECTED.**
+> Direction now: **modify `SceneTree` in place** — edit home is the goblin mirror
+> `modules/goblin/scene/main/scene_tree.cpp` (single core-file swap, content =
+> faithful upstream copy). No module, no base-class seam, no retype ripple:
+> `get_tree()`/`SceneTree::get_singleton()`/editor/PM stay upstream-typed, and
+> the optimized tree runs everywhere (editor, PM, games) for free. Lost vs this
+> plan: A/B benchmark baseline and per-project opt-out; acceptance = suite green
+> + no regressions. P5 T1–T6/M1–M7 optimizations land directly in the mirror
+> (upstream scene_tree.cpp changes port manually). Full re-lock pending architect.
+
 Spec: `modules/goblin/docs/rfc/fast-scene-tree-rfc.md` (proposed 2026-08-16). Companion to backlog M-14. Direction locked 2026-08-16 (user): **`FastSceneTree : public MainLoop` — full re-implementation** (extending SceneTree rejected — inherits unoptimizable private machinery).
 
 ## Goal

@@ -24,14 +24,14 @@ DISABLE_MODULES = {
     "csg", "gridmap", "gltf", "fbx",
     # Navigation (AStar3D from core/math, not these modules)
     "navigation_3d", "navigation_2d",
-    # 2D physics (3D game; 2D falls back to PhysicsServer2DDummy).
-    # godot_physics_3d KEPT: jolt_physics registers "Jolt Physics"
-    # but NOT the default (jolt_physics/register_types.cpp:59);
-    # GodotPhysics3D is the registered default (godot_physics_3d/
-    # register_types.cpp:56-57) used by main.cpp:362-372 fallback and
-    # tests/test_main.cpp:204 new_default_server(). Trimming it would
-    # drop the test suite + fresh-project boot to the dummy server.
-    "godot_physics_2d",
+    # 2D physics KEPT since 2026-08-16 (user directive): the fork ships the
+    # real 2D physics server, not the dummy fallback. godot_physics_3d also
+    # KEPT: jolt_physics registers "Jolt Physics" but NOT the default
+    # (jolt_physics/register_types.cpp:59); GodotPhysics3D is the registered
+    # default (godot_physics_3d/register_types.cpp:56-57) used by
+    # main.cpp:362-372 fallback and tests/test_main.cpp:204
+    # new_default_server(). Trimming it would drop the test suite +
+    # fresh-project boot to the dummy server.
     # Shader compiler (GL Compatibility uses GLSL directly, no SPIR-V;
     # RenderingDevice shader_compile_spirv_from_source fails without
     # glslang — Forward+/Mobile unsupported by design, ADR 0003)
@@ -160,6 +160,11 @@ def configure(env):
         },
         "scene": {
             "viewport": os.path.join(_goblin_dir, "scene", "main", "viewport.cpp"),
+            # Fast scene tree (M-14, direction 2026-08-17): SceneTree is modified
+            # IN PLACE — this mirror is the edit home. Content is a faithful copy
+            # of upstream scene_tree.cpp; optimizations land here directly (no
+            # module, no BaseSceneTree seam).
+            "scene_tree": os.path.join(_goblin_dir, "scene", "main", "scene_tree.cpp"),
         },
     }
 
