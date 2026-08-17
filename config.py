@@ -1,5 +1,5 @@
 # ===================================================================
-# MODULE TRIM — 28 modules disabled (~55% faster compile)
+# MODULE TRIM — 26 modules disabled (~51% faster compile)
 # Mechanism: build-time option injection (ADR 0012). module_*_enabled
 # is decided at SConstruct:499 opts.Update from ARGUMENTS (args layer
 # beats defaults and custom.py/profile files). configure() runs AFTER
@@ -12,12 +12,18 @@
 # Precedent: methods.py:229, platform/android/detect.py:118.
 # ===================================================================
 DISABLE_MODULES = {
-    # Image/texture formats (PNG only) — tinyexr KEPT (editor .exr
-    # lightmap save, Image::save_exr needs modules/tinyexr; C-11)
-    "bmp", "tga", "dds", "hdr", "jpg", "webp",
-    "basis_universal", "ktx", "astcenc", "etcpak",
-    # Audio/video (no video playback, no interactive music)
-    "theora", "interactive_music",
+     # Image/texture formats (PNG only) — tinyexr KEPT (editor .exr
+     # lightmap save, Image::save_exr needs modules/tinyexr; C-11)
+     # NOTE: astcenc is NOT trimmed — the pre-built ANGLE static library
+     # (godotengine/godot-angle-static) bundles an AstcDecompressor that
+     # links against astcenc_* symbols (astcenc_context_alloc, etc.).
+     # Trimming it causes LNK2019 unresolved externals on Windows builds
+     # that use ANGLE. astcenc is decoder-only in template_release
+     # (ASTCENC_DECOMPRESS_ONLY), minimal code footprint.
+     "bmp", "tga", "dds", "hdr", "jpg", "webp",
+     "basis_universal", "ktx", "etcpak",
+     # Audio/video (no video playback, no interactive music)
+     "theora", "interactive_music",
     # VR/XR (no VR usage)
     "webxr", "openxr", "mobile_vr",
     # 3D nodes/scene (no CSG, GridMap, GLTF/FBX import)
