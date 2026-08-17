@@ -185,21 +185,32 @@ inline constexpr const unsigned char app_icon_png[] = {{
 def goblin_ico_builder(target, source, env):
     """Generate goblin.ico (Windows exe icon) from app_icon.png.
 
-    Writes a PNG-compressed ICO (Vista+ supports PNG entries): a single
-    256x256 entry pointing at the PNG bytes of app_icon.png.
+    Writes a multi-resolution PNG-compressed ICO (Vista+ supports PNG
+    entries) with standard Windows icon sizes: 256, 128, 64, 48, 32, 16.
+    Falls back to a single 256x256 entry if Pillow is unavailable.
     """
     png_path = str(source[0])
-    with open(png_path, "rb") as f:
-        png_data = f.read()
+    ico_path = str(target[0])
 
-    # ICONDIR: reserved(2)=0, type(2)=1, count(2)=1
-    header = struct.pack("<HHH", 0, 1, 1)
-    # ICONDIRENTRY: width(1)=0 (means 256), height(1)=0, colors(1)=0,
-    # reserved(1)=0, planes(2)=1, bitcount(2)=32, size(4), offset(4)=22
-    entry = struct.pack("<BBBBHHII", 0, 0, 0, 0, 1, 32, len(png_data), 22)
+    try:
+        from PIL import Image
 
-    with open(str(target[0]), "wb") as f:
-        f.write(header + entry + png_data)
+        img = Image.open(png_path).convert("RGBA")
+        sizes = [(256, 256), (128, 128), (64, 64), (48, 48), (32, 32), (16, 16)]
+        img.save(ico_path, sizes=sizes)
+    except ImportError:
+        # Fallback: single 256x256 PNG-compressed ICO entry.
+        with open(png_path, "rb") as f:
+            png_data = f.read()
+
+        # ICONDIR: reserved(2)=0, type(2)=1, count(2)=1
+        header = struct.pack("<HHH", 0, 1, 1)
+        # ICONDIRENTRY: width(1)=0 (means 256), height(1)=0, colors(1)=0,
+        # reserved(1)=0, planes(2)=1, bitcount(2)=32, size(4), offset(4)=22
+        entry = struct.pack("<BBBBHHII", 0, 0, 0, 0, 1, 32, len(png_data), 22)
+
+        with open(ico_path, "wb") as f:
+            f.write(header + entry + png_data)
 
 
 def goblin_editor_icons_builder(target, source, env):
