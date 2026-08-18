@@ -46,7 +46,7 @@ all inside one server with a defined data-flow order.
 
 ### 3.1 Shape
 
-- Additive module `modules/sim/` (ADR 0008 anatomy, mirrors `modules/midi/` + `modules/combat/`):
+- Additive module `modules/sim/` (ADR 0008 anatomy, mirrors `modules/midi/`):
   `SCsub`, `config.py` (`can_build()`/`get_doc_classes()`/`get_icons_path()`), `register_types.{h,cpp}`,
   `doc_classes/`, `tests/`, `editor/icons/`. Zero overrides; nothing outside `modules/sim/` touched.
 - `SimServer` singleton registered like `JoltPhysicsServer3D` (module-provided server precedent):
@@ -187,9 +187,9 @@ duck-typed `has_method("interact")` contract.
 
 ### S-05 — Combat integration
 
-`modules/combat/` classes (C-14, shipped) gain optional SimServer hooks: `Hitbox3D` hits
-`emit_stimulus` (impact events), `Projectile3D` hits resolve `query_surface` for surface-specific
-impact effects/sounds. Combat stays a standalone module; SimServer integration is additive.
+Combat subsystem (C-14, co-located in `modules/sim/`, moved 2026-08-17) gains optional SimServer hooks: `Hitbox3D` hits
+emit `stimulus` (impact events), `Projectile3D` resolves `query_surface` for surface-specific
+impact effects/sounds. Co-located in `modules/sim/` — hooks are internal C++ calls, no cross-module coupling.
 
 ## 5. In / Out guardrails
 
@@ -270,5 +270,5 @@ stay independent; the cadence pipeline (S-01) may later consume the tree's `regi
 ## 12. Backlog mapping
 
 Supersedes/folds: C-05, C-06, M-07, M-08, M-09 → S-01/S-02/S-03 (statuses updated in backlog.md).
-C-14 (combat module) stays standalone; S-05 adds integration hooks. Genre-coverage cluster 2
+C-14 (combat subsystem) co-located in `modules/sim/` (moved 2026-08-17); S-05 adds integration hooks. Genre-coverage cluster 2
 (perception fields) now maps to S-01/S-03.

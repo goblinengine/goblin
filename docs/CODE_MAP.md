@@ -81,15 +81,19 @@ Standalone additive feature module at the repo root (ADR 0008) — standard Godo
 - Importers are `ResourceImporter` subclasses registered in `ResourceFormatImporter` at EDITOR level (WAV-importer pattern). Importer names `midi_stream.mid` / `midi_stream.sf2` match the GDExtension.
 - Test note: `--test` mode has no AudioServer; the doctest suite bootstraps `AudioDriverManager::get_driver(0)` (the dummy) via `set_singleton()` + `init()`, and recreates `AudioServer` whenever missing — `GodotTestCaseListener::test_case_end` deletes the singleton after every test case.
 
-## Combat module (`modules/combat/`)
+## Sim module (`modules/sim/`)
 
-Standalone additive feature module at the repo root (ADR 0008) — standard Godot module anatomy, auto-discovered with the full module lifecycle (`MODULE_COMBAT_ENABLED`). Same structure as `modules/midi/`. No overrides, no upstream file touched.
+Standalone additive feature module at the repo root (ADR 0008) — standard Godot module anatomy, auto-discovered with the full module lifecycle (`MODULE_SIM_ENABLED`). Same structure as `modules/midi/`. Contains the combat subsystem (C-14, moved 2026-08-17) and the SimServer systemic simulation layer (S-01–S-05). No overrides, no upstream file touched.
 
+**Combat subsystem** (C-14, moved from `modules/combat/`):
 - `Hitbox3D` — active damage detector (extends Area3D): monitoring on, monitorable off. Carries attack data (damage, knockback, damage_types, element, source); on Hurtbox3D overlap dedups per activation, forwards via `Hurtbox3D.apply_hit`, emits `hit(hurtbox, hit_data)`.
 - `Hurtbox3D` — passive damage receiver (extends Area3D): monitoring off, monitorable on. `apply_hit(attacker, hit_data)` emits `hurt(attacker, hit_data)` when active (virtual, C++ subclasses can intercept damage).
 - `Projectile3D` — manual-velocity projectile (extends Area3D, NOT RigidBody3D): owns velocity/gravity/homing, continuous swept collision via an internal `ShapeCast3D` child (no tunneling), bounce/expiry/range behavior, emits `hit(hit_data)` + `expired()`. Forwards hits to Hurtbox3D on the collider.
 - Hit-data contract: `CombatUtils` (combat_utils.h) defines the stable Dictionary keys (`damage`, `knockback`, `damage_types`, `element`, `source`, `position`, `normal`, `velocity`, `collider`) shared by all three classes.
 - Physics tick: native nodes receive it via `_notification(NOTIFICATION_PHYSICS_PROCESS)` (not a C++ virtual `_physics_process` — GDVIRTUAL only in 4.7).
+- **S-05 integration**: SimServer stimulus emission + surface query hooks are internal C++ calls (same module as combat — no cross-module coupling).
+
+**SimServer** (S-01–S-05): server singleton (RID-based, like PhysicsServer3D). Cadence pipeline (`pre_tick → sim_tick → post_tick`), stimulus bus with spatial index, surface registry + query (impact UV via barycentric interpolation), ambient light field + stealth readout, interaction focus query. Consumes PhysicsServer3D (ray/shape queries) + RenderingServer (as needed). Does not walk the SceneTree. Full API in `docs/rfc/simserver-rfc.md`. **S-01 shipped 2026-08-18** (clock/cadence/schedule, stimulus bus with push delivery + pull query, save/restore); S-02/S-03/S-04 method stubs bound for forward-compatibility.
 
 ## Where new code goes
 
@@ -99,7 +103,7 @@ Standalone additive feature module at the repo root (ADR 0008) — standard Godo
 | Single core .cpp | `modules/goblin/core/<mirror path>/` + dict entry in `goblin_add_library()` |
 | Fast scene tree (M-14): SceneTree modified IN PLACE | `modules/goblin/scene/main/scene_tree.cpp` (swap in config.py `"scene"` dict) — content is a faithful upstream copy; optimizations land here directly. Companion core edit: `scene/main/scene_tree.h` (+7 lines: 2 ProcessGroup compaction flags + 3 cached StringName members — the only upstream file touched). No module, no base-class seam: `get_tree()`/`SceneTree::get_singleton()` stay upstream, editor/PM/games all run the one tree. Batches landed: T1 (lazy compaction / copy-free `_process_group`) + T6 (copy-free group calls via `ptr()` / ref-efficient timers / cached signal names).  |
 | Single editor .cpp | `modules/goblin/editor/overrides/<mirror path>/` + dict entry in `goblin_add_library()` (NEVER a globbed dir — `editor/SCsub` globs `*.cpp` non-recursively; unmodified headers stay upstream, rewrite the bare own-header include to root-relative) |
-| New additive feature module (zero overrides) | standalone `modules/<name>/` with standard module anatomy (ADR 0008) — auto-discovered, full lifecycle; never inside `modules/goblin/` |
+| New additive feature module (zero overrides) | standalone `modules/<name>/` with standard module anatomy (ADR 0008) — auto-discovered, full lifecycle; never inside `modules/goblin/`. Current: `modules/midi/` (audio synth, thirdparty + importers + optional), `modules/sim/` (combat + SimServer, no thirdparty + genre-essential) |
 | New native class (override-adjacent) | .cpp/.h in `modules/goblin/` + `GDREGISTER_CLASS` in register_types.cpp |
 | Build-time generator | `goblin_builders.py` + assignment in `configure()` |
 | Branding assets | `main/`, `editor/icons/`, `platform/windows/` |
@@ -108,7 +112,7 @@ Standalone additive feature module at the repo root (ADR 0008) — standard Godo
 
 - Fork tests: `modules/goblin/modules/gdscript/tests/` (mirror of upstream suite + new cases under `parser/`, `analyzer/`, `runtime/`). The test harness (`gdscript_test_runner_suite.h`, `test_completion.h`, `test_lsp.h`) targets the fork's own tests dir.
 - MIDI tests: `modules/midi/tests/test_midi_stream.h` (doctest `TEST_CASE`s, picked up via `modules_tests.gen.h` when `tests=yes`). Generates a minimal SF2 + SMF in memory; covers length, synth render, song-end stop, loop restart, manual notes. Run: `bin/goblin.windows.editor.x86_64.exe --test --test-case="*MidiStream*"`.
-- Combat tests: `modules/combat/tests/test_combat.h` — 11 doctest cases (defaults, hit registration, dedup/reset, inactive states, motion/gravity, bounce math, lifetime expiry, hit-data contract). Name prefix `[SceneTree]` is required: physics nodes crash without the per-case physics-server bootstrap that `[SceneTree]`-prefixed cases get in `tests/test_main.cpp`. Run: `bin/goblin.windows.editor.x86_64.exe --headless --test --test-case="[SceneTree][Combat]*"`.
+Sim module tests: `modules/sim/tests/test_sim.h` — combat subsystem tests (11 doctest cases: Hitbox3D/Hurtbox3D/Projectile3D defaults, hit registration, dedup/reset, inactive states, motion/gravity, bounce math, lifetime expiry, hit-data contract) + S-01 SimServer tests (clock/cadence/stimulus bus: tick math, tag/cancel/repeat, save/restore round-trip, stimulus emit/query/listener delivery/pruning — 11 cases, all green). Name prefix `[SceneTree]` is required for combat tests: physics nodes crash without the per-case physics-server bootstrap that `[SceneTree]`-prefixed cases get in `tests/test_main.cpp`. SimServer tests use `[Modules][SimServer]` prefix (no SceneTree dependency). Run: `bin/goblin.windows.editor.x86_64.exe --test --test-case=SimServer`. Note: 2 combat test failures are pre-existing (Godot 4 Dictionary/Object-Variant copy semantics — null Object storage + non-RefCounted Object copy through emit_signal); identical code at both failure sites; no SimServer test regressions.
 - Run: build with `tests=yes` (`scons platform=windows target=editor module_mono_enabled=no accesskit=no angle=no tests=yes -j4`), then `bin/goblin.windows.editor.x86_64.exe --headless --test --test-case "[Modules][GDScript]*"`.
 - Regenerate expected outputs from current behavior: `bin/goblin.windows.editor.x86_64.exe --headless --gdscript-generate-tests` (writes `.out` files — use with care; it encodes whatever the engine currently does).
 - Gotchas:
