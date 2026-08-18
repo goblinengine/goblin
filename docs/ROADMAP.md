@@ -222,10 +222,11 @@ Each module was assessed against:
 
 ### Trim List (~42 modules)
 
-**Image/Texture Formats (12 modules):**
-`bmp`, `tga`, `dds`, `hdr`, `jpg`, `webp`, `tinyexr`, `basis_universal` (runtime), `ktx`, `astcenc`, `etcpak`, `svg` (runtime)
+**Image/Texture Formats (10 modules):**
+`bmp`, `tga`, `dds`, `hdr`, `tinyexr`, `basis_universal` (runtime), `ktx`, `astcenc`, `etcpak`, `svg` (runtime)
 
 *The reference title uses only PNG. All other image formats are dead code.*
+*EXCEPTION (B-21, 2026-08-18): `webp` + `jpg` are KEPT. Vanilla Godot 4.7 writes lossless/lossy texture imports as WebP-embedded .ctex, so trimming `webp` breaks every pre-existing vanilla-imported project cache (`compressed_texture.cpp:343`). `jpg` kept for `.jpg` source compat. Godot compatibility trumps trim size.*
 
 **Audio/Video (2 modules):**
 `theora` (video playback), `interactive_music` (AudioStreamPlaylist/Interactive/Synchronized)

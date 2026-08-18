@@ -20,7 +20,13 @@ DISABLE_MODULES = {
      # Trimming it causes LNK2019 unresolved externals on Windows builds
      # that use ANGLE. astcenc is decoder-only in template_release
      # (ASTCENC_DECOMPRESS_ONLY), minimal code footprint.
-     "bmp", "tga", "dds", "hdr", "jpg", "webp",
+     # NOTE: webp + jpg are NOT trimmed (2026-08-18): vanilla Godot 4.7
+     # writes lossless/lossy texture imports as WebP-embedded .ctex
+     # (DATA_FORMAT_WEBP), so trimming webp makes every pre-existing
+     # vanilla-imported project cache unreadable (compressed_texture.cpp:343
+     # "img.is_null() || img->is_empty()"). jpg has the same failure mode
+     # for .jpg source textures. Kept for Godot compatibility.
+     "bmp", "tga", "dds", "hdr",
      "basis_universal", "ktx", "etcpak",
      # Audio/video (no video playback, no interactive music)
      "theora", "interactive_music",
