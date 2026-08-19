@@ -21,6 +21,8 @@ Secondary candidates (MIDI, lightmap baking, spatial field, palette) — §4.
 
 ## 2. The Expanded Dictionary (Primary Feature)
 
+> **Superseded 2026-08-19 (decision).** §2.1–§2.8 describe the engine-level `_template` reserved-key design. **Rejected**: the reference title's `Data` system (`data.gd`) already implements templates as a centralized, registered three-level runtime fallback chain (`instance → Objects.list[id] → _types[type].defaults`) keyed by `id`/`type` StringNames. Engine-level template metadata was rejected as (a) redundant with the GDScript registry, (b) a `core/variant` `Dictionary` header-blast-radius + ODR/ABI hazard, and (c) leaky if done as a reserved `_template` key (`keys()`/`merge()`/`size()`/`hash()`/`==` all see it). Templates stay GDScript-side. The residual G-18 value is `Dictionary` runtime-perf hardening under real fallback usage, gated by TD-04 (backlog). §2 is retained verbatim for history; do not implement §2.1–§2.8.
+
 ### 2.1 What it delivers
 
 ```gdscript
