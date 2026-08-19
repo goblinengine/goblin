@@ -53,6 +53,8 @@
 #include "core/config/engine.h"
 #include "core/config/project_settings.h"
 #include "core/core_constants.h"
+#include "core/io/config_file.h"
+#include "core/io/dir_access.h"
 #include "core/io/file_access.h"
 #include "scene/resources/packed_scene.h"
 #include "scene/scene_string_names.h"
@@ -63,6 +65,25 @@
 #endif
 
 ///////////////////////////
+
+// Goblin: register every `@schema const` of a parsed class into the global schema
+// registry (name -> declaring script path). Only top-level (head) schemas are
+// registered globally; inner-class schemas resolve through the class-member path
+// within their own script. Returns true if any schema was added.
+static bool _register_script_schemas(const GDScriptParser::ClassNode *p_class, const String &p_path) {
+	if (p_class == nullptr) {
+		return false;
+	}
+	bool changed = false;
+	for (int i = 0; i < p_class->members.size(); i++) {
+		const GDScriptParser::ClassNode::Member &member = p_class->members[i];
+		if (member.type == GDScriptParser::ClassNode::Member::CONSTANT && member.constant->identifier != nullptr && GDScriptParser::is_schema_constant(member.constant)) {
+			GDScriptLanguage::get_singleton()->add_schema(member.constant->identifier->name, p_path);
+			changed = true;
+		}
+	}
+	return changed;
+}
 
 GDScriptNativeClass::GDScriptNativeClass(const StringName &p_name) {
 	name = p_name;
@@ -820,10 +841,31 @@ Error GDScript::reload(bool p_keep_state) {
 		if (EngineDebugger::is_active()) {
 			GDScriptLanguage::get_singleton()->debug_break_parse(_get_debug_path(), parser.get_errors().front()->get().start_line, "Parser Error: " + parser.get_errors().front()->get().message);
 		}
+		// Goblin: the source is gone or invalid — drop its schema registrations.
+		String failed_path = path.is_empty() ? get_path() : path;
+		if (!failed_path.is_empty()) {
+			GDScriptLanguage::get_singleton()->remove_schemas_by_path(failed_path);
+		}
 		// TODO: Show all error messages.
 		_err_print_error("GDScript::reload", path.is_empty() ? "built-in" : (const char *)path.utf8().get_data(), parser.get_errors().front()->get().start_line, ("Parse Error: " + parser.get_errors().front()->get().message).utf8().get_data(), false, ERR_HANDLER_SCRIPT);
 		reloading = false;
 		return ERR_PARSE_ERROR;
+	}
+
+	// Goblin: re-sync the `@schema` registry from the parsed source, before analysis.
+	// Registration is source-based (like class_name), so it must not be gated on the
+	// script analyzing successfully — and it must happen before analysis so cross-script
+	// `Dictionary[Name]` resolves even while this script's own analysis is in flight
+	// (e.g. a consumer analyzed through an `extends` chain).
+	{
+		String reload_path = path.is_empty() ? get_path() : path;
+		if (!reload_path.is_empty()) {
+			GDScriptLanguage *gd_lang = GDScriptLanguage::get_singleton();
+			gd_lang->remove_schemas_by_path(reload_path);
+			if (_register_script_schemas(parser.get_tree(), reload_path)) {
+				gd_lang->save_schemas();
+			}
+		}
 	}
 
 	GDScriptAnalyzer analyzer(&parser);
@@ -2139,6 +2181,83 @@ Variant GDScriptLanguage::get_any_global_constant(const StringName &p_name) {
 	ERR_FAIL_V_MSG(Variant(), vformat("Could not find any global constant with name: %s.", p_name));
 }
 
+bool GDScriptLanguage::has_schema(const StringName &p_name) {
+	MutexLock lock(mutex);
+	load_schemas();
+	return schemas.has(p_name);
+}
+
+String GDScriptLanguage::get_schema_path(const StringName &p_name) {
+	MutexLock lock(mutex);
+	load_schemas();
+	return schemas.getptr(p_name) ? *schemas.getptr(p_name) : String();
+}
+
+void GDScriptLanguage::add_schema(const StringName &p_name, const String &p_path) {
+	MutexLock lock(mutex);
+	load_schemas();
+	const String *existing = schemas.getptr(p_name);
+	if (existing != nullptr && *existing == p_path) {
+		return; // Unchanged.
+	}
+	schemas[p_name] = p_path;
+}
+
+void GDScriptLanguage::remove_schemas_by_path(const String &p_path) {
+	MutexLock lock(mutex);
+	load_schemas();
+	Vector<StringName> to_erase;
+	for (const KeyValue<StringName, String> &E : schemas) {
+		if (E.value == p_path) {
+			to_erase.push_back(E.key);
+		}
+	}
+	for (const StringName &key : to_erase) {
+		schemas.erase(key);
+	}
+	if (!to_erase.is_empty()) {
+		save_schemas();
+	}
+}
+
+String GDScriptLanguage::get_schema_cache_path() const {
+	return ProjectSettings::get_singleton()->get_project_data_path().path_join("goblin_schema_cache.cfg");
+}
+
+void GDScriptLanguage::load_schemas() {
+	if (schemas_loaded) {
+		return;
+	}
+	schemas_loaded = true;
+	if (ProjectSettings::get_singleton() == nullptr) {
+		return;
+	}
+	ConfigFile cache;
+	if (cache.load(get_schema_cache_path()) != OK) {
+		return; // No cache yet.
+	}
+	if (!cache.has_section("schemas")) {
+		return;
+	}
+	Vector<String> keys = cache.get_section_keys("schemas");
+	for (const String &key : keys) {
+		schemas[StringName(key)] = cache.get_value("schemas", key, String());
+	}
+}
+
+void GDScriptLanguage::save_schemas() {
+	if (!Engine::get_singleton()->is_editor_hint()) {
+		return; // Exported games don't carry `.godot/`; registration is load-order based there.
+	}
+	ConfigFile cache;
+	for (const KeyValue<StringName, String> &E : schemas) {
+		cache.set_value("schemas", String(E.key), E.value);
+	}
+	const String path = get_schema_cache_path();
+	DirAccess::make_dir_recursive_absolute(path.get_base_dir());
+	cache.save(path);
+}
+
 void GDScriptLanguage::remove_named_global_constant(const StringName &p_name) {
 	ERR_FAIL_COND(!named_globals.has(p_name));
 	named_globals.erase(p_name);
@@ -2193,6 +2312,11 @@ void GDScriptLanguage::init() {
 #ifdef TESTS_ENABLED
 	GDScriptTests::GDScriptTestRunner::handle_cmdline();
 #endif // TESTS_ENABLED
+
+	// Goblin: seed the schema registry from the persisted cache before any script is
+	// analyzed (class_name parity — `ScriptServer::init_languages()` loads the global
+	// class list at the same point). The editor scan and script reloads keep it fresh.
+	load_schemas();
 }
 
 #ifdef TOOLS_ENABLED
@@ -2731,12 +2855,27 @@ String GDScriptLanguage::_get_global_class_name(const String &p_path, String *r_
 
 	String source = f->get_as_utf8_string();
 
+	// Goblin: scripts that declare `@schema` constants need their bodies parsed during
+	// the scan so their schemas can be registered (schema names must be resolvable from
+	// any file before the declaring script itself is loaded). All other scripts keep the
+	// fast header-only parse.
+	bool has_schema_marker = source.contains("@schema");
+
 	GDScriptParser parser;
-	err = parser.parse(source, p_path, false, false);
+	err = parser.parse(source, p_path, false, has_schema_marker);
 
 	const GDScriptParser::ClassNode *c = parser.get_tree();
 	if (!c) {
 		return String(); // No class parsed.
+	}
+
+	if (has_schema_marker) {
+		if (_register_script_schemas(c, p_path)) {
+			// Goblin: persist the registry after processing schema-declaring files
+			// (class_name-style: the editor writes `global_script_class_cache.cfg` at scan
+			// completion; the language module writes its schema cache at the same point).
+			GDScriptLanguage::get_singleton()->save_schemas();
+		}
 	}
 
 	/* **WARNING**

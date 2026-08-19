@@ -106,6 +106,12 @@ public:
 		// StringName key to a full DataType (which may itself carry a shape).
 		Vector<StringName> dictionary_shape_keys;
 		Vector<DataType> dictionary_shape_value_types;
+		// Goblin: `@schema` support. For a schema (or a dictionary instantiated from
+		// one via `Dictionary[Name]`), `dictionary_shape_defaults` holds the per-key
+		// default value, parallel to `dictionary_shape_keys`.
+		Vector<Variant> dictionary_shape_defaults;
+		bool is_schema = false;
+		StringName schema_name;
 
 		enum Kind {
 			BUILTIN,
@@ -366,6 +372,9 @@ public:
 			union_types = p_other.union_types;
 			dictionary_shape_keys = p_other.dictionary_shape_keys;
 			dictionary_shape_value_types = p_other.dictionary_shape_value_types;
+			dictionary_shape_defaults = p_other.dictionary_shape_defaults;
+			is_schema = p_other.is_schema;
+			schema_name = p_other.schema_name;
 		}
 
 		DataType() = default;
@@ -1504,6 +1513,10 @@ public:
 		Decision decision = DECISION_EXCLUDE;
 	};
 
+	// Goblin: true when a constant node carries `@schema` (annotation presence, reliable
+	// during analysis and in the parse-only editor scan).
+	static bool is_schema_constant(const ConstantNode *p_constant);
+
 private:
 	struct PendingWarning {
 		const Node *source = nullptr;
@@ -1708,6 +1721,7 @@ private:
 	bool abstract_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
 	bool onready_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
 	bool private_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
+	bool schema_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
 	template <PropertyHint t_hint, Variant::Type t_type>
 	bool export_annotations(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
 	bool export_storage_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);

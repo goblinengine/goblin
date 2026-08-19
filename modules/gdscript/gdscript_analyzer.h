@@ -103,6 +103,7 @@ class GDScriptAnalyzer {
 	void reduce_call(GDScriptParser::CallNode *p_call, bool p_is_await = false, bool p_is_root = false);
 	void reduce_cast(GDScriptParser::CastNode *p_cast);
 	void reduce_dictionary(GDScriptParser::DictionaryNode *p_dictionary);
+	void merge_schema_dictionary(GDScriptParser::DictionaryNode *p_dictionary, const GDScriptParser::DataType &p_schema_type, const GDScriptParser::DataType &p_literal_datatype); // Goblin: `Dictionary[Name] = { ... }`.
 	void reduce_get_node(GDScriptParser::GetNodeNode *p_get_node);
 	void reduce_identifier(GDScriptParser::IdentifierNode *p_identifier, bool can_be_builtin = false);
 	void reduce_identifier_from_base(GDScriptParser::IdentifierNode *p_identifier, GDScriptParser::DataType *p_base = nullptr);

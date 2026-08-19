@@ -151,6 +151,8 @@ GDScriptParser::GDScriptParser() {
 		register_annotation(MethodInfo("@onready"), AnnotationInfo::VARIABLE, &GDScriptParser::onready_annotation);
 		// Private annotation.
 		register_annotation(MethodInfo("@private"), AnnotationInfo::VARIABLE | AnnotationInfo::FUNCTION | AnnotationInfo::CONSTANT | AnnotationInfo::CLASS, &GDScriptParser::private_annotation);
+		// Schema annotation (Goblin).
+		register_annotation(MethodInfo("@schema"), AnnotationInfo::CONSTANT, &GDScriptParser::schema_annotation);
 		// Export annotations.
 		register_annotation(MethodInfo("@export"), AnnotationInfo::VARIABLE, &GDScriptParser::export_annotations<PROPERTY_HINT_NONE, Variant::NIL>);
 		register_annotation(MethodInfo("@export_enum", PropertyInfo(Variant::STRING, "names")), AnnotationInfo::VARIABLE, &GDScriptParser::export_annotations<PROPERTY_HINT_ENUM, Variant::NIL>, varray(), true);
@@ -4733,6 +4735,43 @@ bool GDScriptParser::private_annotation(AnnotationNode *p_annotation, Node *p_ta
 	return true;
 }
 
+bool GDScriptParser::schema_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class) {
+	if (p_class == nullptr) {
+		// Statement context (local constants) — the registry is project-wide, so schemas
+		// must live at class level to be resolvable from any file.
+		push_error(R"("@schema" can only be applied to a class-level constant.)", p_annotation);
+		return false;
+	}
+	// Guaranteed by AnnotationInfo::CONSTANT.
+	ERR_FAIL_COND_V(p_target->type != Node::CONSTANT, false);
+	int schema_count = 0;
+	for (const AnnotationNode *annotation : p_target->annotations) {
+		if (annotation->name == SNAME("@schema")) {
+			schema_count++;
+		}
+	}
+	if (schema_count > 1) {
+		push_error(R"("@schema" annotation can only be used once per constant.)", p_annotation);
+		return false;
+	}
+	return true;
+}
+
+// Goblin: whether a constant node carries the `@schema` annotation. The annotations are
+// attached at parse time (before any member resolution), so this is reliable both during
+// analysis and in the parse-only editor scan.
+bool GDScriptParser::is_schema_constant(const GDScriptParser::ConstantNode *p_constant) {
+	if (p_constant == nullptr) {
+		return false;
+	}
+	for (const AnnotationNode *annotation : p_constant->annotations) {
+		if (annotation->name == SNAME("@schema")) {
+			return true;
+		}
+	}
+	return false;
+}
+
 static String _get_annotation_error_string(const StringName &p_annotation_name, const Vector<Variant::Type> &p_expected_types, const GDScriptParser::DataType &p_provided_type) {
 	Vector<String> types;
 	for (int i = 0; i < p_expected_types.size(); i++) {
@@ -5568,6 +5607,10 @@ String GDScriptParser::DataType::to_string() const {
 			}
 			if (builtin_type == Variant::DICTIONARY && has_container_element_types()) {
 				return vformat("Dictionary[%s, %s]", get_container_element_type_or_variant(0).to_string(), get_container_element_type_or_variant(1).to_string());
+			}
+			// Goblin: schema dictionaries (`@schema const` and `Dictionary[Name]`).
+			if (builtin_type == Variant::DICTIONARY && is_schema) {
+				return schema_name != StringName() ? vformat("Dictionary[%s]", schema_name) : "Dictionary[<schema>]";
 			}
 			return Variant::get_type_name(builtin_type);
 		case NATIVE:

@@ -49,6 +49,12 @@ public:
 	// Goblin: shaped dictionary schema (parallel vectors, same as the parser-side DataType).
 	Vector<StringName> dictionary_shape_keys;
 	Vector<GDScriptDataType> dictionary_shape_value_types;
+	// Goblin: `@schema` support — per-key defaults parallel to dictionary_shape_keys,
+	// plus the schema identity. `is_schema` marks schema constants and dictionaries
+	// instantiated from them (`Dictionary[Name]`).
+	Vector<Variant> dictionary_shape_defaults;
+	bool is_schema = false;
+	StringName schema_name;
 
 	enum Kind {
 		VARIANT, // Can be any type.
@@ -168,6 +174,9 @@ public:
 		container_element_types = p_other.container_element_types;
 		dictionary_shape_keys = p_other.dictionary_shape_keys;
 		dictionary_shape_value_types = p_other.dictionary_shape_value_types;
+		dictionary_shape_defaults = p_other.dictionary_shape_defaults;
+		is_schema = p_other.is_schema;
+		schema_name = p_other.schema_name;
 	}
 
 	GDScriptDataType(const GDScriptDataType &p_other) {

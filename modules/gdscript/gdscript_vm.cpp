@@ -500,6 +500,44 @@ void (*type_init_function_table[])(Variant *) = {
 #define METHOD_CALL_ON_NULL_VALUE_ERROR(method_pointer) "Cannot call method '" + (method_pointer)->get_name() + "' on a null value."
 #define METHOD_CALL_ON_FREED_INSTANCE_ERROR(method_pointer) "Cannot call method '" + (method_pointer)->get_name() + "' on a previously freed instance."
 
+// Goblin: normalize a shaped-dictionary entry value against its declared entry type,
+// so the runtime value matches the static shape (e.g. a plain array value for an
+// `Array[T]` entry becomes a typed array, like a typed-dictionary construction would
+// produce). Shared by OPCODE_CONSTRUCT_SHAPED_DICTIONARY for both schema defaults and
+// literal entries.
+static Variant _normalize_shaped_dict_entry_value(const Variant &p_value, const GDScriptDataType &p_entry_type) {
+	Variant entry_value = p_value;
+	if (p_entry_type.kind == GDScriptDataType::BUILTIN && p_entry_type.builtin_type == Variant::ARRAY && p_entry_type.has_container_element_type(0) && p_value.get_type() == Variant::ARRAY) {
+		const GDScriptDataType &element_type = p_entry_type.get_container_element_type(0);
+		const Array *src_array = VariantInternal::get_array(&p_value);
+		if (src_array->get_typed_builtin() != (uint32_t)element_type.builtin_type || src_array->get_typed_class_name() != element_type.native_type || src_array->get_typed_script() != Variant((Object *)element_type.script_type)) {
+			Array typed_array;
+			typed_array.set_typed(element_type.builtin_type, element_type.native_type, element_type.script_type);
+			typed_array.resize(src_array->size());
+			for (int j = 0; j < src_array->size(); j++) {
+				// Use .set instead of operator[] to handle type conversion / validation.
+				typed_array.set(j, src_array->operator[](j));
+			}
+			entry_value = typed_array;
+		}
+	} else if (p_entry_type.kind == GDScriptDataType::BUILTIN && p_entry_type.builtin_type == Variant::DICTIONARY && p_entry_type.has_container_element_types() && p_value.get_type() == Variant::DICTIONARY) {
+		const GDScriptDataType &key_type = p_entry_type.get_container_element_type_or_variant(0);
+		const GDScriptDataType &value_type = p_entry_type.get_container_element_type_or_variant(1);
+		const Dictionary *src_dict = VariantInternal::get_dictionary(&p_value);
+		if (src_dict->get_typed_key_builtin() != (uint32_t)key_type.builtin_type || src_dict->get_typed_key_class_name() != key_type.native_type || src_dict->get_typed_key_script() != Variant((Object *)key_type.script_type) ||
+				src_dict->get_typed_value_builtin() != (uint32_t)value_type.builtin_type || src_dict->get_typed_value_class_name() != value_type.native_type || src_dict->get_typed_value_script() != Variant((Object *)value_type.script_type)) {
+			Dictionary typed_dict;
+			typed_dict.set_typed(key_type.builtin_type, key_type.native_type, key_type.script_type, value_type.builtin_type, value_type.native_type, value_type.script_type);
+			for (const Variant *dk = src_dict->next(nullptr); dk != nullptr; dk = src_dict->next(dk)) {
+				// Use .set instead of operator[] to handle type conversion / validation.
+				typed_dict.set(*dk, src_dict->operator[](*dk));
+			}
+			entry_value = typed_dict;
+		}
+	}
+	return entry_value;
+}
+
 Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_args, int p_argcount, Callable::CallError &r_err, CallState *p_state) {
 	GodotProfileZoneScript(this, source, name, name, _initial_line);
 
@@ -1931,6 +1969,40 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 					const GDScriptDataType &shape_value_type = shape.get_container_element_type_or_variant(1);
 					dict.set_typed(shape_key_type.builtin_type, shape_key_type.native_type, shape_key_type.script_type, shape_value_type.builtin_type, shape_value_type.native_type, shape_value_type.script_type);
 				}
+
+				// Goblin: `Dictionary[Name]` types carry per-key defaults — fill them first,
+				// then let the literal entries override (a plain shaped literal has no
+				// defaults, so this loop is a no-op for G-17 dictionaries).
+				const bool has_defaults = shape.dictionary_shape_defaults.size() == shape.dictionary_shape_keys.size();
+				for (int i = 0; has_defaults && i < shape.dictionary_shape_keys.size(); i++) {
+					const StringName key = shape.dictionary_shape_keys[i];
+					const GDScriptDataType &entry_type = shape.dictionary_shape_value_types[i];
+					const Variant &default_value = shape.dictionary_shape_defaults[i];
+					Variant entry_value = _normalize_shaped_dict_entry_value(default_value, entry_type);
+					// Defaults come from the constant pool (read-only). Each instance must
+					// own mutable copies of container defaults so e.g. `n.sub.level = 7` works.
+					if (entry_value.get_type() == Variant::DICTIONARY && entry_value.operator Dictionary().is_read_only()) {
+						entry_value = entry_value.operator Dictionary().duplicate(true);
+					} else if (entry_value.get_type() == Variant::ARRAY && entry_value.operator Array().is_read_only()) {
+						entry_value = entry_value.operator Array().duplicate(true);
+					}
+#ifdef DEBUG_ENABLED
+					// Validate each default against its shape (a safety net; the analyzer
+					// already rejects statically-known wrong types). Note: OPCODE_BREAK is
+					// a plain `break` on MSVC, so it must not be used inside this loop.
+					if (invalid_value_error.is_empty()) {
+						if (entry_type.has_type() && !entry_type.validate(default_value)) {
+							invalid_value_error = vformat(R"(Invalid default value of type "%s" for shaped dictionary key "%s".)", _get_var_type(&default_value), key);
+						}
+					}
+#endif
+					if (is_typed_dict) {
+						dict.set(key, entry_value);
+					} else {
+						dict[key] = entry_value;
+					}
+				}
+
 				dict.reserve(argc);
 				for (int i = 0; i < argc; i++) {
 					GET_INSTRUCTION_ARG(k, i * 2 + 0);
@@ -1940,35 +2012,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 					// static shape (e.g. a plain array value for an `Array[T]` entry becomes
 					// a typed array, like a typed-dictionary construction would produce).
 					const GDScriptDataType entry_type = shape.get_dictionary_shape_value_type_or_variant(StringName(*k));
-					Variant entry_value = *v;
-					if (entry_type.kind == GDScriptDataType::BUILTIN && entry_type.builtin_type == Variant::ARRAY && entry_type.has_container_element_type(0) && v->get_type() == Variant::ARRAY) {
-						const GDScriptDataType &element_type = entry_type.get_container_element_type(0);
-						Array *src_array = VariantInternal::get_array(v);
-						if (src_array->get_typed_builtin() != (uint32_t)element_type.builtin_type || src_array->get_typed_class_name() != element_type.native_type || src_array->get_typed_script() != Variant((Object *)element_type.script_type)) {
-							Array typed_array;
-							typed_array.set_typed(element_type.builtin_type, element_type.native_type, element_type.script_type);
-							typed_array.resize(src_array->size());
-							for (int j = 0; j < src_array->size(); j++) {
-								// Use .set instead of operator[] to handle type conversion / validation.
-								typed_array.set(j, src_array->operator[](j));
-							}
-							entry_value = typed_array;
-						}
-					} else if (entry_type.kind == GDScriptDataType::BUILTIN && entry_type.builtin_type == Variant::DICTIONARY && entry_type.has_container_element_types() && v->get_type() == Variant::DICTIONARY) {
-						const GDScriptDataType &key_type = entry_type.get_container_element_type_or_variant(0);
-						const GDScriptDataType &value_type = entry_type.get_container_element_type_or_variant(1);
-						Dictionary *src_dict = VariantInternal::get_dictionary(v);
-						if (src_dict->get_typed_key_builtin() != (uint32_t)key_type.builtin_type || src_dict->get_typed_key_class_name() != key_type.native_type || src_dict->get_typed_key_script() != Variant((Object *)key_type.script_type) ||
-								src_dict->get_typed_value_builtin() != (uint32_t)value_type.builtin_type || src_dict->get_typed_value_class_name() != value_type.native_type || src_dict->get_typed_value_script() != Variant((Object *)value_type.script_type)) {
-							Dictionary typed_dict;
-							typed_dict.set_typed(key_type.builtin_type, key_type.native_type, key_type.script_type, value_type.builtin_type, value_type.native_type, value_type.script_type);
-							for (const Variant *dk = src_dict->next(nullptr); dk != nullptr; dk = src_dict->next(dk)) {
-								// Use .set instead of operator[] to handle type conversion / validation.
-								typed_dict.set(*dk, src_dict->operator[](*dk));
-							}
-							entry_value = typed_dict;
-						}
-					}
+					Variant entry_value = _normalize_shaped_dict_entry_value(*v, entry_type);
 #ifdef DEBUG_ENABLED
 				// Validate each entry against its shape (a safety net; the analyzer
 				// already rejects statically-known wrong types). Note: OPCODE_BREAK is

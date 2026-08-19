@@ -118,6 +118,15 @@ void GDScriptFunction::decode_datatype(const int *p_code, int &r_pos, GDScriptDa
 		r_type.dictionary_shape_keys.push_back(key);
 		r_type.dictionary_shape_value_types.push_back(value_type);
 	}
+	uint32_t defaults_count = p_code[r_pos++];
+	for (uint32_t i = 0; i < defaults_count; i++) {
+		uint32_t default_addr = p_code[r_pos++];
+		if (((default_addr & ADDR_TYPE_MASK) >> ADDR_BITS) == ADDR_TYPE_CONSTANT) {
+			r_type.dictionary_shape_defaults.push_back(get_constant(default_addr & ADDR_MASK));
+		} else {
+			r_type.dictionary_shape_defaults.push_back(Variant());
+		}
+	}
 }
 
 bool GDScriptDataType::is_type(const Variant &p_variant, bool p_allow_implicit_conversion) const {

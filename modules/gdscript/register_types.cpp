@@ -58,8 +58,11 @@
 #include "core/object/class_db.h"
 
 #ifdef TOOLS_ENABLED
+#include "core/io/config_file.h"
+#include "core/io/dir_access.h"
 #include "editor/editor_node.h"
 #include "editor/export/editor_export.h"
+#include "editor/file_system/editor_paths.h"
 #include "editor/translations/editor_translation_parser.h"
 
 #ifndef GDSCRIPT_NO_LSP
@@ -94,6 +97,17 @@ protected:
 		if (preset.is_valid()) {
 			script_mode = preset->get_script_export_mode();
 		}
+
+		// Goblin: ship the `@schema` registry cache so cross-file `Dictionary[Name]`
+		// resolves in exported games (class_name parity — the export platform adds
+		// `global_script_class_cache.cfg`; schemas need their own cache shipped too).
+		const String schema_cache_path = GDScriptLanguage::get_singleton()->get_schema_cache_path();
+		if (FileAccess::exists(schema_cache_path)) {
+			Vector<uint8_t> schema_cache = FileAccess::get_file_as_bytes(schema_cache_path);
+			if (!schema_cache.is_empty()) {
+				add_file(schema_cache_path, schema_cache, false);
+			}
+		}
 	}
 
 	virtual void _export_file(const String &p_path, const String &p_type, const HashSet<String> &p_features) override {
@@ -124,6 +138,22 @@ static void _editor_init() {
 	Ref<EditorExportGDScript> gd_export;
 	gd_export.instantiate();
 	EditorExport::get_singleton()->add_export_plugin(gd_export);
+
+	// Goblin: first-run bootstrap for the `@schema` registry. A project whose project-data
+	// cache predates the schema feature serves unchanged scripts from `filesystem_cache`,
+	// so the editor's scan never calls `get_global_class_name` for them and `@schema`
+	// constants would never be discovered (cross-file `Dictionary[Name]` would fail). On
+	// the first run without a schema cache, write one (so this bootstrap runs exactly once)
+	// and invalidate the filesystem cache — the editor then performs a full rescan that
+	// registers schemas and fills the schema cache.
+	if (!FileAccess::exists(GDScriptLanguage::get_singleton()->get_schema_cache_path())) {
+		const String schema_cache_path = GDScriptLanguage::get_singleton()->get_schema_cache_path();
+		DirAccess::make_dir_recursive_absolute(schema_cache_path.get_base_dir());
+		Ref<ConfigFile> empty_cache;
+		empty_cache.instantiate();
+		empty_cache->save(schema_cache_path);
+		DirAccess::remove_absolute(EditorPaths::get_singleton()->get_project_settings_dir().path_join("filesystem_cache10"));
+	}
 
 #ifdef TOOLS_ENABLED
 	Ref<GDScriptSyntaxHighlighter> gdscript_syntax_highlighter;

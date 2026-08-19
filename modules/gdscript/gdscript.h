@@ -465,6 +465,14 @@ class GDScriptLanguage : public ScriptLanguage {
 
 	HashMap<String, ObjectID> orphan_subclasses;
 
+	// Goblin: `@schema` registry (schema name -> declaring script path). The in-memory
+	// map is the source of truth for a session, rebuilt when script files are processed
+	// (editor class-name scan + script reload) and loaded from a persisted cache at first
+	// use (class_name-style, mirroring `res://.godot/global_script_class_cache.cfg`).
+	HashMap<StringName, String> schemas;
+	bool schemas_loaded = false;
+	void load_schemas();
+
 #ifdef TOOLS_ENABLED
 	void _extension_loaded(const Ref<GDExtension> &p_extension);
 	void _extension_unloading(const Ref<GDExtension> &p_extension);
@@ -578,6 +586,18 @@ public:
 	// These two functions should be used when behavior needs to be consistent between in-editor and running the scene
 	bool has_any_global_constant(const StringName &p_name) { return named_globals.has(p_name) || globals.has(p_name); }
 	Variant get_any_global_constant(const StringName &p_name);
+
+	// Goblin: global schema registry — `@schema const` names mapped to the script path
+	// that declares them. Populated at script reload time, during the editor's class-name
+	// scan, and from a persisted cache (`res://.godot/goblin_schema_cache.cfg`) so
+	// cross-file `Dictionary[Name]` works in cached editor sessions. Consumed by the
+	// analyzer for cross-file `Dictionary[Name]`.
+	bool has_schema(const StringName &p_name);
+	String get_schema_path(const StringName &p_name);
+	void add_schema(const StringName &p_name, const String &p_path);
+	void remove_schemas_by_path(const String &p_path);
+	void save_schemas();
+	String get_schema_cache_path() const;
 
 	_FORCE_INLINE_ static GDScriptLanguage *get_singleton() { return singleton; }
 

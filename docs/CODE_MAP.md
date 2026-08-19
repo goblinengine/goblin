@@ -51,14 +51,15 @@ Diff vs upstream: `git diff --no-index --stat modules/gdscript modules/goblin/mo
 |---|---|---|
 | Tokenizer | gdscript_tokenizer.{h,cpp} | `then`/`elthen` tokens + keywords (full feature: parser/analyzer/compiler wired — see Features table) |
 | Tokenizer buffer | gdscript_tokenizer_buffer.{h,cpp} | Save/restore support (parser lookahead) |
-| Parser | gdscript_parser.{h,cpp} | `DataType::UNION` kind, `@private` annotation, shaped dict literals (`key: Type = value`), datatype shape |
-| Analyzer | gdscript_analyzer.cpp | Union resolve/compat, private-access blocking, shape inference + entry-type refinement |
-| Compiler | gdscript_compiler.cpp | `OPCODE_CONSTRUCT_SHAPED_DICTIONARY` emit, UNION -> runtime VARIANT |
-| Bytecode gen | gdscript_byte_codegen.{h,cpp} | `append_goblin_datatype()` - recursive datatype as raw instruction words |
-| VM | gdscript_vm.cpp | Shaped-dict opcode dispatch + runtime validation, datatype decode |
-| Function | gdscript_function.{h,cpp} | Datatype shape payload + validate/decode helpers |
+| Parser | gdscript_parser.{h,cpp} | `DataType::UNION` kind, `@private` annotation, shaped dict literals (`key: Type = value`), datatype shape, `@schema` annotation + schema datatype fields (`is_schema`/`schema_name`/`dictionary_shape_defaults`), `is_schema_constant()` helper |
+| Analyzer | gdscript_analyzer.cpp | Union resolve/compat, private-access blocking, shape inference + entry-type refinement, schema const finalization + `Dictionary[Name]` resolution (local/member/registry) + literal override-merge (`merge_schema_dictionary`) |
+| Compiler | gdscript_compiler.cpp | `OPCODE_CONSTRUCT_SHAPED_DICTIONARY` emit, UNION -> runtime VARIANT, schema metadata copy in `_gdtype_from_datatype`, implicit-initializer default fill for schema members |
+| Bytecode gen | gdscript_byte_codegen.{h,cpp} | `append_goblin_datatype()` - recursive datatype as raw instruction words; schema defaults serialized via constant refs; `clear_address` schema branch |
+| VM | gdscript_vm.cpp | Shaped-dict opcode dispatch + runtime validation, datatype decode, schema defaults fill (+ container deep-copy), `_normalize_shaped_dict_entry_value` |
+| Function | gdscript_function.{h,cpp} | Datatype shape payload + validate/decode helpers; schema fields on `GDScriptDataType` |
 | Editor | gdscript_editor.cpp | Autocomplete recursion (shapes), private filter (`p_recursion_depth > 0`) |
-| Disassembler | gdscript_disassembler.cpp | Datatype/shape printing |
+| Disassembler | gdscript_disassembler.cpp | Datatype/shape/defaults printing |
+| Language | gdscript.{h,cpp} | Global schema registry (`GDScriptLanguage::schemas`) — source-based: editor scan (`_get_global_class_name` body-parse for `@schema` files), reload re-sync (after parse, before analysis), persisted cache (`res://.godot/goblin_schema_cache.cfg`) eager-loaded at init + saved at registration points |
 
 ### Features (verified in code)
 
@@ -66,8 +67,9 @@ Diff vs upstream: `git diff --no-index --stat modules/gdscript modules/goblin/mo
 |---|---|---|
 | Union types | parser + analyzer + compiler | `int | float`, `null` singleton; compiler maps UNION -> VARIANT |
 | `@private` | parser + analyzer | Same-script access allowed; no `@export` combo; name still occupies slot in subclasses |
-| String ctors | `core/variant/variant_construct.{cpp,h}` | `String(int/float/bool)`, `1 as String` -> `"1"` |
+| String ctors | `core/variant/variant_construct.{h,cpp}` | `String(int/float/bool)`, `1 as String` -> `"1"` |
 | Shaped dictionaries | parser/analyzer/compiler/vm/editor | Typed entries, recursive shape, `OPCODE_CONSTRUCT_SHAPED_DICTIONARY`, access refinement |
+| `@schema` dictionaries | parser/analyzer/compiler/vm + gdscript.{h,cpp} + register_types.cpp | `@schema const` = reusable project-wide schema; `Dictionary[Name]` instantiates with defaults autofilled + typed override-merge + growable. Global registry (name -> script path), source-based (scan + reload-after-parse) + persisted cache eager-loaded at init, shipped in exports via the gdscript export plugin; first-run bootstrap invalidates `filesystem_cache` when the schema cache is missing. `Dictionary[Name]` is type-annotation-only (expression use = analyzer error). Defaults in the datatype (serialized via constant refs), filled by the VM. Details: `docs/gdscript_features.md` |
 | `then`/`elthen` | tokenizer + parser + analyzer + compiler | `then` null-only (`a != null ? b : a`), `elthen` truthy (`a ? a : b`) — locked 2026-08-13; no VM changes; tests pending (TD-02) |
 
 ## MIDI / SoundFont module (`modules/midi/`)

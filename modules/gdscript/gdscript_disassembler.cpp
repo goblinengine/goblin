@@ -715,6 +715,9 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 							text += ", ";
 						}
 						text += String(shape.dictionary_shape_keys[i]) + ": " + _datatype_name(shape.dictionary_shape_value_types[i]);
+						if (i < shape.dictionary_shape_defaults.size()) {
+							text += " = " + shape.dictionary_shape_defaults[i].stringify();
+						}
 					}
 					text += ")";
 				}

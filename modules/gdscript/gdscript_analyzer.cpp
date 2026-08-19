@@ -740,6 +740,9 @@ GDScriptParser::DataType GDScriptAnalyzer::resolve_datatype(GDScriptParser::Type
 			}
 			if (result.is_meta_type) {
 				type_found = true;
+			} else if (result.is_schema) {
+				// Goblin: a schema constant used as a type (`Dictionary[Name]`).
+				type_found = true;
 			} else if (Ref<Script>(local.constant->initializer->reduced_value).is_valid()) {
 				Ref<GDScript> gdscript = local.constant->initializer->reduced_value;
 				if (gdscript.is_valid()) {
@@ -818,15 +821,39 @@ GDScriptParser::DataType GDScriptAnalyzer::resolve_datatype(GDScriptParser::Type
 				}
 			}
 			if (builtin_type == Variant::DICTIONARY) {
-				GDScriptParser::DataType key_type = type_from_metatype(resolve_datatype(p_type->get_container_type_or_null(0)));
-				if (key_type.kind != GDScriptParser::DataType::VARIANT) {
-					key_type.is_constant = false;
-					result.set_container_element_type(0, key_type);
-				}
-				GDScriptParser::DataType value_type = type_from_metatype(resolve_datatype(p_type->get_container_type_or_null(1)));
-				if (value_type.kind != GDScriptParser::DataType::VARIANT) {
-					value_type.is_constant = false;
-					result.set_container_element_type(1, value_type);
+				if (p_type->container_types.size() == 1) {
+					// Goblin: `Dictionary[Name]` — single-arg dictionary from a schema.
+					// The single argument is resolved as a type; a schema constant makes
+					// this a schema-instantiated dictionary (shape + defaults, no flat
+					// key/value types so the dictionary stays growable beyond the schema).
+					GDScriptParser::DataType schema_type = resolve_datatype(p_type->get_container_type_or_null(0));
+					if (schema_type.is_schema) {
+						result.dictionary_shape_keys = schema_type.dictionary_shape_keys;
+						result.dictionary_shape_value_types = schema_type.dictionary_shape_value_types;
+						result.dictionary_shape_defaults = schema_type.dictionary_shape_defaults;
+						result.is_schema = true;
+						result.schema_name = schema_type.schema_name;
+					} else {
+						const GDScriptParser::TypeNode *arg_type = p_type->get_container_type_or_null(0);
+						String arg_name = arg_type != nullptr && !arg_type->type_chain.is_empty() ? String(arg_type->type_chain[0]->name) : schema_type.to_string();
+						push_error(vformat(R"(Dictionary[%s] requires a schema (a constant annotated "@schema").)", arg_name), p_type);
+						return bad_type;
+					}
+				} else {
+					GDScriptParser::DataType key_type = type_from_metatype(resolve_datatype(p_type->get_container_type_or_null(0)));
+					GDScriptParser::DataType value_type = type_from_metatype(resolve_datatype(p_type->get_container_type_or_null(1)));
+					if (key_type.is_schema || value_type.is_schema) {
+						push_error(R"(A schema cannot be used as a dictionary key or value type.)", p_type);
+						return bad_type;
+					}
+					if (key_type.kind != GDScriptParser::DataType::VARIANT) {
+						key_type.is_constant = false;
+						result.set_container_element_type(0, key_type);
+					}
+					if (value_type.kind != GDScriptParser::DataType::VARIANT) {
+						value_type.is_constant = false;
+						result.set_container_element_type(1, value_type);
+					}
 				}
 			}
 		} else if (class_exists(first)) {
@@ -918,12 +945,17 @@ GDScriptParser::DataType GDScriptAnalyzer::resolve_datatype(GDScriptParser::Type
 							result = member.get_datatype();
 							found = true;
 							break;
-						case GDScriptParser::ClassNode::Member::CONSTANT:
-							if (member.get_datatype().is_meta_type) {
-								result = member.get_datatype();
-								found = true;
-								break;
-							} else if (Ref<Script>(member.constant->initializer->reduced_value).is_valid()) {
+					case GDScriptParser::ClassNode::Member::CONSTANT:
+						if (member.get_datatype().is_meta_type) {
+							result = member.get_datatype();
+							found = true;
+							break;
+						} else if (member.get_datatype().is_schema) {
+							// Goblin: `@schema const` used as a type (`Dictionary[Name]`).
+							result = member.get_datatype();
+							found = true;
+							break;
+						} else if (Ref<Script>(member.constant->initializer->reduced_value).is_valid()) {
 								Ref<GDScript> gdscript = member.constant->initializer->reduced_value;
 								if (gdscript.is_valid()) {
 									Ref<GDScriptParserRef> ref = parser->get_depended_parser_for(gdscript->get_script_path());
@@ -945,6 +977,35 @@ GDScriptParser::DataType GDScriptAnalyzer::resolve_datatype(GDScriptParser::Type
 					}
 				}
 			}
+		}
+	}
+
+	if (!result.is_set() && GDScriptLanguage::get_singleton()->has_schema(first)) {
+		// Goblin: global schema registry — `@schema const` declared in another script.
+		// Resolve the declaring script on demand and reuse its schema datatype.
+		const String schema_path = GDScriptLanguage::get_singleton()->get_schema_path(first);
+		if (GDScript::is_canonically_equal_paths(parser->script_path, schema_path)) {
+			push_error(vformat(R"(Could not find schema "%s" in the current script.)", first), p_type);
+			return bad_type;
+		}
+		Ref<GDScriptParserRef> ref = parser->get_depended_parser_for(schema_path);
+		if (ref.is_null() || ref->raise_status(GDScriptParserRef::INHERITANCE_SOLVED) != OK) {
+			push_error(vformat(R"(Could not parse script from "%s" (while resolving schema "%s").)", schema_path, first), p_type);
+			return bad_type;
+		}
+		GDScriptParser::ClassNode *schema_class = ref->get_parser()->head;
+		if (schema_class == nullptr || !schema_class->has_member(first)) {
+			push_error(vformat(R"(Schema "%s" was not found in "%s".)", first, schema_path), p_type);
+			return bad_type;
+		}
+		ref->get_analyzer()->resolve_class_member(schema_class, first, p_type);
+		result = schema_class->get_member(first).get_datatype();
+		if (result.is_schema) {
+			result.is_constant = false;
+			type_found = true;
+		} else {
+			push_error(vformat(R"(Constant "%s" is not a schema (it needs the "@schema" annotation).)", first), p_type);
+			return bad_type;
 		}
 	}
 
@@ -993,7 +1054,13 @@ GDScriptParser::DataType GDScriptAnalyzer::resolve_datatype(GDScriptParser::Type
 				return bad_type;
 			}
 		} else if (result.builtin_type == Variant::DICTIONARY) {
-			if (p_type->container_types.size() != 2) {
+			if (result.is_schema) {
+				// Goblin: `Dictionary[Name]` — a schema dictionary takes exactly one type argument.
+				if (p_type->container_types.size() != 1) {
+					push_error(R"(A schema dictionary requires exactly one collection element type.)", p_type);
+					return bad_type;
+				}
+			} else if (p_type->container_types.size() != 2) {
 				push_error(R"(Typed dictionaries require exactly two collection element types.)", p_type);
 				return bad_type;
 			}
@@ -2178,12 +2245,19 @@ void GDScriptAnalyzer::resolve_assignable(GDScriptParser::AssignableNode *p_assi
 			// Goblin: a "Dictionary" annotation (bare or homogeneous, e.g.
 			// Dictionary[StringName, Variant]) is a compatible supertype of a shaped
 			// dictionary literal; the per-key shape refines the variable type instead of
-			// being lost.
-			if (has_specified_type && specified_type.kind == GDScriptParser::DataType::BUILTIN && specified_type.builtin_type == Variant::DICTIONARY &&
+			// being lost. Schema dictionaries keep their own shape (the literal refines
+			// the schema, not the other way around).
+			if (has_specified_type && !specified_type.is_schema && specified_type.kind == GDScriptParser::DataType::BUILTIN && specified_type.builtin_type == Variant::DICTIONARY &&
 					literal_datatype.kind == GDScriptParser::DataType::BUILTIN && literal_datatype.builtin_type == Variant::DICTIONARY && literal_datatype.has_dictionary_shape()) {
 				specified_type.dictionary_shape_keys = literal_datatype.dictionary_shape_keys;
 				specified_type.dictionary_shape_value_types = literal_datatype.dictionary_shape_value_types;
 				type = specified_type;
+			}
+			// Goblin: `Dictionary[Name] = { ... }` — instantiate a schema. The literal
+			// overrides merge with the schema defaults; overrides are validated against
+			// the schema entry types; unknown keys grow the dictionary.
+			if (has_specified_type && specified_type.is_schema) {
+				merge_schema_dictionary(dictionary, specified_type, literal_datatype);
 			}
 		}
 
@@ -2196,6 +2270,23 @@ void GDScriptAnalyzer::resolve_assignable(GDScriptParser::AssignableNode *p_assi
 			} else {
 				push_error(vformat(R"(Assigned value for %s "%s" isn't a constant expression.)", p_kind, p_assignable->identifier->name), p_assignable->initializer);
 			}
+		}
+
+		if (is_constant && has_specified_type && specified_type.is_schema && p_assignable->initializer->is_constant &&
+				p_assignable->initializer->type == GDScriptParser::Node::DICTIONARY) {
+			// Goblin: materialize a schema-instantiated constant as its full value
+			// (defaults + overrides), not just the literal's own entries.
+			Dictionary schema_const;
+			for (int i = 0; i < specified_type.dictionary_shape_keys.size(); i++) {
+				schema_const[specified_type.dictionary_shape_keys[i]] = specified_type.dictionary_shape_defaults[i];
+			}
+			GDScriptParser::DictionaryNode *dictionary = static_cast<GDScriptParser::DictionaryNode *>(p_assignable->initializer);
+			for (int i = 0; i < dictionary->elements.size(); i++) {
+				if (dictionary->elements[i].key->is_constant) {
+					schema_const[dictionary->elements[i].key->reduced_value] = dictionary->elements[i].value->reduced_value;
+				}
+			}
+			p_assignable->initializer->reduced_value = schema_const;
 		}
 
 		if (has_specified_type && p_assignable->initializer->is_constant) {
@@ -2287,6 +2378,30 @@ void GDScriptAnalyzer::resolve_assignable(GDScriptParser::AssignableNode *p_assi
 
 	type.is_constant = is_constant;
 	type.is_read_only = false;
+
+	// Goblin: `@schema const` — finalize the schema datatype (shape + per-key defaults).
+	if (is_constant) {
+		GDScriptParser::ConstantNode *constant = static_cast<GDScriptParser::ConstantNode *>(p_assignable);
+		if (GDScriptParser::is_schema_constant(constant)) {
+			if (type.kind != GDScriptParser::DataType::BUILTIN || type.builtin_type != Variant::DICTIONARY || !type.has_dictionary_shape()) {
+				push_error(R"("@schema" constants must be shaped dictionary literals (e.g. `{ key: Type = value }`).)", p_assignable->identifier);
+			} else {
+				type.is_schema = true;
+				type.schema_name = p_assignable->identifier->name;
+				type.dictionary_shape_defaults.clear();
+				// Extract the per-key defaults from the fully-reduced literal value (the
+				// const fold above materialized defaults + entries as a Dictionary),
+				// aligned with the shape keys.
+				if (p_assignable->initializer != nullptr && p_assignable->initializer->is_constant && p_assignable->initializer->reduced_value.get_type() == Variant::DICTIONARY) {
+					const Dictionary schema_value = p_assignable->initializer->reduced_value;
+					for (int i = 0; i < type.dictionary_shape_keys.size(); i++) {
+						type.dictionary_shape_defaults.push_back(schema_value.get(type.dictionary_shape_keys[i], Variant()));
+					}
+				}
+			}
+		}
+	}
+
 	p_assignable->set_datatype(type);
 }
 
@@ -4052,6 +4167,36 @@ void GDScriptAnalyzer::reduce_dictionary(GDScriptParser::DictionaryNode *p_dicti
 	p_dictionary->set_datatype(dict_type);
 }
 
+void GDScriptAnalyzer::merge_schema_dictionary(GDScriptParser::DictionaryNode *p_dictionary, const GDScriptParser::DataType &p_schema_type, const GDScriptParser::DataType &p_literal_datatype) {
+	// `Dictionary[Name] = { ... }`: instantiate a schema. The literal's shape is
+	// replaced by the schema shape (defaults included) plus any literal-only keys.
+	// Literal overrides are validated against the schema entry types; unknown keys
+	// stay growable (Variant unless explicitly annotated or inferred from a shaped
+	// nested literal).
+	GDScriptParser::DataType merged = p_schema_type;
+
+	for (int i = 0; i < p_dictionary->elements.size(); i++) {
+		const GDScriptParser::DictionaryNode::Pair &element = p_dictionary->elements[i];
+		if (!element.key->is_constant || element.key->reduced_value.get_type() != Variant::STRING_NAME) {
+			continue; // Dynamic keys are allowed and treated as Variant.
+		}
+		const StringName key = element.key->reduced_value;
+		if (p_schema_type.has_dictionary_shape_key(key)) {
+			const GDScriptParser::DataType &schema_entry_type = p_schema_type.get_dictionary_shape_value_type(key);
+			const GDScriptParser::DataType &entry_type = element.value->get_datatype();
+			if (!entry_type.has_no_type() && entry_type.is_hard_type() && !is_type_compatible(schema_entry_type, entry_type, true, element.value)) {
+				push_error(vformat(R"(Cannot assign a value of type "%s" to schema key "%s" of type "%s".)", entry_type.to_string(), key, schema_entry_type.to_string()), element.value);
+			}
+		} else if (p_literal_datatype.has_dictionary_shape_key(key)) {
+			merged.set_dictionary_shape_entry(key, p_literal_datatype.get_dictionary_shape_value_type(key));
+		} else {
+			merged.set_dictionary_shape_entry(key, GDScriptParser::DataType::get_variant_type());
+		}
+	}
+
+	p_dictionary->set_datatype(merged);
+}
+
 void GDScriptAnalyzer::reduce_get_node(GDScriptParser::GetNodeNode *p_get_node) {
 	GDScriptParser::DataType result;
 	result.kind = GDScriptParser::DataType::VARIANT;
@@ -5188,6 +5333,17 @@ void GDScriptAnalyzer::reduce_subscript(GDScriptParser::SubscriptNode *p_subscri
 			GDScriptParser::DataType base_type = p_subscript->base->get_datatype();
 			GDScriptParser::DataType index_type = p_subscript->index->get_datatype();
 
+			if (base_type.is_meta_type) {
+				// Goblin: indexing a type name (`Dictionary[Car]`, `Array[int]`) is only
+				// valid as a type annotation. In expression position a type name is not a
+				// value — reject it here so the error surfaces in the editor instead of a
+				// compiler failure at reload.
+				push_error(vformat(R"(Cannot use type "%s" as a value. Indexing a type is only allowed in a type annotation.)", type_from_metatype(base_type).to_string()), p_subscript);
+				result_type.kind = GDScriptParser::DataType::VARIANT;
+				p_subscript->set_datatype(result_type);
+				return;
+			}
+
 			if (base_type.is_variant()) {
 				result_type.kind = GDScriptParser::DataType::VARIANT;
 				mark_node_unsafe(p_subscript);
@@ -5934,6 +6090,13 @@ Variant GDScriptAnalyzer::make_variable_default_value(GDScriptParser::VariableNo
 					GDScriptParser::DataType key = datatype.get_container_element_type_or_variant(0);
 					GDScriptParser::DataType value = datatype.get_container_element_type_or_variant(1);
 					result = make_dictionary_from_element_datatype(key, value);
+				} else if (datatype.builtin_type == Variant::DICTIONARY && datatype.is_schema) {
+					// Goblin: schema-instantiated member — default value is the filled schema.
+					Dictionary schema_dict;
+					for (int i = 0; i < datatype.dictionary_shape_keys.size(); i++) {
+						schema_dict[datatype.dictionary_shape_keys[i]] = datatype.dictionary_shape_defaults[i];
+					}
+					result = schema_dict;
 				} else {
 					VariantInternal::initialize(&result, datatype.builtin_type);
 				}

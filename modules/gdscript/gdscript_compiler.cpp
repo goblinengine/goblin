@@ -211,6 +211,12 @@ GDScriptDataType GDScriptCompiler::_gdtype_from_datatype(const GDScriptParser::D
 		result.dictionary_shape_keys.push_back(p_datatype.dictionary_shape_keys[i]);
 		result.dictionary_shape_value_types.push_back(_gdtype_from_datatype(p_datatype.dictionary_shape_value_types[i], p_owner, false));
 	}
+	// Goblin: schema metadata (`@schema` dictionaries).
+	for (int i = 0; i < p_datatype.dictionary_shape_defaults.size(); i++) {
+		result.dictionary_shape_defaults.push_back(p_datatype.dictionary_shape_defaults[i]);
+	}
+	result.is_schema = p_datatype.is_schema;
+	result.schema_name = p_datatype.schema_name;
 
 	return result;
 }
@@ -2438,6 +2444,10 @@ GDScriptFunction *GDScriptCompiler::_parse_function(Error &r_error, GDScript *p_
 
 				if (field_type.builtin_type == Variant::ARRAY && field_type.has_container_element_type(0)) {
 					codegen.generator->write_construct_typed_array(dst_address, field_type.get_container_element_type(0), Vector<GDScriptCodeGenerator::Address>());
+				} else if (field_type.builtin_type == Variant::DICTIONARY && field_type.is_schema) {
+					// Goblin: schema-instantiated member without an initializer — the
+					// default value is the schema with its defaults filled in.
+					codegen.generator->write_construct_shaped_dictionary(dst_address, field_type, Vector<GDScriptCodeGenerator::Address>());
 				} else if (field_type.builtin_type == Variant::DICTIONARY && field_type.has_container_element_types()) {
 					codegen.generator->write_construct_typed_dictionary(dst_address, field_type.get_container_element_type_or_variant(0),
 							field_type.get_container_element_type_or_variant(1), Vector<GDScriptCodeGenerator::Address>());

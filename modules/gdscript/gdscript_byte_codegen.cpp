@@ -1518,6 +1518,11 @@ void GDScriptByteCodeGenerator::append_datatype(const GDScriptDataType &p_type) 
 		append(p_type.dictionary_shape_keys[i]);
 		append_datatype(p_type.dictionary_shape_value_types[i]);
 	}
+	// Goblin: schema defaults (parallel to the shape keys), referenced from the constant table.
+	append((int)p_type.dictionary_shape_defaults.size());
+	for (int i = 0; i < p_type.dictionary_shape_defaults.size(); i++) {
+		append(get_constant_pos(p_type.dictionary_shape_defaults[i]) | (GDScriptFunction::ADDR_TYPE_CONSTANT << GDScriptFunction::ADDR_BITS));
+	}
 }
 
 void GDScriptByteCodeGenerator::write_construct_shaped_dictionary(const Address &p_target, const GDScriptDataType &p_shape, const Vector<Address> &p_arguments) {
@@ -1957,7 +1962,11 @@ void GDScriptByteCodeGenerator::clear_address(const Address &p_address) {
 				write_assign_false(p_address);
 				break;
 			case Variant::DICTIONARY:
-				if (p_address.type.has_container_element_types()) {
+				if (p_address.type.is_schema) {
+					// Goblin: schema-instantiated dictionary — the default value is the
+					// schema with its defaults filled in.
+					write_construct_shaped_dictionary(p_address, p_address.type, Vector<GDScriptCodeGenerator::Address>());
+				} else if (p_address.type.has_container_element_types()) {
 					write_construct_typed_dictionary(p_address, p_address.type.get_container_element_type_or_variant(0), p_address.type.get_container_element_type_or_variant(1), Vector<GDScriptCodeGenerator::Address>());
 				} else {
 					write_construct(p_address, p_address.type.builtin_type, Vector<GDScriptCodeGenerator::Address>());
