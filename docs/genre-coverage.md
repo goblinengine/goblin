@@ -25,7 +25,7 @@ Legend: **overlap** = Godot covers it (scriptable where noted) · **gap → item
 
 | Need | Godot offers | Godot lacks → fork |
 |---|---|---|
-| Items/quests/dialogue data | Resource system, JSON, ConfigFile | No data-table framework → **G-08 typed dicts, G-07 structs** (G-18 template dicts engine-side rejected 2026-08-19 — templates are a GDScript-side registry pattern, see `data.gd`; residual `Dictionary` perf gating is TD-04) |
+| Items/quests/dialogue data | Resource system, JSON, ConfigFile | No data-table framework → **G-08 typed dicts, G-07 structs**, with **G-18 (template dicts)** spec locked 2026-08-19 (`@schema` const dictionaries, RFC §2.0), no `core/variant` change |
 | Inventory/containers/shops | Full Control UI toolkit | No native system → scriptable (title-side) |
 | Stats/levels/skill trees | — | Scriptable |
 | Dialogue | Dialogic (community addon) | Scriptable (title-side) |
@@ -34,7 +34,7 @@ Legend: **overlap** = Godot covers it (scriptable where noted) · **gap → item
 | Save/load world state | ResourceSaver, manual serialization | No systemic save framework → title-side delta save/load (adopted) |
 | Rules/condition eval | — | Scriptable (title-side Rule) — C++ reaction server correctly rejected |
 
-**Verdict:** RPG is a *data-layer* genre. Godot's language gap (untyped dicts, no value types) is the whole story → G-07/G-08 are exactly the right answer. (Engine-level template dicts G-18 rejected 2026-08-19 — templates live GDScript-side, see `data.gd`; residual `Dictionary` perf gating is TD-04.)
+**Verdict:** RPG is a *data-layer* genre. Godot's language gap (untyped dicts, no value types) is the whole story → G-07/G-08, with G-18 (template dicts) spec locked 2026-08-19 (`@schema` const dictionaries, RFC §2.0), GDScript-side registry pattern proven by `data.gd`; TD-04 gates any future `core/variant` perf change.
 
 ## 3. Shooter (general/TPS/arena)
 
@@ -84,7 +84,7 @@ Legend: **overlap** = Godot covers it (scriptable where noted) · **gap → item
 |---|---|---|
 | Events/stimulus | Signals, groups, autoloads | No global bus — signals + title-side queue suffice (reaction server rejected correctly) |
 | Data-driven rules | Resources + GDScript | No rule engine — title-side; language layer helps (G-19 callable shorthand) |
-| **Entity data model** | Nodes | Untyped dicts → **G-17 (DONE), G-08, G-07** (G-18 engine templates rejected 2026-08-19 — see `data.gd`) |
+| **Entity data model** | Nodes | Untyped dicts → **G-17 (DONE), G-08, G-07, G-18 (locked: `@schema`)** |
 | Perception fields (light/acoustics) | — | → C-05/M-07/M-08, C-06 |
 | Tick/cadence scheduling | `process_mode`, custom groups via script | Native cadence rejected; title-side scheduler |
 | Determinism | Per-version, no guarantees | Not planned (no rollback need) |
@@ -119,7 +119,7 @@ The genuine gaps cluster in exactly 4 places, and the plan already targets all 4
 
 | Cluster | Items | Plan status |
 |---|---|---|
-| 1. **Language data layer** (systemic/RPG core) | G-17 done · G-07, G-08 | ✅ P1, correctly prioritized · **Updated 2026-08-19:** G-18 (engine-level template dicts) rejected — templates are a GDScript-side registry pattern proven by `data.gd` (`instance → Objects.list[id] → _types[type].defaults`, keyed by `id`/`type`); no `_template` key in `Variant` (leaks into `keys()`/`merge()`/`size()`/`hash()`/`==` + `core/variant` header blast radius). Residual G-18 value = `Dictionary` runtime-perf hardening under real fallback usage (TD-04 gates any C++ work). G-07/G-08 remain the live language-data items |
+| 1. **Language data layer** (systemic/RPG core) | G-17 done · G-18 (locked: `@schema`) · G-07, G-08 | ✅ P1, correctly prioritized · **Updated 2026-08-19:** G-18 spec locked — `@schema` const dictionaries (defaults autofill, typed overrides, growable beyond schema; `Dictionary[Name]` instantiation; engine surface per RFC §2.0 — const-as-type + G-17 shape fields, defaults vector, VM default-fill, global schema registry; no `core/variant` change). data.gd proves the GDScript registry pattern; TD-04 gates future `core/variant` perf; G-07/G-08 live language-data items |
 | 2. **Perception/simulation fields** (immersive sim + systemic) | C-05/C-06/M-07/M-08 folded → **SimServer S-01/S-02/S-03** (`modules/goblin/docs/rfc/simserver-rfc.md`, 2026-08-16) | ✅ P1 — now the primary-focus pillar with real engine items |
 | 3. **Retro presentation** (boomer + low-fi) | CUT done · M-06/M-11/M-12/M-13 | ⚠️ P3 — retro is secondary by charter |
 | 4. **Genre contracts** (hitscan metadata → S-02, movers, portals) | M-09 folded → S-02 · M-10/M-05 | ⚠️ P3 — title has scripted substitutes |
@@ -129,7 +129,7 @@ The genuine gaps cluster in exactly 4 places, and the plan already targets all 4
 Recommended adjustments (2026-08-15 alignment review):
 
 1. Charter wording: narrow the "Systemic out of the box" promise to what is actually built (perception fields, occlusion, data layer); interaction/cadence explicitly title-side until a migration case exists. **Resolved 2026-08-16:** no narrowing needed — SimServer gives interaction/cadence/stimulus/fields real engine items (S-01…S-04).
-2. Promote C-05/M-07/M-08 (spatial field + stealth value) to P1 after G-18. **Resolved 2026-08-16:** folded into SimServer S-01/S-03, P1. **Note 2026-08-19:** the "after G-18" sequencing is moot — G-18 (engine template dicts) was rejected, so it is no longer a cluster-1 ordering gate; cluster 2 is independently P1 (S-01/S-02/S-03 shipped).
+2. Promote C-05/M-07/M-08 (spatial field + stealth value) to P1 after G-18. **Resolved 2026-08-16:** folded into SimServer S-01/S-03, P1. **Note 2026-08-19:** cluster 2 is independently P1 (S-01/S-02/S-03 shipped); G-18 is a cluster-1 item and does not gate cluster 2.
 3. Start G-07 structs de-risk (50 parser-only test cases) — pure analysis, unblocks the biggest-gap decision. **Grounded 2026-08-19** by `data.gd`: the reference title's `Data` entity model is dict-heavy with 8+ `duplicate(true)` sites and no value/copy-by-value semantics anywhere — structs are the live language-data gap.
 4. Schedule palettes (M-06, 2–3d) or drop the word from the charter.
 5. Perf validation gate for G-10/G-11 — profile the reference title first, port only the winning opcodes.

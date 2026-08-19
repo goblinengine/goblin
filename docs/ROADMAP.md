@@ -385,8 +385,8 @@ Compiler inserts `finally` block for cleanup on scope exit. Useful for resource 
 
 ### Tier 4 — Transformative (Long-term, very high impact)
 
-**Generics with `typeinfo`:**
-daslang-style compile-time generics with type reflection. Enables typed containers (`Array[MyStruct]` with full type safety), generic algorithms (sort, filter, map over typed collections without boxing), and template specialization.
+**Generics with `typeinfo` (LOW priority — add "for fun", speculative):**
+daslang-style compile-time generics with type reflection. Enables typed containers (`Array[MyStruct]` with full type safety), generic algorithms (sort, filter, map over typed collections without boxing), and template specialization. Not required by the reference title today (unions + typed containers cover the data-layer gaps; the "consistency across positions" case is `Array[MyStruct]` after G-07 structs). Added 2026-08-19 at user request as a low-priority / experimental item.
 
 **Zero-Marshaling C++ Interop:**
 Script data laid out at C++-compatible offsets. `ManagedStructureAnnotation` allows scripts to read/write engine data directly at C++ addresses. This is the hardest feature but the most transformative — it eliminates the single biggest performance cost in Godot's scripting model.

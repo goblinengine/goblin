@@ -21,7 +21,20 @@ Secondary candidates (MIDI, lightmap baking, spatial field, palette) — §4.
 
 ## 2. The Expanded Dictionary (Primary Feature)
 
-> **Superseded 2026-08-19 (decision).** §2.1–§2.8 describe the engine-level `_template` reserved-key design. **Rejected**: the reference title's `Data` system (`data.gd`) already implements templates as a centralized, registered three-level runtime fallback chain (`instance → Objects.list[id] → _types[type].defaults`) keyed by `id`/`type` StringNames. Engine-level template metadata was rejected as (a) redundant with the GDScript registry, (b) a `core/variant` `Dictionary` header-blast-radius + ODR/ABI hazard, and (c) leaky if done as a reserved `_template` key (`keys()`/`merge()`/`size()`/`hash()`/`==` all see it). Templates stay GDScript-side. The residual G-18 value is `Dictionary` runtime-perf hardening under real fallback usage, gated by TD-04 (backlog). §2 is retained verbatim for history; do not implement §2.1–§2.8.
+> **Locked 2026-08-19 — design settled, no code yet.** G-18 = **`@schema` dictionaries**: `@schema` on a `const` Dictionary makes the const a project-wide reusable **schema**; `Dictionary[Name]` instantiates a Dictionary from it — defaults autofilled at construction, per-key type enforcement (wrong-type override = compile error), construction-time override merge (`= { key = value }`). Schema keys are typed; the dictionary stays **growable** beyond the schema (unknown keys fall back to the flat value type / `Variant`, G-17 rule; strict/fixed mode deferred). Rules: `@schema` requires a `const` (immutable schema) + a shaped Dictionary literal; a non-schema const in `Dictionary[...]` is an error. Engine surface (no `core/variant` change, no new keyword): extend const-as-type in `resolve_datatype` (analyzer const branches) + G-17 shape fields on `GDScriptDataType`/`DataType`; global schema registry (class_name-style scan-time collection, portable across files); single-arg `Dictionary[T]` type resolution; defaults vector serialized in `append_datatype`/`decode_datatype`; default-fill in `OPCODE_CONSTRUCT_SHAPED_DICTIONARY`. See §2.0 + backlog G-18.
+
+### 2.0 `@schema` dictionaries (locked design)
+
+```gdscript
+@schema const mycritter = { hp: int = 10, name: String = "", pos: Vector2 = Vector2.ZERO }
+var m: Dictionary[mycritter]                       # typed; defaults filled: hp=10, name="", pos=(0,0)
+var m2: Dictionary[mycritter] = { hp = 20 }        # override merges: hp=20; types forced by schema
+# var bad: Dictionary[mycritter] = { hp = "hello" } # ERROR — "hp" must be int
+# var bad2: Dictionary[plain_const]                 # ERROR — not a schema (needs @schema)
+var m3: Dictionary[mycritter] = { hp = 30, loot = ["sword"] }   # OK — grows past the schema
+```
+
+Semantics: a schema is a typed per-key shape + defaults; `Dictionary[Name]` is a Dictionary initialized from the schema; construction overrides merge and must match schema types; keys beyond the schema are allowed and grow the dictionary (G-17 extensibility); no fixed/strict mode yet. Schemas are `const`-only and registered project-wide at scan time (usable in any file, no imports). Not implemented — spec locked, implementation pending (backlog G-18).
 
 ### 2.1 What it delivers
 
@@ -33,32 +46,28 @@ var creature_tpl := {
 }
 
 var goblin := {
-    _template = creature_tpl,
     hp = 25,          # override default; type stays int
     reach = 2.0,
 }
 
 goblin.reach      # typed float
-goblin.keys()     # "_template" never included
 ```
 
 ### 2.2 Semantics (locked)
 
-1. `_template` is a **reserved key**: consumed by the analyzer; never appears in `keys()`/iteration/serialization.
-2. **Pre-set defaults (creation-time expansion):** template keys not set in the instance are added with their default value; materialized at construction — the runtime dictionary is a normal, fully-populated `Dictionary`.
-3. **Types** come from the template (or an explicit entry annotation, which wins and is validated against the template type). Wrong-type override = analyzer error.
-4. **Shape = template keys ∪ explicit keys**, recursing through nested shapes/containers.
-5. Any shaped dict can serve as a template via `_template =`. Templates are plain values (no new class).
+1. **Pre-set defaults (creation-time expansion):** template keys not set in the instance are added with their default value; materialized at construction — the runtime dictionary is a normal, fully-populated `Dictionary`.
+2. **Types** come from the template (or an explicit entry annotation, which wins and is validated against the template type). Wrong-type override = analyzer error.
+3. **Shape = template keys ∪ explicit keys**, recursing through nested shapes/containers.
 
 ### 2.3 Placement — why NOT `core/variant/dictionary.{h,cpp}`
 
-Delivered in the **GDScript module** (mechanism #1), not by replacing the C++ `Dictionary` Variant class. Rationale: the override hook (mechanism #2) swaps compiled `.cpp` only, not headers, and `dictionary.h` is included everywhere; core Dictionary is a per-release rebase hotspot; templates/types/callables are language-layer concerns the fork already owns. Deferred: runtime-attached template introspection (`has_template()`, lazy fallback) — that alone would require a core change (§2.6).
+Delivered in the **GDScript module** (mechanism #1), not by replacing the C++ `Dictionary` Variant class. Rationale: the override hook (mechanism #2) swaps compiled `.cpp` only, not headers, and `dictionary.h` is included everywhere; core Dictionary is a per-release rebase hotspot; templates/types/callables are language-layer concerns the fork already owns.
 
 ### 2.4 Phases
 
 | Phase | What | Files (under `modules/goblin/modules/gdscript/`) | Effort |
 |-------|------|------|--------|
-| P0 — parser | `key: Type = value` (Lua style) + reserved `_template` key; speculative `parse_type()`+`=` lookahead | `gdscript_parser.{h,cpp}` | 1–1.5 d |
+| P0 — parser | `key: Type = value` (Lua style); speculative `parse_type()`+`=` lookahead | `gdscript_parser.{h,cpp}` | 1–1.5 d |
 | P1 — analyzer | shape inference + template default merging + union-aware validation; remove nested-types `.clear()` at `gdscript_analyzer.cpp:2849` & `:2881-2882`; recurse | `gdscript_analyzer.cpp` | 2–3 d |
 | P2 — runtime | recursive `_validate_against_datatype(Variant, GDScriptDataType)`; `GDScriptDataType` shape (`gdscript_function.h:48` already self-recursive); `OPCODE_CONSTRUCT_SHAPED_DICTIONARY` emits template-expanded typed dict; typed writes | `gdscript_compiler.cpp`, `gdscript_vm.cpp`, `gdscript_function.h` | 2–4 d |
 | P3 — typed access + callable members | `dict.key` / `dict["key"]` / `dict.get()` refine to shape type; `dict.method()` invokes a stored `Callable`; autocomplete recurses | `gdscript_analyzer.cpp`, `gdscript_editor.cpp` | 3–5 d |
@@ -81,12 +90,12 @@ No `core/variant/dictionary` replacement; no value semantics; no JSON-style type
 
 ### 2.7 Test gates
 
-Parser (typed entries, `_template`, style rules), analyzer (default merging, override/type precedence, nesting ≥ 3, union entries), runtime (clean `keys()`, typed-write errors, nested enforcement), callables. Reference corpus: 236 scripts + 342 tests compile/pass unchanged.
+Parser (typed entries, style rules), analyzer (default merging, override/type precedence, nesting ≥ 3, union entries), runtime (clean `keys()`, typed-write errors, nested enforcement), callables. Reference corpus: 236 scripts + 342 tests compile/pass unchanged.
 
 ### 2.8 ADRs
 
 - **ADR-0009** shaped dictionary literals (typed entries, recursive shape, access refinement).
-- **ADR-0010** template dictionaries (reserved `_template`, creation-time expansion, GDScript-module placement).
+- **ADR-0010** template dictionaries (creation-time expansion, GDScript-module placement).
 - **ADR-0011** callable shorthand (`(...)` on Callable vars and dict members).
 
 ---
