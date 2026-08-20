@@ -32,6 +32,8 @@
 // resolves through the goblin overlay CPPPATH (this mirror has no sibling .h).
 #include "scene/main/scene_tree.h"
 
+#include "scene/main/entity_registry.h" // Goblin Engine: SceneTree-owned entity pools (D-20).
+
 STATIC_ASSERT_INCOMPLETE_TYPE(class, RenderingServer);
 
 #include "core/config/engine.h"
@@ -676,6 +678,12 @@ bool SceneTree::physics_process(double p_time) {
 	// This should happen last because any processing that deletes something beforehand might expect the object to be removed in the same frame.
 	_flush_delete_queue();
 
+	// Goblin Engine: batched entity component flush (D-20) — one dense pass per
+	// pool to RenderingServer at the frame boundary, after delete-queue flush.
+	if (entity_registry) {
+		entity_registry->flush_dirty();
+	}
+
 	_call_idle_callbacks();
 
 	return _quit;
@@ -744,6 +752,12 @@ bool SceneTree::process(double p_time) {
 
 	// This should happen last because any processing that deletes something beforehand might expect the object to be removed in the same frame.
 	_flush_delete_queue();
+
+	// Goblin Engine: batched entity component flush (D-20) — one dense pass per
+	// pool to RenderingServer at the frame boundary, after delete-queue flush.
+	if (entity_registry) {
+		entity_registry->flush_dirty();
+	}
 
 	_flush_accessibility_changes();
 
@@ -2277,6 +2291,9 @@ SceneTree::SceneTree() {
 #endif
 
 	process_groups.push_back(&default_process_group);
+
+	// Goblin Engine: SceneTree-owned entity registry (D-20).
+	entity_registry = memnew(EntityRegistry);
 }
 
 SceneTree::~SceneTree() {
@@ -2308,6 +2325,10 @@ SceneTree::~SceneTree() {
 	}
 
 	memdelete(process_group_call_queue_allocator);
+
+	// Goblin Engine: SceneTree-owned entity registry (D-20). Freed after root
+	// teardown: entities already detached via EXIT_TREE, registry is empty.
+	memdelete(entity_registry);
 
 	if (singleton == this) {
 		singleton = nullptr;

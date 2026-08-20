@@ -180,19 +180,38 @@ def configure(env):
         },
     }
 
+    # New sources ADDED to a library (no upstream counterpart — the override
+    # dict above only replaces existing stems; these have no stem to replace).
+    # EntityNode/EntityComponent (D-20): compiled into the scene library so the
+    # mirror scene_tree.cpp (same library, overlay env) can include and drive
+    # the registry. Registered at MODULE_INITIALIZATION_LEVEL_SCENE from
+    # register_types.cpp (precedent: modules/sim/register_types.cpp).
+    _GOBLIN_FILE_ADDITIONS = {
+        "scene": {
+            "entity_registry": os.path.join(_goblin_dir, "scene", "main", "entity_registry.cpp"),
+            "entity_node": os.path.join(_goblin_dir, "scene", "main", "entity_node.cpp"),
+            "entity_component": os.path.join(_goblin_dir, "scene", "main", "entity_component.cpp"),
+            "transform_3d_component": os.path.join(_goblin_dir, "scene", "main", "transform_3d_component.cpp"),
+            "mesh_instance_component": os.path.join(_goblin_dir, "scene", "main", "mesh_instance_component.cpp"),
+            "visibility_component": os.path.join(_goblin_dir, "scene", "main", "visibility_component.cpp"),
+        },
+    }
+
     def goblin_add_library(self_env, program, source, **kw):
         program_str = str(program)
         if program_str.startswith("#bin/godot"):
             program = program_str.replace("godot", "goblin")
         # Replace selected sources in the core/editor libraries before the library is created.
         lib_name = str(program).replace("#bin/obj/", "").split(".", 1)[0]
+
+        # Goblin mirrors compile with the goblin tree as a pseudo-root include
+        # overlay: root-relative includes ("drivers/gles3/effects/post_effects.h")
+        # resolve to the goblin mirror first, then fall through to upstream.
+        _goblin_env = self_env.Clone()
+        _goblin_env.Prepend(CPPPATH=[_goblin_dir])
+
         overrides = _GOBLIN_FILE_OVERRIDES.get(lib_name)
         if overrides:
-            # Goblin mirrors compile with the goblin tree as a pseudo-root include
-            # overlay: root-relative includes ("drivers/gles3/effects/post_effects.h")
-            # resolve to the goblin mirror first, then fall through to upstream.
-            _goblin_env = self_env.Clone()
-            _goblin_env.Prepend(CPPPATH=[_goblin_dir])
             _new_source = []
             for _s in source:
                 # Sources are Object nodes whose str() is the target path, e.g.
@@ -206,6 +225,17 @@ def configure(env):
                 else:
                     _new_source.append(_s)
             source = _new_source
+        # New sources ADDED to the library (no upstream stem to replace).
+        additions = _GOBLIN_FILE_ADDITIONS.get(lib_name)
+        if additions:
+            _added = []
+            for _stem, _path in additions.items():
+                if os.path.isfile(_path):
+                    if self_env.get("verbose"):
+                        print(f"Goblin: Adding {_stem} -> {_path}")
+                    _added.append(_goblin_env.Object(_path))
+            if _added:
+                source = list(source) + _added
         return godot_methods.add_library(self_env, program, source, **kw)
 
     def goblin_add_shared_library(self_env, program, source, **kw):
@@ -301,7 +331,14 @@ def configure(env):
 
 
 def get_doc_classes():
-    return []
+    # EntityNode/EntityComponent hybrid tree+ECS layer (D-20).
+    return [
+        "EntityNode",
+        "EntityComponent",
+        "Transform3DComponent",
+        "MeshInstanceComponent",
+        "VisibilityComponent",
+    ]
 
 
 def get_doc_path():
